@@ -58,8 +58,25 @@ from app.coordination.auction import (
     create_auction_from_conflict,
     is_valid_auction_transition,
 )
+from app.coordination.radio import (
+    CONFIRM_TIMEOUT_S,
+    HEARTBEAT_HZ,
+    HEARTBEAT_PERIOD_S,
+    HEARTBEAT_TIMEOUT_S,
+    LINK_DEGRADED,
+    LINK_PERFECT,
+    LINK_SEVERE,
+    R_COMM_M,
+    BoundedRadio,
+    FailureDetector,
+    FailureEvent,
+    LinkProfile,
+    PeerHealth,
+    RadioStats,
+)
 
 __all__ = [
+
     # Models (Step 1)
     "AMRState",
     "MovementIntent",
@@ -110,5 +127,22 @@ __all__ = [
     "compute_ranking",
     "create_auction_from_conflict",
     "is_valid_auction_transition",
+    # Bounded radio / failure detection (Step 4B)
+    "BoundedRadio",
+    "CONFIRM_TIMEOUT_S",
+    "FailureDetector",
+    "FailureEvent",
+    "HEARTBEAT_HZ",
+    "HEARTBEAT_PERIOD_S",
+    "HEARTBEAT_TIMEOUT_S",
+    "LINK_DEGRADED",
+    "LINK_PERFECT",
+    "LINK_SEVERE",
+    "LinkProfile",
+    "PeerHealth",
+    "RadioStats",
+    "R_COMM_M",
 ]
 
+
+# File contains AI-generated response based on internal company sources

@@ -1,0 +1,12 @@
+[INFO]  set $FDIPGLOB: /home/fdipglob
+[INFO]    This is TR Environment, cadappl is not supported anymore
+
+fleet=50 ticks=1800 seeds=(11, 13, 17)
+config            done  coll  replans
+control             14     1    51880  <-- COLLISIONS
+wip30               22     0    36381
+hyst10              14     1    51880  <-- COLLISIONS
+hyst25              14     1    51880  <-- COLLISIONS
+wip30+hyst10        22     0    36381
+wip30+hyst25        22     0    36381
+BASELINE            43     0

@@ -1,0 +1,41 @@
+[INFO]  set $FDIPGLOB: /home/fdipglob
+[INFO]    This is TR Environment, cadappl is not supported anymore
+
+
+=== baseline ===
+  seed 11: done=  7 coll=  0 overlap_ticks=    0 moving= 80.0%
+           verdicts={'PROCEED': 17281, 'SLOW': 0, 'YIELD': 0, 'WAIT': 4201, 'REROUTE': 118} replans=287
+  seed 13: done=  4 coll=  0 overlap_ticks=    0 moving= 55.9%
+           verdicts={'PROCEED': 12076, 'SLOW': 0, 'YIELD': 0, 'WAIT': 9227, 'REROUTE': 297} replans=637
+  seed 17: done=  8 coll=  0 overlap_ticks=    0 moving= 74.5%
+           verdicts={'PROCEED': 16090, 'SLOW': 0, 'YIELD': 0, 'WAIT': 5345, 'REROUTE': 165} replans=382
+
+=== monitor_only ===
+  seed 11: done=  4 coll=  0 overlap_ticks=    0 moving= 65.0%
+           verdicts={'PROCEED': 12689, 'SLOW': 1359, 'YIELD': 0, 'WAIT': 7320, 'REROUTE': 232} replans=510
+           vetoes=7552 clamps=1359 clamp_ratio=0.153 held_now=14 policy_reroutes=232
+  seed 13: done=  3 coll=  1 overlap_ticks=  470 moving= 48.1%
+           verdicts={'PROCEED': 9959, 'SLOW': 440, 'YIELD': 0, 'WAIT': 10850, 'REROUTE': 351} replans=745
+           vetoes=11201 clamps=440 clamp_ratio=0.038 held_now=17 policy_reroutes=351
+  seed 17: done=  6 coll=  1 overlap_ticks=  398 moving= 65.9%
+           verdicts={'PROCEED': 13266, 'SLOW': 971, 'YIELD': 0, 'WAIT': 7138, 'REROUTE': 225} replans=500
+           vetoes=7363 clamps=971 clamp_ratio=0.117 held_now=15 policy_reroutes=225
+
+=== ladder_only ===
+  seed 11: done= 12 coll= 56 overlap_ticks= 1637 moving= 94.2%
+           verdicts={'PROCEED': 16665, 'SLOW': 3677, 'YIELD': 1224, 'WAIT': 0, 'REROUTE': 34} replans=126
+  seed 13: done= 10 coll= 74 overlap_ticks= 2278 moving= 92.8%
+           verdicts={'PROCEED': 16916, 'SLOW': 3126, 'YIELD': 1525, 'WAIT': 0, 'REROUTE': 33} replans=125
+  seed 17: done= 15 coll= 48 overlap_ticks= 1844 moving= 92.6%
+           verdicts={'PROCEED': 17627, 'SLOW': 2371, 'YIELD': 1582, 'WAIT': 0, 'REROUTE': 20} replans=104
+
+=== full ===
+  seed 11: done=  4 coll=  0 overlap_ticks=    0 moving= 62.0%
+           verdicts={'PROCEED': 11296, 'SLOW': 2088, 'YIELD': 3904, 'WAIT': 4169, 'REROUTE': 143} replans=334
+           vetoes=4296 clamps=1703 clamp_ratio=0.284 held_now=11 policy_reroutes=143
+  seed 13: done=  2 coll=  0 overlap_ticks=    0 moving= 47.1%
+           verdicts={'PROCEED': 8695, 'SLOW': 1487, 'YIELD': 5541, 'WAIT': 5676, 'REROUTE': 201} replans=442
+           vetoes=5852 clamps=1486 clamp_ratio=0.203 held_now=18 policy_reroutes=201
+  seed 17: done=  7 coll=  0 overlap_ticks=    0 moving= 69.8%
+           verdicts={'PROCEED': 10670, 'SLOW': 4403, 'YIELD': 3360, 'WAIT': 3064, 'REROUTE': 103} replans=259
+           vetoes=3151 clamps=2369 clamp_ratio=0.429 held_now=9 policy_reroutes=103

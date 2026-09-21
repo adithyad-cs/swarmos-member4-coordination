@@ -1,0 +1,222 @@
+/* Transport: the WebSocket feed from M2, plus the REST control surface.
+ *
+ * Two design commitments here, both about honesty:
+ *
+ *  1. The link state is reported, never hidden. DEGRADED is a real state that
+ *     the UI shows inline -- if frames are late the operator learns it from the
+ *     product, not by noticing the map looks stale.
+ *
+ *  2. Reconnection is bounded exponential backoff with jitter, and every
+ *     attempt is visible. A silent reconnect loop that never says "I gave up"
+ *     is how a dashboard ends up confidently displaying last week's data.
+ *
+ * The fallback is explicit too: if no backend is reachable the UI does NOT
+ * fabricate robots. It shows the empty state naming the cause and the action.
+ */
+
+import { store, LINK } from "./store.js";
+
+const WS_PATH = "/ws/fleet";
+const API_BASE = "";              // same origin; M2 serves web/ statically
+const STALE_MS = 700;             // 7 missed ticks at 10 Hz -> degraded
+const BACKOFF_MS = [250, 500, 1000, 2000, 4000, 8000];
+const MAX_ATTEMPTS = 12;
+
+export class Transport {
+  constructor({ onBanner } = {}) {
+    this.ws = null;
+    this.attempt = 0;
+    this.closedByUs = false;
+    this.lastFrameAt = 0;
+    this.onBanner = onBanner || (() => {});
+    this._staleTimer = null;
+  }
+
+  url() {
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${location.host}${WS_PATH}`;
+  }
+
+  connect() {
+    this.closedByUs = false;
+    let ws;
+    try {
+      ws = new WebSocket(this.url());
+    } catch (err) {
+      this._scheduleReconnect(`WebSocket could not be created: ${err.message}`);
+      return;
+    }
+    this.ws = ws;
+
+    ws.onopen = () => {
+      this.attempt = 0;
+      store.setLink(LINK.LIVE);
+      this.onBanner(null);
+      this._startStaleWatch();
+    };
+
+    ws.onmessage = (ev) => {
+      let msg;
+      try {
+        msg = JSON.parse(ev.data);
+      } catch {
+        // A malformed frame is dropped, loudly. It is never partially applied.
+        console.warn("dropped malformed frame");
+        return;
+      }
+      this.lastFrameAt = performance.now();
+      if (store.link !== LINK.LIVE) store.setLink(LINK.LIVE);
+      this._dispatch(msg);
+    };
+
+    ws.onclose = () => {
+      this._stopStaleWatch();
+      if (this.closedByUs) {
+        store.setLink(LINK.DOWN);
+        return;
+      }
+      this._scheduleReconnect("Connection to the coordination server closed.");
+    };
+
+    ws.onerror = () => {
+      // onclose always follows, so the reconnect decision lives there only.
+      store.setLink(LINK.DEGRADED);
+    };
+  }
+
+  _dispatch(msg) {
+    switch (msg.type) {
+      case "hello":
+        // Envelope discipline: schema_version is checked, not assumed.
+        if (msg.schema_version && msg.schema_version !== "1.0") {
+          this.onBanner({
+            tone: "warn",
+            cause: `Server speaks schema ${msg.schema_version}, this client speaks 1.0.`,
+            action: "Fields may be missing. Reload after updating the client.",
+          });
+        }
+        store.applyHello(msg);
+        break;
+      case "frame":
+        store.applyFrame(msg);
+        break;
+      case "reset":
+        store.reset();
+        break;
+      case "error":
+        this.onBanner({
+          tone: "error",
+          cause: msg.cause || "The coordination server reported an error.",
+          action: msg.action || "Check the server log, then restart the run.",
+        });
+        break;
+      default:
+        console.warn("unknown frame type", msg.type);
+    }
+  }
+
+  /* A frame that is merely LATE is a different failure from a socket that is
+   * CLOSED, and the operator needs to be able to tell them apart. */
+  _startStaleWatch() {
+    this._stopStaleWatch();
+    this._staleTimer = setInterval(() => {
+      // Never report staleness before the first frame has ever arrived: an
+      // idle server that has not been given a run is not a late server.
+      if (!this.lastFrameAt || !store.everFrame) return;
+      const age = performance.now() - this.lastFrameAt;
+      if (age > STALE_MS && store.link === LINK.LIVE) {
+        store.setLink(LINK.DEGRADED, `${Math.round(age)} ms since last frame`);
+        this.onBanner({
+          tone: "warn",
+          cause: `No simulation frame for ${Math.round(age)} ms (expected every 100 ms).`,
+          action: "The map is showing the last known state. Coordination may be paused.",
+        });
+      } else if (age <= STALE_MS && store.link === LINK.DEGRADED) {
+        store.setLink(LINK.LIVE);
+        this.onBanner(null);
+      }
+    }, 200);
+  }
+
+  _stopStaleWatch() {
+    if (this._staleTimer) clearInterval(this._staleTimer);
+    this._staleTimer = null;
+  }
+
+  _scheduleReconnect(cause) {
+    store.setLink(LINK.DOWN);
+    this.attempt += 1;
+    if (this.attempt > MAX_ATTEMPTS) {
+      this.onBanner({
+        tone: "error",
+        cause: `${cause} Gave up after ${MAX_ATTEMPTS} attempts.`,
+        action: "Start the backend with ./run.sh, then press R to retry.",
+      });
+      return;
+    }
+    const base = BACKOFF_MS[Math.min(this.attempt - 1, BACKOFF_MS.length - 1)];
+    const delay = base + Math.floor(Math.random() * 120);   // jitter
+    this.onBanner({
+      tone: "warn",
+      cause,
+      action: `Reconnecting in ${(delay / 1000).toFixed(1)} s (attempt ${this.attempt} of ${MAX_ATTEMPTS}).`,
+    });
+    setTimeout(() => this.connect(), delay);
+  }
+
+  retryNow() {
+    this.attempt = 0;
+    this.close();
+    this.connect();
+  }
+
+  close() {
+    this.closedByUs = true;
+    this._stopStaleWatch();
+    if (this.ws) this.ws.close();
+    this.ws = null;
+  }
+
+  /* ---- REST control surface. Every call returns {ok, data, error} so the
+   * caller never has to guess whether a failure was network or logic. ---- */
+
+  async post(path, body) {
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {}),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        return { ok: false, error: (data && data.detail) || `HTTP ${res.status}`, data };
+      }
+      return { ok: true, data };
+    } catch (err) {
+      return { ok: false, error: `Cannot reach the coordination server: ${err.message}` };
+    }
+  }
+
+  async get(path) {
+    try {
+      const res = await fetch(`${API_BASE}${path}`);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        return { ok: false, error: (data && data.detail) || `HTTP ${res.status}`, data };
+      }
+      return { ok: true, data };
+    } catch (err) {
+      return { ok: false, error: `Cannot reach the coordination server: ${err.message}` };
+    }
+  }
+
+  startRun(cfg)  { return this.post("/api/sim/start", cfg); }
+  pauseRun()     { return this.post("/api/sim/pause", {}); }
+  resumeRun()    { return this.post("/api/sim/resume", {}); }
+  stopRun()      { return this.post("/api/sim/stop", {}); }
+  stepRun(n)     { return this.post("/api/sim/step", { ticks: n || 1 }); }
+  injectFault(f) { return this.post("/api/sim/inject", f); }
+  scenarios()    { return this.get("/api/scenarios"); }
+  traceHash()    { return this.get("/api/trace/hash"); }
+  benchmark(b)   { return this.post("/api/benchmark/run", b); }
+}

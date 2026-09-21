@@ -60,13 +60,19 @@ class MessageType(str, enum.Enum):
     """
     Controlled set of coordination message types.
 
-    Only ROBOT_STATE and PATH_INTENT are defined for Step 1.
-    Additional types (HEARTBEAT, CONFLICT_ALERT, RESERVATION_*, etc.)
-    will be added in later steps without breaking the envelope schema.
+    ROBOT_STATE and PATH_INTENT were defined for Step 1.  HEARTBEAT was
+    added for the bounded radio and failure detector (app/coordination/
+    radio.py): it is the liveness beacon every robot emits at 10 Hz, and
+    its absence is what drives the SUSPECTED -> FAILED escalation.  It
+    carries no payload requirements, so adding it does not change the
+    envelope schema.  Further types (CONFLICT_ALERT, RESERVATION_*, etc.)
+    can be added the same way.
     """
 
     ROBOT_STATE = "ROBOT_STATE"
     PATH_INTENT = "PATH_INTENT"
+    HEARTBEAT = "HEARTBEAT"
+
 
 
 # ---------------------------------------------------------------------------
@@ -187,3 +193,5 @@ def create_path_intent_message(
         target_id=target_id,
         payload=intent.model_dump(mode="json"),
     )
+
+# File contains AI-generated response based on internal company sources
