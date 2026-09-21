@@ -261,6 +261,18 @@ class SimEngine:
         # onto the snapshot for display and is never passed to the policy, so
         # deleting it or feeding it garbage cannot change robot behaviour or the
         # trace hash. tests/test_ml.py proves that rather than asserting it.
+        #
+        # X-05, measured 2026-09-21, do NOT promote this into the planner.
+        # Scored against a persistence baseline on identical (zone, target
+        # tick) pairs by tools/measure_forecast.py, 1800 ticks, seeds
+        # 11/13/17, rush_50:
+        #   fleet  8: model MAE 5.344 vs persistence 0.667 (701 pct worse)
+        #   fleet 50: model MAE 2.308 vs persistence 0.415 (456 pct worse)
+        # A linear slope over a 20 tick horizon overshoots because robot
+        # flow is bursty, not linear. It loses to guessing 'the zone holds
+        # what it holds now', so it may not steer routing. The fence is
+        # enforced by tests/test_ml_fence.py; reasoning in
+        # docs/X05_FORECASTER_DECISION.md.
         self.forecaster = Forecaster()
         self.ml_enabled = True
         self._last_advisories: dict = {}
