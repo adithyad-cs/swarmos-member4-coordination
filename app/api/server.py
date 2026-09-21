@@ -27,7 +27,13 @@ Route contract (must stay in lockstep with web/js/transport.js):
     GET  /api/status
     GET  /api/health
     POST /api/benchmark/run {scenario, seeds, ticks}
+    POST /api/cosim/start   {scenario, seed, fleet_size, ticks, speed,
+                             integrity}
+    POST /api/cosim/stop
+    POST /api/cosim/inject  {fault}
+    GET  /api/cosim/status
     WS   /ws/fleet
+    WS   /ws/cosim
 
 tests/test_api.py asserts that contract mechanically in both directions so the
 two files cannot drift apart silently.
@@ -47,6 +53,8 @@ from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from app.api.cosim_runner import CoSimConfig as CoSimDefaults
+from app.api.cosim_runner import CoSimConfig, cosim_manager
 from app.api.runner import POLICIES, RunConfig, manager
 from app.sim.scenarios import FaultKind, list_scenarios
 
@@ -57,6 +65,12 @@ WEB_DIR = Path(__file__).resolve().parents[2] / "web"
 # park a worker thread for an hour.
 MAX_BENCH_SEEDS = 12
 MAX_BENCH_TICKS = 3000
+
+# Re-exported from the co-simulation manager so the HTTP layer and the manager
+# cannot drift to different defaults. 1800 ticks is 180 s of sim time, which is
+# past the startup transient; fleet 8 is the measured parity point.
+COSIM_DEFAULT_TICKS = CoSimDefaults().ticks
+COSIM_DEFAULT_FLEET = CoSimDefaults().fleet_size
 
 
 # --------------------------------------------------------------------------
@@ -245,6 +259,107 @@ async def sim_inject(request: Request) -> JSONResponse:
 
 
 # --------------------------------------------------------------------------
+# co-simulation (X-12)
+# --------------------------------------------------------------------------
+
+async def cosim_start(request: Request) -> JSONResponse:
+    """Start a two-arm counterfactual run.
+
+    There is no `policy` field on purpose. The arms ARE the policies - asking
+    the caller to name one would let it start a co-simulation of a policy
+    against itself, which would render two identical fleets and prove nothing.
+    """
+    try:
+        data = await _body(request)
+        scenario = _as_str(data, "scenario") or ""
+        seed = _as_int(data, "seed", 11)
+        fleet = _as_int(data, "fleet_size", COSIM_DEFAULT_FLEET)
+        ticks = _as_int(data, "ticks", COSIM_DEFAULT_TICKS)
+        speed = _as_float(data, "speed", 1.0)
+        integrity = bool(data.get("integrity", False))
+    except ValueError as exc:
+        return _fail(str(exc))
+
+    known = {s["name"] for s in list_scenarios()}
+    if scenario and scenario not in known:
+        return _fail(
+            f"Unknown scenario '{scenario}'. Choose one of: "
+            + ", ".join(sorted(known))
+            + "."
+        )
+    if ticks is not None and ticks < 1:
+        return _fail("The comparison horizon must be at least 1 tick.")
+
+    cfg = CoSimConfig(
+        scenario=scenario or list_scenarios()[0]["name"],
+        seed=seed,
+        fleet_size=fleet,
+        ticks=ticks if ticks is not None else COSIM_DEFAULT_TICKS,
+        speed=speed,
+        integrity=integrity,
+    )
+    try:
+        result = await cosim_manager.start(cfg)
+    except Exception as exc:
+        return _fail(f"Could not start the co-simulation: {exc}")
+    return _relay(result)
+
+
+async def cosim_stop(request: Request) -> JSONResponse:
+    return _relay(await cosim_manager.stop())
+
+
+async def cosim_inject(request: Request) -> JSONResponse:
+    """Inject a fault into BOTH arms at the same tick.
+
+    Single-arm injection is deliberately not offered. Faulting only the
+    baseline would manufacture the result the comparison is supposed to test.
+    """
+    try:
+        data = await _body(request)
+        fault = _as_str(data, "fault")
+    except ValueError as exc:
+        return _fail(str(exc))
+    if not fault:
+        return _fail("No fault was named. Pick a fault to inject.")
+    if not cosim_manager.has_run:
+        return _fail("There is no co-simulation to inject into. Start one first.")
+    return _relay(await cosim_manager.inject(fault))
+
+
+async def cosim_status(request: Request) -> JSONResponse:
+    return JSONResponse({"ok": True, **cosim_manager.status()})
+
+
+async def ws_cosim(ws: WebSocket) -> None:
+    """The co-simulation socket, separate from /ws/fleet.
+
+    Two sockets rather than one multiplexed stream: the live map must keep
+    receiving frames at a steady 10 Hz even while a co-simulation is running,
+    and a client that only wants one of the two should not have to pay the
+    bandwidth of both.
+    """
+    await ws.accept()
+    queue = cosim_manager.subscribe()
+    try:
+        await ws.send_json(cosim_manager.hello_payload())
+        last = cosim_manager.last_frame()
+        if last is not None:
+            await ws.send_json(last)
+        while True:
+            message = await queue.get()
+            await ws.send_json(message)
+    except (WebSocketDisconnect, asyncio.CancelledError):
+        pass
+    except RuntimeError:
+        pass
+    finally:
+        cosim_manager.unsubscribe(queue)
+        with contextlib.suppress(Exception):
+            await ws.close()
+
+
+# --------------------------------------------------------------------------
 # read-only surfaces
 # --------------------------------------------------------------------------
 
@@ -384,7 +499,12 @@ routes = [
     Route("/api/status", status, methods=["GET"]),
     Route("/api/health", health, methods=["GET"]),
     Route("/api/benchmark/run", benchmark_run, methods=["POST"]),
+    Route("/api/cosim/start", cosim_start, methods=["POST"]),
+    Route("/api/cosim/stop", cosim_stop, methods=["POST"]),
+    Route("/api/cosim/inject", cosim_inject, methods=["POST"]),
+    Route("/api/cosim/status", cosim_status, methods=["GET"]),
     WebSocketRoute("/ws/fleet", ws_fleet),
+    WebSocketRoute("/ws/cosim", ws_cosim),
 ]
 
 if WEB_DIR.is_dir():

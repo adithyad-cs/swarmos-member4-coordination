@@ -17,6 +17,11 @@
 import { store, LINK } from "./store.js";
 
 const WS_PATH = "/ws/fleet";
+/* The co-simulation stream is a SECOND socket, not a message type on the
+ * first one. The live map must keep its steady 10 Hz while a comparison
+ * runs, and a client that wants only one of the two should not pay for
+ * both. */
+const COSIM_WS_PATH = "/ws/cosim";
 const API_BASE = "";              // same origin; M2 serves web/ statically
 const STALE_MS = 700;             // 7 missed ticks at 10 Hz -> degraded
 const BACKOFF_MS = [250, 500, 1000, 2000, 4000, 8000];
@@ -219,4 +224,15 @@ export class Transport {
   scenarios()    { return this.get("/api/scenarios"); }
   traceHash()    { return this.get("/api/trace/hash"); }
   benchmark(b)   { return this.post("/api/benchmark/run", b); }
+
+  /* ---- Co-simulation (X-12). No policy argument: the two arms ARE the
+   * policies, so naming one would allow a run against itself. ---- */
+  startCosim(cfg)   { return this.post("/api/cosim/start", cfg); }
+  stopCosim()       { return this.post("/api/cosim/stop", {}); }
+  injectCosim(f)    { return this.post("/api/cosim/inject", f); }
+  cosimStatus()     { return this.get("/api/cosim/status"); }
+  cosimSocketUrl()  {
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${location.host}${COSIM_WS_PATH}`;
+  }
 }
