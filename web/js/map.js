@@ -117,9 +117,14 @@ export class MapView {
     return [(px - this.panX) / s, (this.h - py - this.panY) / s];
   }
 
+  /* Fit needs a warehouse, and at startup there is not one yet - it arrives on
+   * the first state frame. Calling fit() before then is a no-op, so the very
+   * first successful fit has to be triggered by the frame that brings the
+   * warehouse in. See maybeFitOnFirstWarehouse(). */
   fit() {
     const wh = store.warehouse;
     if (!wh || !wh.width_m || !wh.height_m) return;
+    this._hasFit = true;
     const pad = 24;
     const sx = (this.w - pad * 2) / wh.width_m;
     const sy = (this.h - pad * 2) / wh.height_m;
@@ -129,6 +134,17 @@ export class MapView {
     this.panY = (this.h - wh.height_m * this.fitScale) / 2;
     this._staticDirty = true;
     this._pathsDirty = true;
+  }
+
+  /* Called every frame. Fits exactly once, when a warehouse first becomes
+   * known, and never again - refitting later would yank the view out from under
+   * an operator who has panned or zoomed deliberately. */
+  maybeFitOnFirstWarehouse() {
+    if (this._hasFit) return false;
+    const wh = store.warehouse;
+    if (!wh || !wh.width_m || !wh.height_m) return false;
+    this.fit();
+    return true;
   }
 
   zoomBy(factor, cx, cy) {
@@ -618,6 +634,7 @@ export class MapView {
   start() {
     const loop = () => {
       const now = performance.now();
+      this.maybeFitOnFirstWarehouse();
       if (this._staticDirty) this.drawStatic();
       if (this._pathsDirty) this.drawPaths();
       this.drawRobots(now);
