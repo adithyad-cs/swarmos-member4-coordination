@@ -51,6 +51,10 @@ class FaultKind(str, enum.Enum):
     ZONE_PARTITION = "ZONE_PARTITION"
     TASK_BURST = "TASK_BURST"
     KILL_ML = "KILL_ML"
+    # X-01. Cuts one robot's radio in both directions. Proves that a robot which
+    # can no longer coordinate keeps working under a tighter envelope instead of
+    # stopping and blocking an aisle, and rejoins the moment it is audible again.
+    COMM_BLACKOUT = "COMM_BLACKOUT"
 
 
 @dataclass(frozen=True)

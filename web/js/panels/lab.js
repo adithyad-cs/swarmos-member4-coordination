@@ -14,7 +14,8 @@ import { shortHash, int } from "../format.js";
 
 const FAULTS = [
   { id: "robot_failure", label: "Robot failure (kill one robot)" },
-  { id: "comm_blackout", label: "Comm blackout (drop all links 3 s)" },
+  { id: "comm_blackout", label: "Comm blackout (cut one robot's radio 6 s)" },
+  { id: "link_impair", label: "Link impairment (drops and latency, fleet-wide)" },
   { id: "blocked_aisle", label: "Block an aisle (static obstacle)" },
   { id: "rogue_agent", label: "Rogue agent (adversarial robot)" },
 ];

@@ -192,6 +192,12 @@ class BoundedRadio:
         self._positions: dict[str, tuple[float, float]] = {}
         # Robots whose traffic is discarded on sight (X-10 rogue containment).
         self._quarantined: set[str] = set()
+        # Robots whose radio is DEAD rather than distrusted (X-01 blackout).
+        # Deliberately a separate set from _quarantined: quarantine is a
+        # judgement the fleet makes and can lift, a blackout is a fault the
+        # robot is suffering. Collapsing them would let an attack hide behind a
+        # broken antenna in the reports.
+        self._silenced: set[str] = set()
         # Per-recipient inbox, plus a delay queue keyed by the tick at which a
         # delayed message becomes visible.
         self._inbox: dict[str, list[CoordinationMessage]] = {}
@@ -229,11 +235,42 @@ class BoundedRadio:
         for rid, pos in self._positions.items():
             if rid == robot_id or rid in self._quarantined:
                 continue
+            # A silenced peer cannot hear this robot, so it is not a neighbour.
+            # Filtering here rather than in _deliver keeps the `reached` count
+            # in broadcast() honest: nothing was reached, so nothing is counted.
+            if rid in self._silenced:
+                continue
             d = euclidean(origin[0], origin[1], pos[0], pos[1])
             if d <= self.radius_m:
                 out.append((d, rid))
         out.sort()
         return [rid for _, rid in out]
+
+    # ------------------------------------------------------------------
+    # radio blackout (X-01)
+    # ------------------------------------------------------------------
+    def silence(self, robot_id: str) -> None:
+        """Cut one robot's radio in BOTH directions.
+
+        Symmetry is the point. A one-way cut would leave the robot still
+        hearing peers and so still able to coordinate, which is not the failure
+        being modelled: a jammed or shadowed antenna neither transmits nor
+        receives, and that is precisely the case sovereign mode must survive.
+        """
+        self._silenced.add(robot_id)
+
+    def restore(self, robot_id: str) -> bool:
+        """Bring a silenced radio back. Returns whether one was actually out."""
+        was_out = robot_id in self._silenced
+        self._silenced.discard(robot_id)
+        return was_out
+
+    def is_silenced(self, robot_id: str) -> bool:
+        return robot_id in self._silenced
+
+    @property
+    def silenced(self) -> tuple[str, ...]:
+        return tuple(sorted(self._silenced))
 
     def degree(self) -> dict[str, int]:
         """Neighbour count per robot. The direct measure of coordination fan-out."""
@@ -325,6 +362,11 @@ class BoundedRadio:
         sender = msg.sender_id
         if sender in self._quarantined:
             self.stats.quarantined += 1
+            return 0
+        if sender in self._silenced:
+            # Charged as a drop, not as a quarantine: the message was offered
+            # and lost to a fault, which is exactly what `dropped` means.
+            self.stats.dropped += 1
             return 0
 
         reached = 0

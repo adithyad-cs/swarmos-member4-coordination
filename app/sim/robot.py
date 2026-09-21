@@ -192,6 +192,10 @@ class SimRobot:
     # the fleet makes about a robot, not a state of the robot's own hardware,
     # and collapsing the two would corrupt the canonical lifecycle model.
     quarantined: bool = False
+    # X-01 mirror of the arbiter's sovereign set. Display and reporting only:
+    # unlike quarantined it does NOT stop the robot and does NOT release its
+    # task, because continuing to work is precisely what is being demonstrated.
+    sovereign: bool = False
 
     # Reported (noised) view.
     reported_x: float = 0.0
@@ -476,10 +480,16 @@ class SimRobot:
             "h": round(self.heading, 3),
             "v": round(self.velocity, 3),
             "b": round(self.battery, 1),
-            # QUARANTINED overrides the lifecycle status for display only.
-            # The operator needs to see at a glance which robots the fleet has
-            # cut off, and that is not expressible as a hardware state.
-            "s": ("QUARANTINED" if self.quarantined else self.status.value),
+            # QUARANTINED and SOVEREIGN override the lifecycle status for
+            # display only, and QUARANTINED outranks SOVEREIGN: a contained liar
+            # is the more urgent fact about a robot than a lost radio, and an
+            # operator shown only "SOVEREIGN" for a quarantined rogue would be
+            # actively misled.
+            "s": (
+                "QUARANTINED" if self.quarantined
+                else "SOVEREIGN" if self.sovereign
+                else self.status.value
+            ),
             "t": self.current_task_id,
             "pc": self.spec.payload_class.value,
             "sc": self.spec.speed_class.value,

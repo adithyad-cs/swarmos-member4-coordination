@@ -191,6 +191,11 @@ class SimEngine:
         self.sensing = self.scenario.sensing
         self.policy: CoordinationPolicy = policy if policy is not None else NoOpPolicy()
 
+        # X-01. tick at which each silenced robot's radio comes back. Engine
+        # state rather than radio state, because the radio's job is to model
+        # reachability, not to schedule the operator's faults.
+        self._blackout_until: dict[str, int] = {}
+
         self.robots: dict[str, SimRobot] = {
             r.robot_id: r
             for r in spawn_fleet(self.warehouse, self.scenario.fleet_size, self.rng)
@@ -331,6 +336,10 @@ class SimEngine:
         council = getattr(self.policy, "council", None)
         if council is not None:
             self.apply_containment(council.contained)
+        # X-01. Same read-back discipline as containment, and for the same
+        # reason: coordination judges, the simulation records.
+        self._sync_sovereign()
+        self._expire_blackouts()
 
         self._apply_onboard_brake()
 
@@ -481,6 +490,7 @@ class SimEngine:
             FaultKind.ZONE_PARTITION: self._fault_zone_partition,
             FaultKind.TASK_BURST: self._fault_task_burst,
             FaultKind.KILL_ML: self._fault_kill_ml,
+            FaultKind.COMM_BLACKOUT: self._fault_comm_blackout,
         }[kind]
         detail = handler(**params)
         # fault_kind, not kind: "kind" is already the event-type field on every
@@ -603,6 +613,68 @@ class SimEngine:
     def _fault_kill_ml(self) -> dict:
         self.ml_enabled = False
         return {"applied": True, "ml_enabled": False}
+
+    def _fault_comm_blackout(self, robot_id: Optional[str] = None,
+                             ticks: int = 60) -> dict:
+        """Cut one robot's radio for `ticks` ticks, then restore it (X-01).
+
+        60 ticks is 6 s at 10 Hz: long enough to clear the 5-tick confirmation
+        window with room to spare and to be visible to a human watching the map,
+        short enough that a judge sees the rejoin inside the same demo breath.
+
+        getattr rather than attribute access because the baseline policy has no
+        radio at all, and forcing one on it to satisfy this fault would corrupt
+        the comparison the whole throughput claim rests on.
+        """
+        radio = getattr(self.policy, "radio", None)
+        if radio is None:
+            return {"applied": False, "reason": "policy has no radio"}
+        robot = self._pick_robot(robot_id)
+        if robot is None:
+            return {"applied": False, "reason": "no healthy robot"}
+        radio.silence(robot.robot_id)
+        self._blackout_until[robot.robot_id] = self.clock.tick + max(1, int(ticks))
+        return {"applied": True, "robot_id": robot.robot_id,
+                "ticks": max(1, int(ticks))}
+
+    def _expire_blackouts(self) -> None:
+        """Restore radios whose blackout has run out (X-01).
+
+        Sorted id order so the restore sequence is identical on every replay.
+        """
+        if not self._blackout_until:
+            return
+        radio = getattr(self.policy, "radio", None)
+        if radio is None:
+            self._blackout_until.clear()
+            return
+        for rid in sorted(self._blackout_until):
+            if self.clock.tick >= self._blackout_until[rid]:
+                radio.restore(rid)
+                del self._blackout_until[rid]
+                self._emit("blackout_ended", robot_id=rid)
+
+    def _sync_sovereign(self) -> None:
+        """Copy the arbiter's sovereign set onto the robots (X-01).
+
+        Read back from the policy, never pushed by it, for the same reason
+        apply_containment is: the simulation stays the single authority on robot
+        state (law 1). Deliberately does NOT touch velocity, speed_scale, status
+        or the current task - a sovereign robot is still working.
+        """
+        ids = getattr(self.policy, "sovereign", None)
+        if ids is None:
+            return
+        wanted = set(ids)
+        for rid in sorted(self.robots):
+            robot = self.robots[rid]
+            should = rid in wanted
+            if should and not robot.sovereign:
+                robot.sovereign = True
+                self._emit("sovereign", robot_id=rid, action="enter")
+            elif not should and robot.sovereign:
+                robot.sovereign = False
+                self._emit("sovereign", robot_id=rid, action="rejoin")
 
     # ==================================================================
     # steps 2 and 3 - tasks and dispatch
@@ -1251,6 +1323,12 @@ class SimEngine:
                 1 for r in self.robots.values() if r.status is RobotStatus.CHARGING
             ),
             "robots_rogue": sum(1 for r in self.robots.values() if r.rogue),
+            # X-01. Beside robots_rogue and not folded into it: a robot with a
+            # dead radio and a robot telling lies are different problems with
+            # different operator responses.
+            "robots_sovereign": sum(
+                1 for r in self.robots.values() if r.sovereign
+            ),
             "avg_battery": round(
                 sum(r.battery for r in self.robots.values()) / max(1, len(self.robots)), 1
             ),

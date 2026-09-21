@@ -37,6 +37,7 @@
   --state-available: #2F6F4E;  /* drawn as OUTLINE only, never filled */
   --state-failed: #6E3A3C;     /* dead robot: desaturated, not alarming */
   --state-quarantined: #A855C4; /* rogue containment (X-10) */
+  --state-sovereign: #4FB3A6;   /* radio lost, still working alone (X-01) */
 
   /* Translucent fills for the same states, for halos and chart bands. */
   --state-blocked-wash: rgba(229, 72, 77, 0.14);

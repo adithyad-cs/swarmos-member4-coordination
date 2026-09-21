@@ -13,7 +13,7 @@ export const LINK = { DOWN: "down", DEGRADED: "degraded", LIVE: "live" };
 
 const STATES = [
   "MOVING", "BLOCKED", "WAITING", "CHARGING",
-  "AVAILABLE", "FAILED", "QUARANTINED",
+  "AVAILABLE", "FAILED", "QUARANTINED", "SOVEREIGN",
 ];
 
 function emptyKpis() {

@@ -128,6 +128,7 @@
 .roster__row[data-state="CHARGING"]    { border-left-color: var(--state-charging); }
 .roster__row[data-state="FAILED"]      { border-left-color: var(--state-failed); }
 .roster__row[data-state="QUARANTINED"] { border-left-color: var(--state-quarantined); }
+.roster__row[data-state="SOVEREIGN"]   { border-left-color: var(--state-sovereign); }
 
 .roster__id {
   font-family: var(--font-mono);

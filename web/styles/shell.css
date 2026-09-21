@@ -456,6 +456,7 @@ body {
 .chip[data-state="AVAILABLE"]   { color: var(--state-available); }
 .chip[data-state="FAILED"]      { color: var(--state-failed); }
 .chip[data-state="QUARANTINED"] { color: var(--state-quarantined); }
+.chip[data-state="SOVEREIGN"]   { color: var(--state-sovereign); }
 
 /* Key/value rows -- the rail's workhorse. Label tertiary, value primary. */
 .kv {

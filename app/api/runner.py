@@ -387,7 +387,8 @@ class RunManager:
 # the boundary so neither has to know about the other's vocabulary.
 _FAULT_ALIASES = {
     "robot_failure": "ROBOT_FAILURE",
-    "comm_blackout": "LINK_IMPAIR",
+    "comm_blackout": "COMM_BLACKOUT",
+    "link_impair": "LINK_IMPAIR",
     "blocked_aisle": "BLOCK_AISLE",
     "clear_blockage": "CLEAR_BLOCKAGE",
     "rogue_agent": "ROGUE_ROBOT",

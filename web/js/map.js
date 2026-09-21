@@ -31,6 +31,9 @@ import { store } from "./store.js";
 const TICK_MS = 100;              // 10 Hz, frozen convention
 const ROBOT_RADIUS_M = 0.35;      // frozen convention
 const FOOTPRINT_M = 0.70;         // pair footprint = collision distance
+// X-01. A sovereign robot is arbitrated against a wider hard-stop:
+// HARD_STOP_M 0.75 + SOVEREIGN_MARGIN_M 0.35, mirrored from swarm_policy.py.
+const SOVEREIGN_ENVELOPE_M = 1.10;
 const LOD_ZOOM = 0.6;             // below this, robots are plain dots
 const LABEL_ZOOM = 1.1;           // below this, no per-robot id labels
 const PULSE_MS = 400;             // one pulse at conflict birth, then static
@@ -50,6 +53,7 @@ function loadColors() {
   STATE_COLOR.AVAILABLE = css("--state-available");
   STATE_COLOR.FAILED = css("--state-failed");
   STATE_COLOR.QUARANTINED = css("--state-quarantined");
+  STATE_COLOR.SOVEREIGN = css("--state-sovereign");
 }
 
 export class MapView {
@@ -457,12 +461,16 @@ export class MapView {
       const rpx = Math.max(3, ROBOT_RADIUS_M * s);
 
       // Safety footprint ring, only for states where separation is the story.
-      if (r.status === "BLOCKED" || r.status === "WAITING") {
+      // SOVEREIGN draws the WIDER envelope it is actually held to, because the
+      // whole claim of the mode is 'less information, so more clearance'. A
+      // ring that matched the normal footprint would hide the claim.
+      if (r.status === "BLOCKED" || r.status === "WAITING" || r.status === "SOVEREIGN") {
+        const ringM = r.status === "SOVEREIGN" ? SOVEREIGN_ENVELOPE_M : FOOTPRINT_M / 2;
         ctx.strokeStyle = color;
         ctx.globalAlpha = 0.28;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(sx, sy, (FOOTPRINT_M / 2) * s, 0, Math.PI * 2);
+        ctx.arc(sx, sy, ringM * s, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
