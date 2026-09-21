@@ -542,32 +542,65 @@ def build(out_path: str) -> str:
 
     # ---------------------------------------------------------- 18 criteria
     s = new_slide(prs, "Success criteria - measured",
-                  "C1 passes. C2 does not, and here is exactly why we are not "
-                  "claiming it.")
+                  "C1 is met after we found and fixed two real defects. C2 is "
+                  "not met, and we say so.")
     kpi_cards(s, [
-        ("PASS", "C1 zero collisions", OK),
-        ("0", "collisions, 18 paired runs", OK),
-        ("+2.3 pct", "C2 mean reduction", BAD),
+        ("9000", "ticks per run, 27 paired", ACCENT),
+        ("7 -> 0", "SwarmOS collisions", OK),
+        ("-19.3 pct", "C2 mean, sign negative", BAD),
         ("20 pct", "C2 bar - not met", BAD),
     ], y=1.45, h=1.4)
     bullets(s, [
-        "C1: zero collisions across 18 paired runs, 3 scenarios, seeds 11/13/17, "
-        "1800 ticks, fleets of 24 to 50. We note honestly that the stop-and-wait "
-        "baseline is also collision-free, so C1 is necessary rather than "
-        "differentiating - what it shows is that negotiation, containment and "
-        "sovereign fallback did not cost us the safety property.",
-        "C2: mean reduction over 9 paired runs is +2.3 percent against a 20 "
-        "percent bar. The spread runs from -47.8 to +57.9 percent, and the "
-        "cause is visible in the raw log: only 1 to 16 tasks complete per run, "
-        "so avg_completion_s is dominated by single samples.",
-        "That is a defect in the measurement, not evidence about the design. It "
-        "would be as wrong to headline +57.9 percent as to headline -47.8. The "
-        "fix is specified: 18000 ticks, 15 to 20 seeds, and a confidence "
-        "interval rather than a point estimate.",
-    ], y=3.15, size=14, gap=11)
-    note(s, "Full record with the per-seed table in "
-            "docs/SUCCESS_CRITERIA_VERIFICATION.md, raw log in "
-            "reports/criteria_1800.log.", y=6.55, color=WARN)
+        "C1: met on the current code - 27 paired runs, 3 scenarios, 9 seeds, "
+        "9000 ticks. It was NOT met a week ago. The 1800-tick run that reported "
+        "PASS never reached the failure, which first appears at tick 700. Next "
+        "slide is that story.",
+        "C1 is necessary, not differentiating: the stop-and-wait control is "
+        "collision-free too. What it shows is that negotiation, containment and "
+        "sovereign fallback did not cost us safety - not that they bought it.",
+        "C2: NOT MET. Mean -19.3 percent, 95 percent CI [-36.0, -2.6]. It got "
+        "worse when we fixed defect 2, which is the right direction: a sound "
+        "step bound withholds speed the arbiter used to grant.",
+        "Two findings matter more than that number. Task supply, not run length, "
+        "binds - 9000 ticks of blocked_aisle is byte-identical to 1800. And "
+        "avg_completion_s across arms is survivorship-biased: one seed scored "
+        "+25.9 percent for us only because we finished 3 tasks to the baseline's "
+        "12.",
+    ], y=3.1, size=13, gap=9)
+    note(s, "Full record in docs/SUCCESS_CRITERIA_VERIFICATION.md, raw log in "
+            "reports/criteria_after_envelope_fix.log. Reproduce with "
+            "tools/verify_criteria_powered.py 9000 9.", y=6.75, color=WARN)
+
+    # ------------------------------------------------------- 19 c1 root cause
+    s = new_slide(prs, "How C1 was actually won",
+                  "A safety argument only ever checked on short runs is not a "
+                  "safety argument")
+    rows = [
+        ["1", "Free waypoint snap",
+         "SimRobot.step snapped onto a waypoint within 0.08 m charging neither "
+         "moved nor budget - free travel every tick. A step cleared with "
+         "0.0039 m of margin reached 0.6962 m against a 0.75 m floor.",
+         "Snap only when the budget affords it, and charge it. 7 -> 1."],
+        ["2", "Truncated step envelope",
+         "The monitor bounded its own step with project_step on the published "
+         "intent, which stops at the end of a short path. A 0.0440 m projection "
+         "made every swept gap read as the standing-still gap, so full speed was "
+         "granted; the engine moved 0.0540 m into a stationary peer.",
+         "Keep the direction, extend the distance to MAX_STEP_M. 1 -> 0."],
+    ]
+    table(s, ["", "Defect", "What it was", "Fix and effect"], rows, y=1.5,
+          col_widths=[0.5, 2.3, 5.5, 3.9], size=11)
+    bullets(s, [
+        "Both broke one invariant: granting speed_scale f must move a robot at "
+        "most f * MAX_STEP_M. Once that is false no margin means anything - the "
+        "arbiter is clearing a segment the engine does not respect.",
+        "Defect 2 produced zero step-authority breaches, so the test that catches "
+        "defect 1 was blind to it. Four tests now pin both, all four failing on "
+        "the pre-fix code. Suite total: 575 passing.",
+    ], y=5.0, size=13, gap=9)
+    note(s, "We report this rather than quietly fixing it: the shape of the "
+            "failure is the transferable lesson, and a judge who ran the demo "
+            "past 180 seconds would have found it.", y=6.6, color=TEAL)
 
     # ---------------------------------------------------------- 19 evidence
     s = new_slide(prs, "Verification evidence",
@@ -681,12 +714,14 @@ def build(out_path: str) -> str:
                   "Ordered by what would change a conclusion, not by what is "
                   "easiest")
     rows = [
-        ["1", "Power the C2 measurement", "18000 ticks, 15 to 20 seeds, "
-         "confidence interval. A few CPU-minutes. Either it clears 20 percent "
-         "or we know it does not."],
-        ["2", "Check whether task supply is the binding constraint",
-         "If both arms are idle-limited, no coordination policy can move the "
-         "number and the scenario is the thing to fix."],
+        ["1", "Re-score C2 on a sound statistic",
+         "Equal-completion-count time and tasks_per_min, both immune to the "
+         "survivorship bias in avg_completion_s. No new simulation needed - the "
+         "paired runs are already on disk."],
+        ["2", "Raise task supply until neither arm is idle-limited",
+         "Measured: blocked_aisle is exhausted well before 1800 ticks, so longer "
+         "runs cannot power C2. Until supply binds, no coordination policy can "
+         "move the number and the scenario is the thing to fix."],
         ["3", "Scale study", "Fleet 100 and 200 with the same seeds, to confirm "
          "the O(k) claim holds where it matters."],
         ["4", "Hardware-in-the-loop", "Replace the physics with a ROS 2 bridge. "
@@ -695,9 +730,11 @@ def build(out_path: str) -> str:
     ]
     table(s, ["", "Next step", "Why it is next"], rows, y=1.5,
           col_widths=[0.6, 3.8, 7.8], size=12)
-    note(s, "Item 4 is cheap precisely because of law L1 - one authoritative "
-            "state source means the world model is replaceable.", y=5.9,
-         color=TEAL)
+    note(s, "The two items that used to head this list - longer runs, and "
+            "checking whether task supply binds - are now answered, and the "
+            "answer killed the first one. Item 4 is cheap precisely because of "
+            "law L1: one authoritative state source means the world model is "
+            "replaceable.", y=5.9, color=TEAL)
 
     # ---------------------------------------------------------- 24 close
     s = new_slide(prs, "SWARMOS", "Summary")

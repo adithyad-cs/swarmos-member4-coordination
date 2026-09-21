@@ -519,6 +519,32 @@ class _Counters:
     sovereign_rejoins: int = 0
 
 
+def _step_envelope(
+    here: tuple[float, float], projected: tuple[float, float]
+) -> tuple[float, float]:
+    """Endpoint of the furthest step the engine could actually deliver.
+
+    `project_step` walks the robot's published movement intent, so it returns
+    the end of the path when the path is shorter than the step. That is not an
+    upper bound on one tick of motion: the path is consumed as the robot moves,
+    a replan can shorten it, and the reported copy lags the true one. Treating
+    it as a bound cost a collision - see tools/patch_c1_sound_envelope.py for
+    the trace - because a projection of 0.044 m cleared a full-speed step that
+    moved 0.054 m and crossed the hard-stop floor.
+
+    Keep the direction, which the projection does know, and extend the distance
+    to the MAX_STEP_M the engine can deliver. A robot with no direction at all
+    is left where it stands: inventing a heading for a stationary robot would
+    manufacture motion nobody intends and wedge the aisle.
+    """
+    dx, dy = projected[0] - here[0], projected[1] - here[1]
+    reach = math.hypot(dx, dy)
+    if reach <= 1e-12 or reach >= MAX_STEP_M:
+        return projected
+    grow = MAX_STEP_M / reach
+    return (here[0] + dx * grow, here[1] + dy * grow)
+
+
 class SwarmPolicy:
     """The SWARMOS arbiter.
 
@@ -1187,7 +1213,7 @@ class SwarmPolicy:
             want = min(want, SOVEREIGN_SPEED_CAP)
 
         here = (me.position.x, me.position.y)
-        full = project_step(me, MAX_STEP_M)
+        full = _step_envelope(here, project_step(me, MAX_STEP_M))
         rest: Segment = (here, here)
         def swept(scale: float) -> Segment:
             """The segment this robot sweeps if allowed `scale` of its step."""

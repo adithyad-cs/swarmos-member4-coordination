@@ -343,11 +343,28 @@ class SimRobot:
             dx, dy = wx - self.x, wy - self.y
             leg = math.hypot(dx, dy)
 
-            if leg <= WAYPOINT_TOLERANCE_M:
+            if leg <= WAYPOINT_TOLERANCE_M and leg <= budget:
                 # Snap exactly onto the waypoint so accumulated float error
                 # cannot drift a robot off the aisle centreline.
+                #
+                # The snap is charged against the budget, and is taken only when
+                # the budget can afford it. It used to be free: neither `moved`
+                # nor `budget` was touched, so a robot could gain up to
+                # WAYPOINT_TOLERANCE_M of displacement per waypoint per tick on
+                # top of whatever its speed allowed. That broke the invariant the
+                # coordination layer depends on - that granting speed_scale f
+                # moves a robot at most f * MAX_STEP_M - and it cost real
+                # collisions: a step the safety monitor cleared with 0.0039 m of
+                # margin overshot into the 0.75 m hard-stop floor, reaching
+                # 0.6962 m. See docs/SUCCESS_CRITERIA_VERIFICATION.md, C1.
+                #
+                # An unaffordable near-waypoint falls through to the ratio branch
+                # below and snaps on a later tick, so the anti-drift guarantee is
+                # kept without granting motion nobody authorised.
                 self.x, self.y = wx, wy
                 self.path.pop(0)
+                moved += leg
+                budget -= leg
                 continue
 
             self.heading = normalise_heading(math.atan2(dy, dx))
