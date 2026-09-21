@@ -35,6 +35,7 @@ const LOD_ZOOM = 0.6;             // below this, robots are plain dots
 const LABEL_ZOOM = 1.1;           // below this, no per-robot id labels
 const PULSE_MS = 400;             // one pulse at conflict birth, then static
 const TRAIL_MAX = 120;            // 12 s of trail for the selected robot
+const GHOST_ALPHA = 0.30;         // baseline arm: present but never competing
 
 function css(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -77,6 +78,11 @@ export class MapView {
     this.trail = [];                  // selected robot's recent positions
     this.trailFor = null;
     this.pulses = new Map();          // conflictId -> started-at ms
+
+    /* Baseline ghost overlay (X-12). A function returning
+     * {robots, at} or null. Null means draw nothing, which is what an
+     * unstarted or non-comparable co-simulation must look like. */
+    this.ghostSource = null;
 
     this.lastFrameTick = -1;
     this.lastFrameAt = 0;
@@ -375,11 +381,50 @@ export class MapView {
 
   /* ------------------------------------------------------- robots layer -- */
 
+  /* Baseline ghosts (X-12). Drawn FIRST so the real fleet is always on top,
+   * and drawn in tertiary ink at low alpha so they read as "the other world"
+   * rather than as robots. No state colour, no labels, no selection ring: the
+   * ghosts are context, not subjects. */
+  _drawGhosts(ctx, now, s) {
+    if (!this.ghostSource) return;
+    const src = this.ghostSource();
+    if (!src || !src.robots || !src.robots.length) return;
+
+    const age = now - (src.at || 0);
+    const t = Math.max(0, Math.min(1, age / TICK_MS));
+    const lod = this.zoom < LOD_ZOOM;
+    const rpx = Math.max(2, ROBOT_RADIUS_M * s);
+
+    ctx.save();
+    ctx.globalAlpha = GHOST_ALPHA;
+    ctx.strokeStyle = css("--ink-tertiary");
+    ctx.fillStyle = css("--ink-tertiary");
+    ctx.lineWidth = 1;
+
+    for (const r of src.robots) {
+      const prev = r.prevPosition || r.position;
+      const ix = prev.x + (r.position.x - prev.x) * t;
+      const iy = prev.y + (r.position.y - prev.y) * t;
+      const [sx, sy] = this.toScreen(ix, iy);
+      if (sx < -20 || sy < -20 || sx > this.w + 20 || sy > this.h + 20) continue;
+
+      ctx.beginPath();
+      ctx.arc(sx, sy, lod ? 2 : rpx, 0, Math.PI * 2);
+      if (lod) ctx.fill();
+      else ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
   drawRobots(now) {
     const ctx = this.rctx;
     ctx.clearRect(0, 0, this.w, this.h);
     const s = this.scale();
     const lod = this.zoom < LOD_ZOOM;
+
+    // Ghosts first: the counterfactual never occludes the real fleet.
+    this._drawGhosts(ctx, now, s);
 
     // Interpolation factor. PRESENTATION ONLY -- see the file header.
     const age = now - this.lastFrameAt;

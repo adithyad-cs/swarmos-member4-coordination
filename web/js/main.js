@@ -15,6 +15,8 @@ import { FleetPanel } from "./panels/fleet.js";
 import { InspectorPanel } from "./panels/inspector.js";
 import { LabPanel } from "./panels/lab.js";
 import { AnalyticsPanel } from "./panels/analytics.js";
+import { CosimPanel } from "./panels/cosim.js";
+import { CosimClient } from "./cosim.js";
 import { Palette } from "./palette.js";
 import { num, int, secs, DASH } from "./format.js";
 
@@ -71,10 +73,22 @@ const transport = new Transport({
 
 const map = new MapView($("map"));
 
+/* The co-simulation is a second, independent stream. It is constructed
+ * unconditionally but connects only when a comparison is started, so an
+ * operator who never opens the Compare tab pays nothing for it. */
+const cosim = new CosimClient(transport);
+
+/* The map asks for ghosts every animation frame; the client decides
+ * whether there are any it can honestly supply. The scenario and seed of
+ * the LIVE run are the gate: a comparison of a different warehouse must
+ * never be painted over this one. */
+map.ghostSource = () => cosim.ghostSource(store.scenario, store.seed);
+
 const panels = {
   fleet: new FleetPanel($("panel-fleet"), map),
   inspector: new InspectorPanel($("panel-inspector")),
   lab: new LabPanel($("panel-lab"), transport),
+  cosim: new CosimPanel($("panel-cosim"), cosim),
   analytics: new AnalyticsPanel($("panel-analytics")),
 };
 
@@ -284,6 +298,10 @@ store.subscribe(() => {
   paintMapInfo();
 });
 
+cosim.subscribe(() => {
+  if (activeTab === "cosim") panels.cosim.render();
+});
+
 window.addEventListener("resize", () => {
   map.resize();
   paintMapInfo();
@@ -303,4 +321,5 @@ map.fit();
 map.start();
 paintMapInfo();
 panels.lab.init();
+panels.cosim.init();
 transport.connect();
