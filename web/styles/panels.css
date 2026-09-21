@@ -326,12 +326,86 @@ select.field__control { cursor: pointer; }
   font-size: var(--text-micro);
   color: var(--ink-tertiary);
 }
+/* A legend entry is the wrapper; the swatch is the <i> inside it. These were
+ * the same selector, which forced the text wrapper to 8x2 px and spilled the
+ * "100 ms tick budget" label across the chart underneath. */
 .chart__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.chart__key > i {
   display: inline-block;
   width: 8px;
   height: 2px;
-  margin-right: 4px;
+  flex: 0 0 auto;
   vertical-align: middle;
+}
+
+/* Legend entries wrap instead of overflowing when a label is long. */
+.chart__legend { flex-wrap: wrap; row-gap: 2px; }
+
+/* The palette row badge. Inline, hugs its text, no border-top. */
+.palette__key {
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--ink-tertiary);
+  background: var(--surface-2);
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------- robot artwork (landing only) ---
+ * Hand-authored inline SVG: this build has no network access, so no raster
+ * asset can be fetched, and vector art stays crisp on any projector. It lives
+ * only inside #map-placeholder, which is removed as soon as the first state
+ * frame lands, so it cannot overlap live robots or telemetry. Decoration never
+ * takes pointer events and never sits above the canvases. */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6, 32px);
+  pointer-events: none;
+}
+.hero__art {
+  flex: 0 0 auto;
+  width: 300px;
+  max-width: 34vw;
+  height: auto;
+  color: var(--ink-tertiary);
+  pointer-events: none;
+}
+.hero__copy { position: relative; z-index: 1; text-align: left; }
+.hero__copy > * { pointer-events: auto; }
+
+/* One slow sweep of the sensing arc, on the landing screen only. */
+.hero__sweep {
+  transform-origin: 96px 96px;
+  animation: hero-sweep 3.2s linear infinite;
+}
+@keyframes hero-sweep { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .hero__sweep { animation: none; }
+}
+@media (max-width: 1100px) {
+  .hero__art { display: none; }
+}
+
+/* Brand glyph beside the SWARMOS wordmark, so the robotics read survives
+ * after the landing hero is gone. */
+.brand__glyph {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-right: 8px;
+  color: var(--ink-secondary);
+  pointer-events: none;
 }
 
 /* -------------------------------------------------- command palette ---- */
@@ -394,6 +468,10 @@ select.field__control { cursor: pointer; }
 .palette__name { font-size: var(--text-body); color: var(--ink-primary); }
 .palette__desc { font-size: var(--text-micro); color: var(--ink-tertiary); display: block; }
 
+/* The footer hint bar. Distinct from .palette__key, which is the small
+ * shortcut badge inside a row: one class cannot be both a full-width bar with
+ * a top border and an inline badge, and when it tried, every badge in the
+ * palette rendered as a full-width box. */
 .palette__hint {
   display: flex;
   gap: var(--space-4);

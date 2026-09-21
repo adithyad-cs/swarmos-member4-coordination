@@ -25,6 +25,14 @@
   <!-- ========================================================== topbar -->
   <header class="topbar">
     <div class="brand">
+      <svg class="brand__glyph" viewBox="0 0 24 24" fill="none"
+           aria-hidden="true" focusable="false">
+        <path d="M5 13 L12 9 L19 13 L12 17 Z" stroke="currentColor"
+              stroke-width="1.5"/>
+        <circle cx="12" cy="5.5" r="1.75" stroke="currentColor"
+                stroke-width="1.5"/>
+        <path d="M12 7.25 L12 9" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
       <span class="brand__mark">SWARMOS</span>
       <span class="brand__sub">Fleet Coordination</span>
     </div>
@@ -99,13 +107,56 @@
 
     <!-- Shown until the first state frame arrives. Names cause and action. -->
     <div class="map__placeholder" id="map-placeholder">
-      <div class="empty">
+      <div class="empty hero">
+        <svg class="hero__art" viewBox="0 0 192 192" fill="none"
+             aria-hidden="true" focusable="false">
+          <!-- Warehouse floor grid. Deliberately an AMR mobile base, not a
+               humanoid: it is what the simulation actually models. -->
+          <g stroke="currentColor" stroke-width="0.5" opacity="0.18">
+            <path d="M12 36h168M12 72h168M12 108h168M12 144h168"/>
+            <path d="M36 12v168M72 12v168M108 12v168M144 12v168"/>
+          </g>
+          <!-- Comm range, R_comm = 15 m -->
+          <circle cx="96" cy="96" r="78" stroke="currentColor"
+                  stroke-width="0.75" stroke-dasharray="3 6" opacity="0.4"/>
+          <g class="hero__sweep" opacity="0.55">
+            <path d="M96 96 L96 18" stroke="var(--state-sovereign)"
+                  stroke-width="1"/>
+            <path d="M96 18 A78 78 0 0 1 151 41" stroke="var(--state-sovereign)"
+                  stroke-width="1.5" fill="none"/>
+          </g>
+          <!-- Load deck -->
+          <path d="M54 92 L96 72 L138 92 L96 112 Z" stroke="currentColor"
+                stroke-width="1.25" opacity="0.85"/>
+          <path d="M54 92 L54 104 L96 124 L138 104 L138 92" stroke="currentColor"
+                stroke-width="1.25" opacity="0.6"/>
+          <path d="M96 112 L96 124" stroke="currentColor" stroke-width="1"
+                opacity="0.6"/>
+          <!-- Payload tote -->
+          <path d="M74 82 L96 71 L118 82 L96 93 Z" stroke="currentColor"
+                stroke-width="1" opacity="0.5"/>
+          <!-- Lidar puck, drawn in SOVEREIGN teal: the one saturated accent -->
+          <circle cx="96" cy="66" r="4.5" stroke="var(--state-sovereign)"
+                  stroke-width="1.25"/>
+          <circle cx="96" cy="66" r="1.5" fill="var(--state-sovereign)"
+                  opacity="0.8"/>
+          <!-- Wheels -->
+          <path d="M62 106 L62 114M130 106 L130 114" stroke="currentColor"
+                stroke-width="2" opacity="0.7"/>
+          <!-- Peer robots, at the 4 px LOD dot size the map uses when zoomed out -->
+          <circle cx="30" cy="150" r="2" fill="currentColor" opacity="0.55"/>
+          <circle cx="160" cy="140" r="2" fill="currentColor" opacity="0.55"/>
+          <circle cx="150" cy="160" r="2" fill="currentColor" opacity="0.4"/>
+          <circle cx="40" cy="36" r="2" fill="currentColor" opacity="0.4"/>
+        </svg>
+        <div class="hero__copy">
         <div class="empty__cause">No run has been started yet.</div>
         <div class="empty__action">Start the reference scenario below, or open the Lab tab to configure your own.</div>
         <div class="empty__cta">
           <button class="btn btn--primary" id="btn-start-demo">Start demo run</button>
         </div>
         <div class="empty__hint">rush_50 &middot; seed 11 &middot; fleet 8</div>
+        </div>
       </div>
     </div>
   </main>

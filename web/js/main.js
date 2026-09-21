@@ -179,6 +179,17 @@ function paintTopbar() {
   if (ck) ck.textContent = store.hasData ? `${secs(store.simTime)} s` : DASH;
 }
 
+/* kpis().verdicts is a nested map of kind -> count, not a scalar. Passing it
+ * straight to int() produced NaN on screen for the whole run. Sum the counts,
+ * and keep DASH for "no data" so a missing value is never drawn as a zero. */
+function verdictTotal(verdicts) {
+  if (verdicts == null) return DASH;
+  if (typeof verdicts === "number") return int(verdicts);
+  const counts = Object.values(verdicts).filter((v) => typeof v === "number");
+  if (!counts.length) return DASH;
+  return int(counts.reduce((a, b) => a + b, 0));
+}
+
 function paintKpis() {
   const k = store.kpis || {};
   const set = (id, v) => { const n = $(id); if (n) n.textContent = v; };
@@ -187,7 +198,7 @@ function paintKpis() {
   set("kpi-collisions", k.collisions == null ? DASH : int(k.collisions));
   set("kpi-p95", k.compute && k.compute.p95_ms != null ? num(k.compute.p95_ms, 1) : DASH);
   set("kpi-avg-completion", k.avg_completion_s == null ? DASH : num(k.avg_completion_s, 1));
-  set("kpi-verdicts", k.verdicts == null ? DASH : int(k.verdicts));
+  set("kpi-verdicts", verdictTotal(k.verdicts));
   set("kpi-replans", k.replans == null ? DASH : int(k.replans));
 }
 

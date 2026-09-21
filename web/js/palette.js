@@ -82,7 +82,7 @@ export class Palette {
       <div class="palette__item" role="option" data-i="${i}" aria-selected="${i === this.cursor}">
         <span class="palette__name">${c.name}</span>
         <span class="palette__desc">${c.desc}</span>
-        ${c.hint ? `<span class="palette__hint kbd">${c.hint}</span>` : ""}
+        ${c.hint ? `<span class="palette__key">${c.hint}</span>` : ""}
       </div>`).join("");
     this.list.querySelectorAll(".palette__item").forEach((n) => {
       n.addEventListener("mouseenter", () => { this.cursor = Number(n.dataset.i); this._paint(); });

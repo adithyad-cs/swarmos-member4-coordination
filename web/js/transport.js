@@ -27,6 +27,12 @@ const STALE_MS = 700;             // 7 missed ticks at 10 Hz -> degraded
 const BACKOFF_MS = [250, 500, 1000, 2000, 4000, 8000];
 const MAX_ATTEMPTS = 12;
 
+function apiError(data, status) {
+  if (data && typeof data.error === "string" && data.error) return data.error;
+  if (data && typeof data.detail === "string" && data.detail) return data.detail;
+  return `The server rejected the request (HTTP ${status}).`;
+}
+
 export class Transport {
   constructor({ onBanner } = {}) {
     this.ws = null;
@@ -185,6 +191,10 @@ export class Transport {
   /* ---- REST control surface. Every call returns {ok, data, error} so the
    * caller never has to guess whether a failure was network or logic. ---- */
 
+  /* The API reports a failure as {ok: false, error: "<human sentence>"}.
+   * This used to read data.detail, which the server never sends, so every 4xx
+   * in the product collapsed to a bare "HTTP 400" and threw away the one piece
+   * of text that told the operator what to do about it. */
   async post(path, body) {
     try {
       const res = await fetch(`${API_BASE}${path}`, {
@@ -194,7 +204,7 @@ export class Transport {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        return { ok: false, error: (data && data.detail) || `HTTP ${res.status}`, data };
+        return { ok: false, error: apiError(data, res.status), data };
       }
       return { ok: true, data };
     } catch (err) {
@@ -207,7 +217,7 @@ export class Transport {
       const res = await fetch(`${API_BASE}${path}`);
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        return { ok: false, error: (data && data.detail) || `HTTP ${res.status}`, data };
+        return { ok: false, error: apiError(data, res.status), data };
       }
       return { ok: true, data };
     } catch (err) {
