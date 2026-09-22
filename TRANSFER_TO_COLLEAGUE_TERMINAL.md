@@ -16,7 +16,8 @@ So a plain clone of `origin/main` lands on `69cfd1a`, which predates **all** of
 this work:
 
 ```
-4d49a43  docs: complete session handoff and kickoff prompt      <- current HEAD
+f9c6c59  docs: transfer instructions for a colleague's ACC terminal   <- current HEAD
+4d49a43  docs: complete session handoff and kickoff prompt
 69709c7  docs: session summary for UI round 3 and the verifier
 3c02051  UI round 3: fix defects I-M, add headless UI contract verifier
 94af5f0  docs: session summary for UI defect round 2 (F, G, H)
@@ -47,7 +48,7 @@ On the colleague's terminal:
 git clone /home/fdipglob_ai_tools/nxp60742/acc_id_work/chin_20260920 swarmos
 cd swarmos
 git config core.fileMode false     # see the note at the bottom
-git log --oneline -1               # must show 4d49a43
+git log --oneline -1               # note the tip; compare with the source repo
 ```
 
 This gives the full history with nothing to transfer manually.
@@ -64,17 +65,27 @@ A single-file, self-contained copy of the entire repository and its full history
 has been produced and verified ("The bundle records a complete history"):
 
 ```
-/home/fdipglob_ai_tools/nxp60742/acc_id_work/swarmos_20260922_4d49a43.bundle   (1.6 MB)
+/home/fdipglob_ai_tools/nxp60742/acc_id_work/swarmos_latest.bundle   (about 1.6 MB)
 ```
+
+Check what tip it carries before you trust it - the bundle is a snapshot and
+may predate the newest commit:
+
+```bash
+git bundle list-heads /home/fdipglob_ai_tools/nxp60742/acc_id_work/swarmos_latest.bundle
+```
+
+If it is behind, ask for it to be regenerated with
+`git bundle create <path>/swarmos_latest.bundle --all`.
 
 Copy that one file to the colleague's machine by whatever means works - shared
 scratch, `scp`, email, a USB stick - then:
 
 ```bash
-git clone swarmos_20260922_4d49a43.bundle swarmos
+git clone swarmos_latest.bundle swarmos
 cd swarmos
 git config core.fileMode false
-git log --oneline -1               # must show 4d49a43
+git log --oneline -1               # note the tip; compare with the source repo
 ```
 
 A bundle is an ordinary git remote, so this is a real clone: full history, all
@@ -102,7 +113,7 @@ git push origin main
 
 `407` specifically means the proxy demanded authentication, so supplying proxy
 credentials - or switching to SSH - is the likely fix. Once `origin/main` shows
-`4d49a43`, a plain `git clone` is safe again and Routes A and B become
+`f9c6c59`, a plain `git clone` is safe again and Routes A and B become
 unnecessary.
 
 ---
