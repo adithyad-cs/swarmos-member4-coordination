@@ -227,6 +227,11 @@ class Warehouse:
             "height": self.height,
             "cell_m": CELL_M,
             "rack_spans": spans,
+            # Blocked cells are forwarded so the map can draw the restricted
+            # region. Sorted for a stable wire order, which keeps the payload
+            # byte-identical across runs with the same blockage and therefore
+            # keeps determinism receipts comparable.
+            "blocked": sorted(self.blocked),
             "chargers": self.cells_of_type(Cell.CHARGER),
             "pick": self.cells_of_type(Cell.PICK),
             "drop": self.cells_of_type(Cell.DROP),

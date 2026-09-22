@@ -44,6 +44,12 @@ const GRID_PX_PER_M = 4;          // below this, no grid at all
 const GRID_MINOR_PX_PER_M = 10;   // below this, major lines only
 const RACK_OUTLINE_PX_PER_M = 6;  // below this, racks are filled but not outlined
 const DOCK_LABEL_PX_PER_M = 10;   // below this, dock labels are unreadable
+// Rack bay ids (A1, A2, ...) need room for ~2 characters inside a 1 m cell.
+const RACK_ID_PX_PER_M = 22;
+// Below this the path layer SIMPLIFIES - thin, undashed, selected and
+// conflicts only. It does not switch off. A fitted 60 m warehouse sits near
+// 11 px/m, so anything that switches off above that is invisible in practice.
+const PATH_DETAIL_PX_PER_M = 14;
 const PULSE_MS = 400;             // one pulse at conflict birth, then static
 const TRAIL_MAX = 120;            // 12 s of trail for the selected robot
 const GHOST_ALPHA = 0.30;         // baseline arm: present but never competing
@@ -331,16 +337,82 @@ export class MapView {
         ctx.fillRect(sx, sy, rw * s, rh * s);
         if (s >= RACK_OUTLINE_PX_PER_M) ctx.strokeRect(sx, sy, rw * s, rh * s);
       }
+
+      // Bay ids, so the aisle structure is readable as structure and not as
+      // abstract blocks (section 17). One label per rack BLOCK, not per span:
+      // spans are run-length rows, and labelling every row would produce a
+      // wall of text. A block is identified by its column band, which is what
+      // a warehouse operator would call an aisle.
+      if (s >= RACK_ID_PX_PER_M) {
+        ctx.fillStyle = css("--map-rack-label");
+        ctx.font = "600 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const seen = new Set();
+        for (const rk of wh.racks) {
+          const [rx, ry, rw, rh] = rk;
+          // Band key: rack columns repeat on a fixed pitch, so rounding the
+          // left edge groups a vertical stack of spans into one bay.
+          const band = Math.round(rx);
+          if (seen.has(band)) continue;
+          seen.add(band);
+          const letter = String.fromCharCode(65 + (seen.size - 1) % 26);
+          const idx = Math.floor((seen.size - 1) / 26) + 1;
+          const [lx, ly] = this.toScreen(rx + rw / 2, ry + rh / 2);
+          ctx.fillText(letter + idx, lx, ly);
+        }
+      }
     }
 
-    // Charging docks, if the scenario declares them.
+    // Operational stations. Each dock arrives tagged with its kind, so the
+    // three families the simulator models get three distinct reads. A charger
+    // is a ring, a pick station a triangle pointing out of the warehouse, a
+    // drop station a square - shape as well as colour, so the distinction
+    // survives a projector with poor colour fidelity.
     if (Array.isArray(wh.docks) && s >= DOCK_LABEL_PX_PER_M) {
-      ctx.strokeStyle = css("--state-charging");
       ctx.lineWidth = 1.5;
       for (const d of wh.docks) {
         const [sx, sy] = this.toScreen(d[0], d[1]);
+        const kind = d[2];
+        const r = 0.42 * s;
+        if (kind === "CHARGER") {
+          ctx.strokeStyle = css("--map-dock-charger");
+          ctx.beginPath();
+          ctx.arc(sx, sy, r, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (kind === "PICK") {
+          ctx.strokeStyle = css("--map-dock-pick");
+          ctx.beginPath();
+          ctx.moveTo(sx, sy - r);
+          ctx.lineTo(sx + r, sy + r);
+          ctx.lineTo(sx - r, sy + r);
+          ctx.closePath();
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = css("--map-dock-drop");
+          ctx.strokeRect(sx - r, sy - r, r * 2, r * 2);
+        }
+      }
+    }
+
+    // Restricted region: the live BLOCK_AISLE footprint. Cross-hatched rather
+    // than solid, so a blocked cell can never be mistaken for a rack.
+    const blocked = wh.blocked;
+    if (Array.isArray(blocked) && blocked.length) {
+      ctx.fillStyle = css("--map-restricted-wash");
+      ctx.strokeStyle = css("--map-restricted");
+      ctx.lineWidth = 1;
+      const cm = wh.cell_m || 1;
+      for (const b of blocked) {
+        if (!Array.isArray(b) || b.length < 2) continue;
+        const [bx, by] = this.toScreen(b[0] * cm, (b[1] + 1) * cm);
+        const w = cm * s;
+        ctx.fillRect(bx, by, w, w);
         ctx.beginPath();
-        ctx.arc(sx, sy, 0.45 * s, 0, Math.PI * 2);
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + w, by + w);
+        ctx.moveTo(bx + w, by);
+        ctx.lineTo(bx, by + w);
         ctx.stroke();
       }
     }
@@ -359,9 +431,12 @@ export class MapView {
     const ctx = this.pctx;
     ctx.clearRect(0, 0, this.w, this.h);
     const s = this.scale();
-    if (s < LOD_PX_PER_M) { this._pathsDirty = false; return; }
 
     const sel = store.selectedRobot;
+    // Low zoom simplifies rather than hides (section 22). Dashes and faint
+    // secondary lines turn to mud below this density, so at low zoom only the
+    // lines that carry meaning are drawn: the selection and anything blocked.
+    const detail = s >= PATH_DETAIL_PX_PER_M;
 
     for (const r of store.robots.values()) {
       if (this.hidden.has(r.status)) continue;
@@ -369,8 +444,41 @@ export class MapView {
       if (!mi || !Array.isArray(mi.path) || mi.path.length < 2) continue;
 
       const isSel = r.robot_id === sel;
-      ctx.strokeStyle = isSel ? css("--map-path-active") : css("--map-path");
-      ctx.lineWidth = isSel ? 2 : 1;
+      const isConflict = r.status === "BLOCKED";
+      if (!detail && !isSel && !isConflict) continue;
+
+      // Five-level ladder. Ordered most to least relevant, so the first
+      // matching rung wins.
+      let stroke;
+      let width;
+      let dash = null;
+      if (isSel) {
+        stroke = css("--map-path-selected");
+        width = 2.5;
+      } else if (isConflict) {
+        stroke = css("--map-path-conflict");
+        width = 1.75;
+      } else if (r.status === "MOVING") {
+        stroke = css("--map-path-moving");
+        width = 1.25;
+      } else if (mi.path.length > 1) {
+        stroke = css("--map-path-planned");
+        width = 1;
+        dash = [4, 3];
+      } else {
+        stroke = css("--map-path-secondary");
+        width = 1;
+        dash = [1, 3];
+      }
+
+      // Section 21: when something is selected, everything else steps back.
+      // Subduing the field is what makes one path followable; brightening the
+      // selection alone just raises the floor.
+      if (sel && !isSel) ctx.globalAlpha = 0.45;
+
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = width;
+      ctx.setLineDash(detail && dash ? dash : []);
       ctx.beginPath();
       for (let i = 0; i < mi.path.length; i += 1) {
         const p = mi.path[i];
@@ -379,6 +487,8 @@ export class MapView {
         else ctx.lineTo(sx, sy);
       }
       ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
 
       // Goal marker, drawn only for the selected robot to keep the map calm.
       if (isSel && mi.target) {

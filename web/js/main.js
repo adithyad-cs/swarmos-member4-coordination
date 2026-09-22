@@ -96,7 +96,10 @@ let activeTab = "fleet";
 
 /* ------------------------------------------------------------------ tabs --- */
 
-function selectTab(name) {
+/* reveal=true means "the user asked for this panel", so show the rail.
+ * reveal=false is the boot path: choose the default panel but leave the rail
+ * closed, which is what section 15 requires of state 2. */
+function selectTab(name, reveal = true) {
   activeTab = name;
   for (const key of Object.keys(panels)) {
     const tab = $(`tab-${key}`);
@@ -106,12 +109,7 @@ function selectTab(name) {
     if (panel) panel.dataset.active = String(on);
   }
   panels[name].render();
-  const rail = $("rail");
-  if (rail && window.innerWidth < 1280) {
-    rail.dataset.open = "true";
-    const handle = $("btn-rail-toggle");
-    if (handle) handle.setAttribute("aria-expanded", "true");
-  }
+  if (reveal) setRailOpen(true);
 }
 
 for (const key of Object.keys(panels)) {
@@ -271,14 +269,27 @@ $("btn-start-demo") && $("btn-start-demo").addEventListener("click", async () =>
   }
 });
 
-/* Below 1280px the rail is an overlay drawer. A drawer with no visible handle
- * is a trap, so the topbar carries one at those widths. */
-$("btn-rail-toggle") && $("btn-rail-toggle").addEventListener("click", () => {
+/* One toggle, two mechanisms. Above 1280px the rail is a grid column and the
+ * shell gives its width back to the map; below, it is an overlay drawer. Both
+ * are driven from the same handle so the keyboard path is identical. */
+function isRailOpen() {
+  const shell = $("shell");
   const rail = $("rail");
-  if (!rail) return;
-  const open = rail.dataset.open !== "true";
-  rail.dataset.open = String(open);
-  $("btn-rail-toggle").setAttribute("aria-expanded", String(open));
+  if (shell && window.innerWidth > 1280) return shell.dataset.rail === "open";
+  return !!rail && rail.dataset.open === "true";
+}
+
+function setRailOpen(open) {
+  const shell = $("shell");
+  const rail = $("rail");
+  if (shell) shell.dataset.rail = open ? "open" : "closed";
+  if (rail) rail.dataset.open = String(open);
+  const handle = $("btn-rail-toggle");
+  if (handle) handle.setAttribute("aria-expanded", String(open));
+}
+
+$("btn-rail-toggle") && $("btn-rail-toggle").addEventListener("click", () => {
+  setRailOpen(!isRailOpen());
 });
 
 $("banner-dismiss") && $("banner-dismiss").addEventListener("click", hideBanner);
@@ -348,7 +359,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-selectTab("fleet");
+selectTab("fleet", false);   /* panels closed on entry (section 15) */
 buildLegend();
 paintTopbar();
 paintKpis();

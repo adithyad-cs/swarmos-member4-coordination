@@ -506,9 +506,24 @@ body {
   color: var(--ink-tertiary);
 }
 
-/* The handle is hidden at desktop widths, where the rail is a real column and
- * there is nothing to toggle. The sub-1280px block above re-enables it. */
-.rail-toggle { display: none; }
+/* The handle is available at every width. The rail is a real column above
+ * 1280px and an overlay drawer below it, but in both cases the operator must
+ * be able to put it away and get the whole floor back. */
+.rail-toggle { display: inline-flex; }
+
+/* Desktop: a closed rail gives its column width back to the map instead of
+ * merely hiding itself, so there is no dead gutter beside the warehouse. The
+ * sub-1280px drawer rules are left untouched; they key off .rail[data-open]. */
+@media (min-width: 1281px) {
+  .shell[data-rail="closed"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "topbar"
+      "map"
+      "strip";
+  }
+  .shell[data-rail="closed"] > .rail { display: none; }
+}
 
 /* Below 900px the telemetry strip cannot hold four metrics on one line, so it
  * scrolls horizontally rather than silently truncating a number. A clipped

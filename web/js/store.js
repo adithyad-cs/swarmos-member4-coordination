@@ -64,6 +64,94 @@ export function adaptRobot(w) {
   };
 }
 
+/* ------------------------------------------------------ warehouse payload --
+ * The backend sends compact CELL geometry, because a 60x40 warehouse as
+ * run-length spans is a few hundred bytes instead of 2400 cells. The renderer
+ * works in METRES, because every other quantity in the product does. This is
+ * the one place those two vocabularies meet.
+ *
+ * Wire format                      Renderer format
+ *   width, height   (cells)          width_m, height_m   (metres)
+ *   cell_m          (m per cell)     -- applied, not forwarded
+ *   rack_spans      [x, y, run]      racks   [x, y, w, h] metre rects
+ *   chargers/pick/drop [[x, y]]      docks   [x, y, kind] metre points
+ *
+ * Returns null for a missing or malformed payload, so the caller keeps its
+ * honest "no warehouse yet" cold-start state rather than rendering a guess. */
+function normaliseWarehouse(wh) {
+  if (!wh) return null;
+
+  const cell = typeof wh.cell_m === "number" && wh.cell_m > 0 ? wh.cell_m : 1.0;
+  const wCells = Number(wh.width);
+  const hCells = Number(wh.height);
+  if (!Number.isFinite(wCells) || !Number.isFinite(hCells)) return null;
+  if (wCells <= 0 || hCells <= 0) return null;
+
+  // Run-length spans -> metre rectangles. A span is one cell tall by
+  // construction, so height is always a single cell.
+  const racks = [];
+  if (Array.isArray(wh.rack_spans)) {
+    for (const span of wh.rack_spans) {
+      if (!Array.isArray(span) || span.length < 3) continue;
+      const [cx, cy, run] = span;
+      if (!(run > 0)) continue;
+      racks.push([cx * cell, cy * cell, run * cell, cell]);
+    }
+  }
+
+  // One dock list, each entry tagged with its kind, so the renderer can give
+  // chargers, pick stations and drop stations distinct semantic styling
+  // without three near-identical loops.
+  const docks = [];
+  const addDocks = (cells, kind) => {
+    if (!Array.isArray(cells)) return;
+    for (const c of cells) {
+      if (!Array.isArray(c) || c.length < 2) continue;
+      // +0.5 cell centres the marker in its cell rather than pinning it to
+      // the corner, which is where a dock physically is.
+      docks.push([(c[0] + 0.5) * cell, (c[1] + 0.5) * cell, kind]);
+    }
+  };
+  addDocks(wh.chargers, "CHARGER");
+  addDocks(wh.pick, "PICK");
+  addDocks(wh.drop, "DROP");
+
+  // Zones are advisory coordination regions (WEST / CENTRE / EAST), not
+  // operational bays. Converted to metres and passed through under their real
+  // names - the simulator models no inbound or outbound concept, so none is
+  // invented here.
+  const zones = [];
+  if (Array.isArray(wh.zones)) {
+    for (const z of wh.zones) {
+      if (!z || typeof z.name !== "string") continue;
+      zones.push({
+        name: z.name,
+        x0: z.x0 * cell,
+        y0: z.y0 * cell,
+        x1: (z.x1 + 1) * cell,
+        y1: (z.y1 + 1) * cell,
+      });
+    }
+  }
+
+  // Blocked cells stay in CELL coordinates: the renderer multiplies by
+  // cell_m itself when hatching them, because a blockage is a whole-cell fact
+  // and rounding it into metres early would let it drift off the grid.
+  const blocked = Array.isArray(wh.blocked)
+    ? wh.blocked.filter((b) => Array.isArray(b) && b.length >= 2)
+    : [];
+
+  return {
+    width_m: wCells * cell,
+    height_m: hCells * cell,
+    cell_m: cell,
+    racks,
+    docks,
+    zones,
+    blocked,
+  };
+}
+
 class Store {
   constructor() {
     this.link = LINK.DOWN;
@@ -134,7 +222,7 @@ class Store {
 
   /** Geometry + scenario identity. Sent once per run, not per tick. */
   applyHello(msg) {
-    this.warehouse = msg.warehouse || null;
+    this.warehouse = normaliseWarehouse(msg.warehouse);
     this.scenario = msg.scenario || null;
     this.seed = msg.seed ?? null;
     this._emit("hello");

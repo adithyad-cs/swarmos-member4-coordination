@@ -35,6 +35,16 @@ Route contract (must stay in lockstep with web/js/transport.js):
     WS   /ws/fleet
     WS   /ws/cosim
 
+Two HTML entry points are served:
+
+    GET  /             web/landing.html   ROBONEX landing page  (state 1)
+    GET  /index.html   web/index.html     SWARMOS dashboard     (states 2, 3)
+
+"/" needs its own route because the StaticFiles mount resolves a bare "/" to
+index.html by itself, which would skip the landing page entirely. The mount
+still serves index.html and every other asset, so the dashboard URL is
+unchanged and no simulation behaviour is touched.
+
 tests/test_api.py asserts that contract mechanically in both directions so the
 two files cannot drift apart silently.
 """
@@ -48,7 +58,7 @@ from typing import Any, Optional
 
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
@@ -386,6 +396,22 @@ async def health(request: Request) -> JSONResponse:
 
 
 # --------------------------------------------------------------------------
+# html entry points
+# --------------------------------------------------------------------------
+
+async def landing(request: Request):
+    """Serve the ROBONEX landing page at "/".
+
+    Falls back to the dashboard if landing.html is ever missing, so a partial
+    checkout degrades into the working product rather than a 404.
+    """
+    page = WEB_DIR / "landing.html"
+    if not page.is_file():
+        page = WEB_DIR / "index.html"
+    return FileResponse(str(page), media_type="text/html")
+
+
+# --------------------------------------------------------------------------
 # benchmark
 # --------------------------------------------------------------------------
 
@@ -505,6 +531,9 @@ routes = [
     Route("/api/cosim/status", cosim_status, methods=["GET"]),
     WebSocketRoute("/ws/fleet", ws_fleet),
     WebSocketRoute("/ws/cosim", ws_cosim),
+    # Declared before the StaticFiles mount below, which would otherwise
+    # resolve "/" to index.html and never reach the landing page.
+    Route("/", landing, methods=["GET"]),
 ]
 
 if WEB_DIR.is_dir():

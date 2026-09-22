@@ -56,6 +56,26 @@
   --map-aisle-label: #4A5561;
   --map-path: rgba(200, 210, 220, 0.22);      /* planned path, ghosted */
   --map-path-active: rgba(200, 210, 220, 0.55);
+  /* Five-level path hierarchy (master prompt section 20). The ladder is
+   * ordered by opacity, not by hue: hue stays reserved for STATE, so a
+   * brighter line means "more relevant right now", never "different kind of
+   * thing". --map-path-secondary is deliberately dim enough that fifty of
+   * them read as texture rather than as spaghetti. */
+  --map-path-selected: rgba(232, 237, 242, 0.92);
+  --map-path-moving: rgba(200, 210, 220, 0.58);
+  --map-path-planned: rgba(200, 210, 220, 0.34);
+  --map-path-secondary: rgba(200, 210, 220, 0.16);
+  --map-path-conflict: rgba(229, 72, 77, 0.72);
+  /* Rack bay labels: tertiary ink, so structure never outshouts robots. */
+  --map-rack-label: #63707D;
+  /* Operational stations. These three are the only ones the simulator
+   * models, so they are the only ones drawn. */
+  --map-dock-charger: rgba(62, 155, 255, 0.85);
+  --map-dock-pick: rgba(79, 179, 166, 0.85);
+  --map-dock-drop: rgba(245, 166, 35, 0.80);
+  /* Restricted region = the real blocked-aisle fault footprint. */
+  --map-restricted: rgba(229, 72, 77, 0.55);
+  --map-restricted-wash: rgba(229, 72, 77, 0.10);
   --map-trail: rgba(62, 155, 255, 0.30);      /* selected robot only */
   --map-reservation: rgba(245, 166, 35, 0.16);
   --map-conflict-ring: #E5484D;
