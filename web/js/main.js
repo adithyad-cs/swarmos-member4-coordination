@@ -235,12 +235,12 @@ if (hit) {
 
 /* ---------------------------------------------------------------- palette --- */
 
-new Palette({
+const palette = new Palette({
   scrim: $("palette-scrim"),
   input: $("palette-input"),
   list: $("palette-list"),
   commands: [
-    { name: "Start run", desc: "Start the configured scenario", hint: "Lab", run: () => { selectTab("lab"); transport.startRun({ scenario: store.scenario || "rush_50", seed: store.seed == null ? 11 : store.seed, fleet_size: DEMO_FLEET }); } },
+    { name: "Start run", desc: "Start the configured scenario", run: () => { selectTab("lab"); transport.startRun({ scenario: store.scenario || "rush_50", seed: store.seed == null ? 11 : store.seed, fleet_size: DEMO_FLEET }); } },
     { name: "Pause / resume", desc: "Toggle the 10 Hz tick loop", run: () => (store.running ? transport.pauseRun() : transport.resumeRun()) },
     { name: "Step one tick", desc: "Advance exactly 100 ms of sim time", run: () => transport.stepRun(1) },
     { name: "Stop run", desc: "Halt the run and release the fleet", run: () => transport.stopRun() },
@@ -318,8 +318,34 @@ window.addEventListener("resize", () => {
   paintMapInfo();
 });
 
+/* Global shortcuts. Every key advertised in the command palette or in a
+ * banner action string must be bound here, otherwise the UI promises
+ * something it does not do. A key is swallowed while the user is typing
+ * in a field, while a modifier is held, or while the palette is open. */
+function typingTarget(t) {
+  if (!t || !t.tagName) return false;
+  const tag = t.tagName.toLowerCase();
+  if (tag === "input" || tag === "select" || tag === "textarea") return true;
+  return t.isContentEditable === true;
+}
+
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && store.selectedRobot) store.select(null);
+  if (e.key === "Escape") {
+    if (store.selectedRobot) store.select(null);
+    return;
+  }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (typingTarget(e.target)) return;
+  if (palette && palette.open) return;
+
+  if (e.key === "0") {
+    e.preventDefault();
+    map.fit();
+    paintMapInfo();
+  } else if (e.key === "r" || e.key === "R") {
+    e.preventDefault();
+    transport.retryNow();
+  }
 });
 
 selectTab("fleet");

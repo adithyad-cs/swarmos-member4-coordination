@@ -34,8 +34,16 @@ const FOOTPRINT_M = 0.70;         // pair footprint = collision distance
 // X-01. A sovereign robot is arbitrated against a wider hard-stop:
 // HARD_STOP_M 0.75 + SOVEREIGN_MARGIN_M 0.35, mirrored from swarm_policy.py.
 const SOVEREIGN_ENVELOPE_M = 1.10;
-const LOD_ZOOM = 0.6;             // below this, robots are plain dots
-const LABEL_ZOOM = 1.1;           // below this, no per-robot id labels
+// Level of detail is a function of PIXEL DENSITY, not of the relative
+// zoom multiplier: scale() = fitScale * zoom is what the eye actually
+// sees. A fitted 60 m warehouse can sit at zoom 0.58 and still have
+// plenty of pixels per metre.
+const LOD_PX_PER_M = 6;           // below this, robots are plain dots
+const LABEL_PX_PER_M = 26;        // below this, no per-robot id labels
+const GRID_PX_PER_M = 4;          // below this, no grid at all
+const GRID_MINOR_PX_PER_M = 10;   // below this, major lines only
+const RACK_OUTLINE_PX_PER_M = 6;  // below this, racks are filled but not outlined
+const DOCK_LABEL_PX_PER_M = 10;   // below this, dock labels are unreadable
 const PULSE_MS = 400;             // one pulse at conflict birth, then static
 const TRAIL_MAX = 120;            // 12 s of trail for the selected robot
 const GHOST_ALPHA = 0.30;         // baseline arm: present but never competing
@@ -283,13 +291,14 @@ export class MapView {
     ctx.fillStyle = css("--map-floor");
     ctx.fillRect(x0, y0, wh.width_m * s, wh.height_m * s);
 
-    // Grid at the 1 m aisle pitch, with a major line every 5 m. Below 8 px per
-    // metre the minor grid becomes moire, so it is dropped.
-    if (s >= 8) {
+    // Grid at the 1 m aisle pitch, with a major line every 5 m. Below
+    // GRID_MINOR_PX_PER_M the minor grid becomes moire, so only the 5 m
+    // majors are drawn; below GRID_PX_PER_M the grid is dropped entirely.
+    if (s >= GRID_PX_PER_M) {
       ctx.lineWidth = 1;
       for (let gx = 0; gx <= wh.width_m; gx += 1) {
         const major = gx % 5 === 0;
-        if (!major && s < 14) continue;
+        if (!major && s < GRID_MINOR_PX_PER_M) continue;
         ctx.strokeStyle = major ? css("--map-grid-major") : css("--map-grid");
         const [sx, sy1] = this.toScreen(gx, 0);
         const [, sy2] = this.toScreen(gx, wh.height_m);
@@ -300,7 +309,7 @@ export class MapView {
       }
       for (let gy = 0; gy <= wh.height_m; gy += 1) {
         const major = gy % 5 === 0;
-        if (!major && s < 14) continue;
+        if (!major && s < GRID_MINOR_PX_PER_M) continue;
         ctx.strokeStyle = major ? css("--map-grid-major") : css("--map-grid");
         const [sx1, sy] = this.toScreen(0, gy);
         const [sx2] = this.toScreen(wh.width_m, gy);
@@ -320,12 +329,12 @@ export class MapView {
         const [rx, ry, rw, rh] = rk;
         const [sx, sy] = this.toScreen(rx, ry + rh);
         ctx.fillRect(sx, sy, rw * s, rh * s);
-        if (s >= 6) ctx.strokeRect(sx, sy, rw * s, rh * s);
+        if (s >= RACK_OUTLINE_PX_PER_M) ctx.strokeRect(sx, sy, rw * s, rh * s);
       }
     }
 
     // Charging docks, if the scenario declares them.
-    if (Array.isArray(wh.docks) && s >= 10) {
+    if (Array.isArray(wh.docks) && s >= DOCK_LABEL_PX_PER_M) {
       ctx.strokeStyle = css("--state-charging");
       ctx.lineWidth = 1.5;
       for (const d of wh.docks) {
@@ -350,7 +359,7 @@ export class MapView {
     const ctx = this.pctx;
     ctx.clearRect(0, 0, this.w, this.h);
     const s = this.scale();
-    if (this.zoom < LOD_ZOOM) { this._pathsDirty = false; return; }
+    if (s < LOD_PX_PER_M) { this._pathsDirty = false; return; }
 
     const sel = store.selectedRobot;
 
@@ -412,7 +421,7 @@ export class MapView {
 
     const age = now - (src.at || 0);
     const t = Math.max(0, Math.min(1, age / TICK_MS));
-    const lod = this.zoom < LOD_ZOOM;
+    const lod = s < LOD_PX_PER_M;
     const rpx = Math.max(2, ROBOT_RADIUS_M * s);
 
     ctx.save();
@@ -441,7 +450,7 @@ export class MapView {
     const ctx = this.rctx;
     ctx.clearRect(0, 0, this.w, this.h);
     const s = this.scale();
-    const lod = this.zoom < LOD_ZOOM;
+    const lod = s < LOD_PX_PER_M;
 
     // Ghosts first: the counterfactual never occludes the real fleet.
     this._drawGhosts(ctx, now, s);
@@ -546,7 +555,7 @@ export class MapView {
       }
 
       // Id label, only when there is room to read it.
-      if (this.zoom >= LABEL_ZOOM) {
+      if (s >= LABEL_PX_PER_M) {
         ctx.fillStyle = css("--ink-tertiary");
         ctx.font = `10px ${css("--font-mono") || "monospace"}`;
         ctx.textAlign = "center";

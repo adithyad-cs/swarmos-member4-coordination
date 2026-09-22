@@ -50,7 +50,10 @@ export class LabPanel {
 
   _build() {
     const opts = this.scenarios
-      ? this.scenarios.map((s) => `<option value="${s.id || s}">${s.name || s.id || s}</option>`).join("")
+      // The server key is ScenarioSpec.as_dict().name. There is no 'id'
+      // field, so a fallback must land on another FIELD, never on the
+      // whole record - that is what produced value="[object Object]".
+      ? this.scenarios.map((s) => `<option value="${s.name}">${s.title || s.name}</option>`).join("")
       : `<option value="rush_50">rush_50</option>
          <option value="narrow_aisle_deadlock">narrow_aisle_deadlock</option>
          <option value="blocked_aisle">blocked_aisle</option>`;

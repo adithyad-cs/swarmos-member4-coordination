@@ -46,8 +46,11 @@
 
   /* ---- Map layer colours (canvas) ------------------------------------- */
   --map-floor: #0C1116;
-  --map-grid: #161D25;
-  --map-grid-major: #1E2831;
+  /* Readable against --map-floor yet still quieter than --line-default
+     (#263039), so the grid orients the eye without competing with the
+     data ink. */
+  --map-grid: #1B242C;
+  --map-grid-major: #232D36;
   --map-rack: #182028;
   --map-rack-edge: #222C36;
   --map-aisle-label: #4A5561;

@@ -135,16 +135,29 @@ export class Transport {
       // idle server that has not been given a run is not a late server.
       if (!this.lastFrameAt || !store.everFrame) return;
       const age = performance.now() - this.lastFrameAt;
-      if (age > STALE_MS && store.link === LINK.LIVE) {
-        store.setLink(LINK.DEGRADED, `${Math.round(age)} ms since last frame`);
-        this.onBanner({
-          tone: "warn",
-          cause: `No simulation frame for ${Math.round(age)} ms (expected every 100 ms).`,
-          action: "The map is showing the last known state. Coordination may be paused.",
-        });
-      } else if (age <= STALE_MS && store.link === LINK.DEGRADED) {
-        store.setLink(LINK.LIVE);
-        this.onBanner(null);
+      if (age > STALE_MS) {
+        if (store.link === LINK.LIVE) {
+          store.setLink(LINK.DEGRADED, `${Math.round(age)} ms since last frame`);
+        }
+        if (store.link === LINK.DEGRADED) {
+          this._staleBannerOn = true;
+          this.onBanner({
+            tone: "warn",
+            cause: `No simulation frame for ${Math.round(age)} ms (expected every 100 ms).`,
+            action: "The map is showing the last known state. Coordination may be paused.",
+          });
+        }
+      } else {
+        // Frames are flowing again. applyFrame() may already have set the
+        // link back to LIVE, so the clear must NOT be gated on DEGRADED or
+        // it becomes unreachable and the banner latches on forever. The
+        // ownership flag keeps us from clearing somebody else's banner
+        // (a socket-closed or server-error banner must survive).
+        if (store.link === LINK.DEGRADED) store.setLink(LINK.LIVE);
+        if (this._staleBannerOn) {
+          this._staleBannerOn = false;
+          this.onBanner(null);
+        }
       }
     }, 200);
   }
@@ -152,6 +165,7 @@ export class Transport {
   _stopStaleWatch() {
     if (this._staleTimer) clearInterval(this._staleTimer);
     this._staleTimer = null;
+    this._staleBannerOn = false;
   }
 
   _scheduleReconnect(cause) {
