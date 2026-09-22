@@ -363,4 +363,58 @@ def test_snapshot_is_json_serialisable():
     json.dumps(snap.as_dict())
     json.dumps(eng.static_payload())
 
+
+# ----------------------------------------------------------------------
+# fleet-50 gridlock regression (docs/GRIDLOCK_DEFECT_20260922.md)
+# ----------------------------------------------------------------------
+
+def test_no_robot_stalls_forever_at_high_density():
+    """A robot holding a task must never be stuck at zero net progress for
+    longer than STALL_RELEASE_TICKS.
+
+    This is the regression test for the fleet-50 gridlock defect: at high
+    density, a pair of robots can land inside each other's safety floor and
+    cycle WAIT -> REROUTE -> WAIT forever without ever actually moving, because
+    the safety monitor's own documented limitation is that no fraction of a
+    step clears a floor you are already inside (see swarm_policy.py._monitor's
+    KNOWN LIMITATION note). Before the stall-release fix in
+    SimEngine._check_stalls, this state persisted for the rest of the run
+    (measured: replans in the tens of thousands, true displacement 0.0 m).
+    The fix does not change the safety kernel; it only stops a robot from
+    holding a task past a bounded number of ticks with no progress, releasing
+    it back to the pending pool instead.
+    """
+    from app.api.runner import _make_policy
+    from app.sim.engine import STALL_RELEASE_TICKS
+
+    scen = get_scenario("rush_50")
+    scen = type(scen)(**{**scen.__dict__, "fleet_size": 50})
+    eng = SimEngine(scen, seed=18, policy=_make_policy("swarmos", 18), label="swarmos")
+
+    worst_streak = 0
+    for _ in range(3000):
+        eng.step()
+        for rid in eng.robots:
+            stalled = eng._stall.get(rid)
+            if stalled is not None:
+                since_tick = stalled[0]
+                worst_streak = max(worst_streak, eng.tick - since_tick)
+
+    assert worst_streak <= STALL_RELEASE_TICKS, (
+        f"a robot held a task with zero net progress for {worst_streak} ticks, "
+        f"exceeding the STALL_RELEASE_TICKS bound of {STALL_RELEASE_TICKS} - "
+        "the permanent wedge has regressed"
+    )
+    # The recovery must actually be exercised at this density, or the bound
+    # above is untested by this scenario.
+    assert eng.stall_releases > 0, (
+        "no stall releases fired in 3000 ticks at fleet 50 - either the "
+        "defect no longer reproduces here (update the scenario/seed used by "
+        "this test) or _check_stalls stopped running"
+    )
+    # The fix must never create a collision: releasing a task only changes
+    # bookkeeping (current_task_id, path, phase), never a robot's position.
+    assert eng.kpis()["collisions"] == 0
+
 # File contains AI-generated response based on internal company sources
+

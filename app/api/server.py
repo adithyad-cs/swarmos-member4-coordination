@@ -57,11 +57,14 @@ from pathlib import Path
 from typing import Any, Optional
 
 from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
+
 
 from app.api.cosim_runner import CoSimConfig as CoSimDefaults
 from app.api.cosim_runner import CoSimConfig, cosim_manager
@@ -553,4 +556,31 @@ async def lifespan(_app):
     await manager.stop()
 
 
-app = Starlette(routes=routes, lifespan=lifespan)
+# CORS is needed for exactly one case: landing.html opened straight off disk
+# (file://, origin "null") talking to this server over http. Every other
+# client (the dashboard served BY this same process) is same-origin and never
+# touches this middleware. allow_origins=["*"] is safe here specifically
+# because the API has no cookies/session auth to leak - every route is a
+# plain, unauthenticated JSON control surface for a local simulation demo.
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+        # Chrome's Private Network Access check: a page whose own origin is
+        # "null" (file://) or otherwise public is, by Chrome's classification,
+        # making a request to a PRIVATE address (127.0.0.1) - a separate check
+        # from ordinary CORS, and it fails closed with no usable error message
+        # beyond a generic CORS block unless this flag is also sent. Without
+        # it, landing.html opened via file:// can never reach this server in
+        # Chrome even though allow_origins=["*"] is otherwise satisfied.
+        allow_private_network=True,
+    ),
+]
+
+
+app = Starlette(routes=routes, middleware=middleware, lifespan=lifespan)
+
+
+# File contains AI-generated response based on internal company sources

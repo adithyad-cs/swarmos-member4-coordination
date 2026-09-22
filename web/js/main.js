@@ -222,9 +222,13 @@ if (hit) {
     const cur = $("info-cursor");
     if (!cur || typeof map.toWorld !== "function") return;
     const r = hit.getBoundingClientRect();
+    // map.toWorld() returns a plain [x, y] array, not an {x, y} object.
+    // This used to read w.x / w.y, which are undefined on an array, so the
+    // readout always rendered "--, -- m" no matter where the mouse was.
     const w = map.toWorld(e.clientX - r.left, e.clientY - r.top);
-    cur.textContent = w ? `${num(w.x, 1)}, ${num(w.y, 1)} m` : DASH;
+    cur.textContent = w ? `${num(w[0], 1)}, ${num(w[1], 1)} m` : DASH;
   });
+
   hit.addEventListener("mouseleave", () => {
     const cur = $("info-cursor");
     if (cur) cur.textContent = DASH;
@@ -371,3 +375,5 @@ paintMapInfo();
 panels.lab.init();
 panels.cosim.init();
 transport.connect();
+
+// File contains AI-generated response based on internal company sources

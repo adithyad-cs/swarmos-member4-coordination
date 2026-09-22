@@ -134,8 +134,15 @@ export class Transport {
       // Never report staleness before the first frame has ever arrived: an
       // idle server that has not been given a run is not a late server.
       if (!this.lastFrameAt || !store.everFrame) return;
+      // A deliberately PAUSED run stops sending frames on purpose - that is
+      // not staleness, it is the feature working. Without this check, every
+      // Pause looked exactly like a dead connection: the link flipped to
+      // DEGRADED and the "no simulation frame" banner appeared within
+      // STALE_MS of the operator's own Pause click.
+      if (!store.running) return;
       const age = performance.now() - this.lastFrameAt;
       if (age > STALE_MS) {
+
         if (store.link === LINK.LIVE) {
           store.setLink(LINK.DEGRADED, `${Math.round(age)} ms since last frame`);
         }
@@ -260,3 +267,5 @@ export class Transport {
     return `${proto}//${location.host}${COSIM_WS_PATH}`;
   }
 }
+
+// File contains AI-generated response based on internal company sources

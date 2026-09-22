@@ -68,6 +68,31 @@ NEAR_MISS_DISTANCE_M = 1.00
 # Pick and drop dwell, in ticks. Real AMRs need time under a rack.
 DWELL_TICKS = 5
 
+# Stalled-task release (fix for the fleet-50 gridlock defect, measured and
+# documented in docs/GRIDLOCK_DEFECT_20260922.md).
+#
+# The safety monitor's own comments in swarm_policy.py._monitor() admit a
+# KNOWN LIMITATION: once a pair of robots is already inside HARD_STOP_M, no
+# fraction of a step clears the floor, so MONITOR_STUCK_TICKS keeps firing
+# REROUTE, _plan() keeps handing back a path, and the pair keeps re-entering
+# the same standoff - replans climb into the tens of thousands while true
+# displacement stays exactly 0.0 m. That is not a path-planning bug (the robot
+# is never left without a path - see _plan()'s `if robot.path: continue`
+# guard, which _apply_verdicts already correctly bypasses on REROUTE) and
+# fixing the monitor geometry itself was tried five times and rejected each
+# time because it re-introduced collisions (see the version history in
+# swarm_policy.py._monitor's docstring). So the fix here is the one the
+# authors flagged as still open: stop retrying forever. A robot that holds a
+# task but has made no measurable progress for STALL_RELEASE_TICKS gives the
+# task back to the pending pool - the same "release, don't loop" recovery
+# StopAndWaitPolicy already uses - so the fleet does not permanently lose
+# capacity to a standoff that the monitor and the ladder cannot themselves
+# resolve. This never overrides the safety kernel: it only decides who is
+# allowed to keep trying.
+STALL_EPS_M = 0.02
+STALL_RELEASE_TICKS = 150       # 15 s of measured zero net progress
+
+
 # How close a robot must be to a pick, drop or charger cell to service it.
 #
 # This MUST be larger than the safety separation any arbiter enforces (0.75 m
@@ -235,8 +260,16 @@ class SimEngine:
         # genuinely different route, which is the honest classical recovery.
         self._avoid_hint: dict[str, set[tuple[int, int]]] = {}
 
+        # Stall tracking for STALL_RELEASE_TICKS (see the constant's comment).
+        # Maps robot_id -> (last_progress_tick, x, y) as of the last tick that
+        # robot was measured to have moved at least STALL_EPS_M from where it
+        # was the previous time this was checked.
+        self._stall: dict[str, tuple[int, float, float]] = {}
+        self.stall_releases = 0
+
         # Safety and metrics.
         self.violations: list[Violation] = []
+
         self.near_misses = 0
         # Pairs currently inside COLLISION_DISTANCE_M. A Violation is recorded
         # only when a pair ENTERS this set, so one frozen overlap is one
@@ -359,10 +392,12 @@ class SimEngine:
             self.robots[rid].step(TICK_SECONDS, self.rng, self.sensing)
 
         self._service()
+        self._check_stalls()
         self._account_safety()
         self._update_hash()
 
         compute_ms = self.clock.end()
+
         snapshot = self._snapshot(compute_ms)
         self.clock.advance()
         return snapshot
@@ -1164,9 +1199,56 @@ class SimEngine:
         cx, cy = self.warehouse.cell_to_m(*cell)
         return robot.distance_to(cx, cy) <= SERVICE_RADIUS_M
 
+    def _check_stalls(self) -> None:
+        """Release a task whose robot has made no measurable progress.
+
+        See STALL_RELEASE_TICKS above for the full reasoning. This runs after
+        motion has been integrated for the tick, so `robot.x, robot.y` are
+        this tick's TRUE final position - exactly what should be compared
+        against the position last recorded for this robot.
+
+        Only robots that currently hold a task and are not already resting
+        for a legitimate reason (dwell, charging, quarantine, failure) are
+        tracked, so a robot that is correctly idle between tasks is never
+        mistaken for one that is wedged.
+        """
+        for rid in sorted(self.robots):
+            robot = self.robots[rid]
+            if robot.current_task_id is None or robot.failed or robot.quarantined:
+                self._stall.pop(rid, None)
+                continue
+            if self._dwell.get(rid, 0) > 0:
+                # Dwelling at a pick/drop station is real, intended rest, not
+                # a stall - reset the clock so it does not fire the instant
+                # dwell ends.
+                self._stall[rid] = (self.clock.tick, robot.x, robot.y)
+                continue
+
+            prev = self._stall.get(rid)
+            if prev is None:
+                self._stall[rid] = (self.clock.tick, robot.x, robot.y)
+                continue
+
+            since_tick, px, py = prev
+            moved = math.hypot(robot.x - px, robot.y - py)
+            if moved >= STALL_EPS_M:
+                self._stall[rid] = (self.clock.tick, robot.x, robot.y)
+                continue
+
+            if self.clock.tick - since_tick >= STALL_RELEASE_TICKS:
+                self.stall_releases += 1
+                self._emit(
+                    "task_stalled", robot_id=rid, task_id=robot.current_task_id,
+                    ticks_without_progress=self.clock.tick - since_tick,
+                )
+                self._release_task(robot, reason="no progress for %d ticks" % STALL_RELEASE_TICKS)
+                robot.status = RobotStatus.AVAILABLE
+                self._stall.pop(rid, None)
+
     # ==================================================================
     # step 8 - safety accounting and hashing
     # ==================================================================
+
     def _account_safety(self) -> None:
         """Count space-time overlaps on TRUE positions. This is X-09.
 
@@ -1326,8 +1408,10 @@ class SimEngine:
             # coordination behaviour
             "verdicts": dict(self.verdict_counts),
             "replans": self.replans,
+            "stall_releases": self.stall_releases,
             "veto_battery": self.veto_battery,
             "veto_capability": self.veto_capability,
+
             # fleet health
             "robots_total": len(self.robots),
             "robots_failed": sum(1 for r in self.robots.values() if r.failed),
