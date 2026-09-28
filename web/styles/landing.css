@@ -168,10 +168,16 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(320px, 560px) minmax(0, 1fr);
+  /* The reference composition gives the hero column roughly a third of the
+     viewport (~410-470px at 1226px wide), not up to 560px - a hero this
+     narrow leaves the visual column (robot + card) enough width to read as
+     large and dominant, matching the reference. minmax(.., 34vw) tracks
+     that ratio at wider viewports too, capped at 460px so it never grows
+     past the reference's own proportions on very wide screens. */
+  grid-template-columns: minmax(300px, min(450px, 36vw)) minmax(0, 1fr);
   align-items: stretch;
   gap: var(--space-6);
-  padding: var(--space-4) clamp(20px, 4vw, 70px) var(--space-7);
+  padding: clamp(6px, 1.6vh, 16px) clamp(20px, 4vw, 70px) clamp(12px, 3vh, 48px);
   min-height: calc(100vh - 84px);
 }
 
@@ -183,7 +189,14 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
-  padding: var(--space-6) 0;
+  /* clamp(), not a flat --space-6, so this compresses instead of
+     overflowing when the row is shorter than the hero's natural content
+     height (a short viewport, or browser zoom above 100% - zoom shrinks
+     the effective vh the same way, so this tracks it correctly). Centered
+     content that can't shrink pushes its excess off BOTH the top and the
+     bottom equally; on a hero this tall, that silently pushes the CTA
+     below the fold - the actual bug this fixes. */
+  padding: clamp(4px, 1.6vh, 24px) 0;
 }
 
 .lp-eyebrow {
@@ -210,10 +223,10 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 .lp-eyebrow__sep { color: var(--lp-ink-dim); }
 
 .lp-hero__title {
-  margin: 22px 0 0 -2px;
+  margin: clamp(4px, 1.1vh, 14px) 0 0 -2px;
   font-family: var(--lp-font-display);
   font-weight: 700;
-  font-size: clamp(44px, 6.4vw, 80px);
+  font-size: clamp(38px, 5.7vw, 70px);
   line-height: 1;
   letter-spacing: 0.035em;
   color: var(--lp-ink-strong);
@@ -221,21 +234,21 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 }
 
 .lp-hero__headline {
-  margin: 26px 0 0;
-  max-width: 34ch;
+  margin: clamp(6px, 1.4vh, 18px) 0 0;
+  max-width: 30ch;
   font-family: var(--lp-font-display);
   font-weight: 500;
-  font-size: clamp(19px, 2vw, 25px);
+  font-size: clamp(15px, 1.6vw, 20px);
   line-height: 1.3;
   letter-spacing: 0.04em;
   color: var(--lp-ink);
 }
 
 .lp-hero__body {
-  margin: 26px 0 0;
-  max-width: 44ch;
-  font-size: 17px;
-  line-height: 1.5;
+  margin: clamp(6px, 1.4vh, 18px) 0 0;
+  max-width: 46ch;
+  font-size: clamp(13px, 1.15vw, 15px);
+  line-height: 1.45;
   color: var(--lp-ink-body);
   text-wrap: pretty;
 }
@@ -243,12 +256,12 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 /* --- status panel (honest, never fabricated: filled by landing.js) ----- */
 
 .lp-status {
-  margin-top: 30px;
+  margin-top: clamp(6px, 1.4vh, 18px);
   width: min(100%, 300px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 15px 18px;
+  gap: 7px;
+  padding: 9px 16px;
   border: 1px solid var(--lp-rule);
   border-radius: 6px;
   background: var(--lp-panel-bg);
@@ -289,21 +302,21 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 
 /* --- CTA: pill, light, glowing on hover, as in the design --------------- */
 
-.lp-cta { margin-top: 26px; }
+.lp-cta { margin-top: clamp(6px, 1.4vh, 18px); }
 
 .lp-cta__btn {
-  width: min(100%, 300px);
-  height: 56px;
+  width: min(100%, 270px);
+  height: 46px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 14px;
   border: none;
-  border-radius: 28px;
+  border-radius: 23px;
   background: var(--lp-cta-bg);
   color: var(--lp-cta-ink);
   font-family: var(--lp-font-body);
-  font-size: 17px;
+  font-size: 14.5px;
   font-weight: 600;
   letter-spacing: 0.12em;
   box-shadow: var(--lp-cta-glow);
@@ -344,11 +357,11 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 /* --- "built for a smarter tomorrow" tag block --------------------------- */
 
 .lp-tomorrow {
-  margin-top: var(--space-6);
+  margin-top: clamp(8px, 1.6vh, 20px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  font-size: 11.5px;
+  gap: 8px;
+  font-size: 10.5px;
   font-weight: 500;
   letter-spacing: 0.12em;
   color: var(--lp-ink-faint);
@@ -362,7 +375,13 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 .lp-visual {
   position: relative;
   align-self: stretch;
-  min-height: 560px;
+  /* A flat 560px minimum forced this column taller than the available row
+     height on short viewports (a 652px-tall window leaves well under
+     560px for the row once the header and main padding are subtracted),
+     which is exactly what pushed content below the fold until the user
+     zoomed out. clamp() keeps the design's intended 560px on tall
+     screens but lets it shrink on short ones instead of overflowing. */
+  min-height: clamp(280px, 60vh, 560px);
 }
 
 /* `right` reserves exactly the panel's own max width (368px, --lp-panel),
