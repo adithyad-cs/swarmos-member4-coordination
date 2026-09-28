@@ -183,6 +183,7 @@
   --lp-ink-strong: #f5f6f7;   /* ROBONEX H1 */
   --lp-ink-body: #e2e5e8;     /* hero paragraph */
   --lp-ink-dim: #c9ced2;      /* eyebrow, tags, card strip */
+  --lp-ink-meta: #c3c8cc;     /* header SIH 2026 / Smart India Hackathon */
   --lp-ink-dimmer: #b9bfc4;   /* AUTONOMOUS WAREHOUSE INTELLIGENCE, quote list */
   --lp-ink-faint: #a3aaaf;    /* BUILT FOR A SMARTER TOMORROW */
   --lp-ink-status-label: #dfe3e6;
@@ -224,4 +225,10 @@
   --lp-cta-glow-hover: 0 0 36px rgba(255, 255, 255, 0.34);
 
   --lp-robot-shadow: rgba(0, 0, 0, 0.6);
+
+  /* The design's own two fonts (self-hosted, see landing.css @font-face):
+   * Orbitron for the wordmark/H1/headline/card-title, Exo 2 for everything
+   * else - exactly the split "ROBONEX Landing.dc.html" itself uses. */
+  --lp-font-display: "Orbitron", sans-serif;
+  --lp-font-body: "Exo 2", sans-serif;
 }

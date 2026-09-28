@@ -10,13 +10,37 @@
 
    All colour comes from the --lp-* tokens appended to tokens.css (values
    copied from the design's own inline styles) - nothing here is a fresh
-   hex/rgba invention. No external fonts: Orbitron/Exo 2 (the design's
-   Google Fonts) are not available offline, so the existing --font-ui system
-   stack stands in, compensated with the same heavier weight and letter-
-   spacing the design itself uses to read as technical/geometric.
+   hex/rgba invention. The design's own fonts, Orbitron and Exo 2, are
+   self-hosted below (web/assets/fonts/) from their original OFL-licensed
+   variable-font files, so no Google Fonts request is ever made at
+   runtime and the rendered typeface matches the design exactly rather
+   than falling back to a system font.
    ========================================================================== */
 
 @import url("tokens.css");
+
+/* Self-hosted, matching the design's own
+   "family=Orbitron:wght@500;600;700&family=Exo+2:wght@400;500;600" request -
+   both are true variable fonts (wght axis), so one file per family covers
+   every weight the design uses, rendered at the exact requested weight via
+   font interpolation, not a nearest-static-weight substitute. */
+@font-face {
+  font-family: "Orbitron";
+  src: url("../assets/fonts/Orbitron.ttf") format("truetype-variations"),
+       url("../assets/fonts/Orbitron.ttf") format("truetype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Exo 2";
+  src: url("../assets/fonts/Exo2.ttf") format("truetype-variations"),
+       url("../assets/fonts/Exo2.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -31,7 +55,7 @@ body.landing {
   overflow-x: hidden;
   background: var(--lp-bg);
   color: var(--lp-ink);
-  font-family: var(--font-ui);
+  font-family: var(--lp-font-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -88,8 +112,8 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 .lp-brand__mark span:nth-child(4) { width: 34px; }
 
 .lp-wordmark {
-  font-family: var(--font-ui);
-  font-weight: 700;
+  font-family: var(--lp-font-display);
+  font-weight: 600;
   font-size: 21px;
   letter-spacing: 0.12em;
   color: var(--lp-ink);
@@ -132,11 +156,11 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   gap: 3px;
   font-size: 13px;
   letter-spacing: 0.02em;
-  color: var(--lp-ink-dim);
+  color: var(--lp-ink-meta);
   white-space: nowrap;
 }
 
-.lp-meta__line--dim { color: var(--lp-ink-dim); }
+.lp-meta__line--dim { color: var(--lp-ink-meta); }
 
 /* --- main: hero column left, robot + card + quote layered on the right -- */
 
@@ -187,11 +211,11 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 
 .lp-hero__title {
   margin: 22px 0 0 -2px;
-  font-family: var(--font-ui);
-  font-weight: 800;
+  font-family: var(--lp-font-display);
+  font-weight: 700;
   font-size: clamp(44px, 6.4vw, 80px);
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.035em;
   color: var(--lp-ink-strong);
   text-shadow: var(--lp-title-glow);
 }
@@ -199,18 +223,18 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 .lp-hero__headline {
   margin: 26px 0 0;
   max-width: 34ch;
-  font-family: var(--font-ui);
-  font-weight: 600;
+  font-family: var(--lp-font-display);
+  font-weight: 500;
   font-size: clamp(19px, 2vw, 25px);
   line-height: 1.3;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.04em;
   color: var(--lp-ink);
 }
 
 .lp-hero__body {
   margin: 26px 0 0;
   max-width: 44ch;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.5;
   color: var(--lp-ink-body);
   text-wrap: pretty;
@@ -278,10 +302,10 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   border-radius: 28px;
   background: var(--lp-cta-bg);
   color: var(--lp-cta-ink);
-  font-family: var(--font-ui);
-  font-size: 16px;
+  font-family: var(--lp-font-body);
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   box-shadow: var(--lp-cta-glow);
   cursor: pointer;
   transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
@@ -305,7 +329,7 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   box-shadow: none;
 }
 
-.lp-cta__arrow { font-size: 17px; }
+.lp-cta__arrow { font-size: 18px; }
 
 .lp-cta__note {
   min-height: 15px;
@@ -341,36 +365,57 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   min-height: 560px;
 }
 
-/* `right` reserves the panel's own footprint (its max width + a gap), not a
-   percentage of .lp-visual: in the source design the robot's box (560px of
-   a 1440px canvas) ends well before the card (left:1015px) and quote
-   (left:1143px) begin, so nothing shows through the quote's transparent
-   background. A width expressed as a % of .lp-visual would grow with the
-   panel's own share of a SHRINKING visual column at medium widths and
-   start showing through the quote again; reserving the panel's actual
-   pixel footprint keeps clearance at every width down to the 860px
-   breakpoint, where the panel drops out of this overlay entirely. */
+/* `right` reserves exactly the panel's own max width (368px, --lp-panel),
+   not that plus an extra gap: the mask below only reaches TRUE zero
+   opacity at the box's own right edge, so the box's right edge must not
+   pass the panel's left edge (where the quote's transparent background
+   begins) - but it can safely touch it, since opacity is already ~0 right
+   at that boundary. Any extra reserved gap beyond the panel's own width
+   only shrinks the box for no safety benefit. A width expressed as a % of
+   .lp-visual would grow with the panel's own share of a SHRINKING visual
+   column at medium widths and start showing through the quote again;
+   reserving the panel's actual pixel footprint keeps clearance at every
+   width down to the 860px breakpoint, where the panel drops out of this
+   overlay entirely. */
 .lp-stage {
   position: absolute;
   left: 0;
   bottom: 0;
-  right: 400px;
-  /* hero-robot.png's own ratio (1164x1428), not the visual column's height:
-     that height varies with hero-copy length and is usually much SQUARER
-     than the portrait image, which forced "cover" to crop in tight on the
-     torso. Matching the image's own ratio here means nothing is cropped or
-     shrunk - the full render shows, edge-to-edge, exactly as the design's
-     own fit="cover" (on a box it sized to match) renders it. */
-  aspect-ratio: 1164 / 1428;
+  right: 368px;
+  /* The design's own box ratio (560x756 px on its 1440x800 canvas), NOT
+     hero-robot.png's native ratio (1164x1428). The design's box is narrower
+     than the image itself, so its fit="cover" crops in on the sides -
+     that crop is what makes the robot read large and bled into the frame.
+     Matching the image's own ratio instead (as an earlier pass did) removes
+     that crop entirely, which undersizes the robot relative to the frame.
+     Width (not height) is the box's primary dimension here: it is set
+     directly by `right`, and height is derived from it via this ratio,
+     capped by max-height so it can never exceed the column's own height -
+     going the other way (height primary, width derived) lets max-width
+     clamp the derived width below what the ratio implies, breaking the
+     ratio and over-cropping the image (verified visually and reverted). */
+  aspect-ratio: 560 / 756;
   max-height: 100%;
   margin: 0;
+  /* The box's own layout size (used above for the panel-clearance math)
+     stays conservative on purpose - it is what keeps the right/bottom
+     edges flush against the card/quote with zero bleed. The design's box
+     is bigger than that layout size can safely be in this fluid two-column
+     layout (its left neighbour is hero body copy, not a fixed margin), so
+     a render-time scale grows the box visually from its bottom-right
+     corner: right and bottom edges stay pinned exactly where the
+     clearance math puts them (unchanged risk to the card/quote), while
+     growth extends only up and left, into the empty space the hero
+     column reserves beyond its own text's actual width. */
+  transform: scale(1.3);
+  transform-origin: 100% 100%;
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0, #000 14%, #000 78%, transparent 96%),
-    linear-gradient(180deg, transparent 0, #000 8%);
+    linear-gradient(90deg, transparent 0, #000 12%, #000 70%, transparent 100%),
+    linear-gradient(180deg, transparent 0, #000 10%);
   -webkit-mask-composite: source-in;
   mask-image:
-    linear-gradient(90deg, transparent 0, #000 14%, #000 78%, transparent 96%),
-    linear-gradient(180deg, transparent 0, #000 8%);
+    linear-gradient(90deg, transparent 0, #000 12%, #000 70%, transparent 100%),
+    linear-gradient(180deg, transparent 0, #000 10%);
   mask-composite: intersect;
 }
 
@@ -444,8 +489,8 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 
 .lp-card__title {
   margin: 0;
-  font-family: var(--font-ui);
-  font-weight: 700;
+  font-family: var(--lp-font-display);
+  font-weight: 600;
   font-size: 19px;
   letter-spacing: 0.1em;
   color: var(--lp-ink);
@@ -463,7 +508,7 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 .lp-card__list li {
   position: relative;
   padding-left: var(--space-4);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.35;
   color: var(--lp-ink-card);
 }
@@ -490,7 +535,7 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   justify-content: center;
   gap: 12px;
   padding: 16px 12px 18px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.12em;
   color: var(--lp-ink-dim);
@@ -559,7 +604,7 @@ body.landing[data-state="entering"] .lp-transition {
   .lp-main { grid-template-columns: minmax(300px, 1fr) minmax(280px, 1fr); }
   .lp-visual { min-height: 480px; }
   .lp-panel { width: min(100%, 300px); }
-  .lp-stage { right: 330px; }
+  .lp-stage { right: 300px; }
 }
 
 @media (max-width: 860px) {
@@ -580,10 +625,18 @@ body.landing[data-state="entering"] .lp-transition {
     position: relative;
     left: auto;
     right: auto;
+    bottom: auto;
     width: 100%;
     height: min(60vh, 480px);
-    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%);
-    mask-image: linear-gradient(180deg, transparent 0, #000 8%);
+    /* The bottom-right-anchored scale that enlarges the desktop/tablet
+       overlay composition doesn't apply here: this stage is no longer the
+       same absolutely-positioned overlay box (it's a full-width, normal-
+       flow element stacked below the hero copy), so the same transform
+       would just bleed 30% past its own full-width box and overlap the
+       "BUILT FOR A SMARTER TOMORROW" text above it. */
+    transform: none;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 10%);
   }
   .lp-panel { position: static; width: 100%; }
 }
