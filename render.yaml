@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: swarmos-sih
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn app.api.server:app --host 0.0.0.0 --port $PORT --log-level warning
+    envVars:
+      - key: PYTHONPATH
+        value: .
+    healthCheckPath: /api/health
