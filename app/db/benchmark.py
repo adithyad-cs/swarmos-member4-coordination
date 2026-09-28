@@ -336,5 +336,3 @@ def message_scaling(
             "robot can talk to regardless of fleet size"
         ),
     }
-
-# File contains AI-generated response based on internal company sources

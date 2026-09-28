@@ -64,5 +64,3 @@ SENSING_REALISTIC = SensingProfile(
     actuation_delay_ticks=1,
     intent_jitter_ticks=1,
 )
-
-# File contains AI-generated response based on internal company sources

@@ -315,5 +315,3 @@ def trace_path(run_id: str, *, directory: str = DEFAULT_TRACE_DIR,
                compress: bool = False) -> str:
     suffix = ".ndjson.gz" if compress else ".ndjson"
     return os.path.join(directory, f"{run_id}{suffix}")
-
-# File contains AI-generated response based on internal company sources

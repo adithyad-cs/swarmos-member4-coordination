@@ -76,5 +76,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-# File contains AI-generated response based on internal company sources

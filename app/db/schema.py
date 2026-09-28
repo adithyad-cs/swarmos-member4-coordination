@@ -155,4 +155,3 @@ CREATE TABLE IF NOT EXISTS comparisons (
     detail_json   TEXT NOT NULL
 );
 """
-# File contains AI-generated response based on internal company sources

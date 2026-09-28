@@ -193,5 +193,3 @@ class TaskGenerator:
                 created_s=now_s,
             ))
         return out
-
-# File contains AI-generated response based on internal company sources

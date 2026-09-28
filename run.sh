@@ -75,12 +75,17 @@ missing=""
 for mod in starlette uvicorn pydantic; do
     "$PY" -c "import $mod" 2>/dev/null || missing="$missing $mod"
 done
+# uvicorn serves NO websockets unless a websocket library is installed: it
+# answers the /ws/fleet upgrade with 404, and the dashboard sits on
+# "Disconnected" with an empty map. Either library works.
+"$PY" -c "import websockets" 2>/dev/null || "$PY" -c "import wsproto" 2>/dev/null \
+    || missing="$missing websockets"
 if [ -n "$missing" ]; then
     echo "ERROR: missing required modules:$missing" >&2
-    echo "Install with: $PY -m pip install starlette uvicorn pydantic" >&2
+    echo "Install with: $PY -m pip install starlette uvicorn pydantic websockets" >&2
     exit 1
 fi
-echo "deps:    starlette, uvicorn, pydantic present"
+echo "deps:    starlette, uvicorn, pydantic, websocket library present"
 
 MODE="serve"
 case "${1:-}" in

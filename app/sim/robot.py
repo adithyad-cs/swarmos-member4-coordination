@@ -564,5 +564,3 @@ def spawn_fleet(
             )
         )
     return robots
-
-# File contains AI-generated response based on internal company sources

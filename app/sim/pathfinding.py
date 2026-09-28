@@ -43,6 +43,7 @@ def find_path(
     *,
     cost_field: Optional[CostField] = None,
     avoid: Optional[Iterable[Cellref]] = None,
+    edge_allowed: Optional[Callable[[Cellref, Cellref], bool]] = None,
 ) -> Optional[list[Cellref]]:
     """Shortest 4-connected path from `start` to `goal`, inclusive of both.
 
@@ -98,6 +99,11 @@ def find_path(
 
         for neighbour in warehouse.neighbours(*current):
             if neighbour in closed or neighbour in blocked:
+                continue
+            # Directed-graph hook: one-way traffic rules (see
+            # app/coordination/traffic.py). None keeps the undirected search,
+            # so every existing caller is unchanged.
+            if edge_allowed is not None and not edge_allowed(current, neighbour):
                 continue
 
             step_cost = 1.0
@@ -198,5 +204,3 @@ def simplify_collinear(
 def path_length_cells(cells: list[Cellref]) -> int:
     """Number of moves in a cell path. Used as the auction distance term."""
     return max(0, len(cells) - 1)
-
-# File contains AI-generated response based on internal company sources

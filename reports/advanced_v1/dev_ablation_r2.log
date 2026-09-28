@@ -1,0 +1,392 @@
+240 runs -> /home/user/swarmos-member4-coordination/reports/experiments/20260927T190833Z_adv_dev_ablation_r2
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000001 done=9/24 makespan=None col=0 (30.14s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000002 done=24/24 makespan=457.7 col=0 (4.39s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000003 done=22/24 makespan=None col=0 (29.35s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000004 done=22/24 makespan=None col=0 (29.87s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000005 done=23/24 makespan=None col=0 (29.72s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000006 done=22/24 makespan=None col=0 (27.7s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000007 done=22/24 makespan=None col=0 (27.35s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000008 done=24/24 makespan=527.0 col=0 (4.47s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000009 done=24/24 makespan=467.1 col=0 (4.57s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000010 done=14/24 makespan=None col=0 (28.33s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000011 done=23/24 makespan=None col=0 (26.8s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000012 done=23/24 makespan=None col=0 (29.02s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000013 done=24/24 makespan=460.0 col=0 (4.09s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000014 done=23/24 makespan=None col=0 (27.4s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000015 done=24/24 makespan=1085.8 col=0 (9.69s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000016 done=11/24 makespan=None col=0 (28.07s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000017 done=24/24 makespan=556.5 col=0 (5.2s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000018 done=22/24 makespan=None col=0 (31.67s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000019 done=22/24 makespan=None col=0 (27.63s)
+  overlap_batch      normal         stop_and_wait+F1+F6 seed=1000020 done=22/24 makespan=None col=0 (27.99s)
+  overlap_batch      normal         swarmos            seed=1000001 done=24/24 makespan=610.9 col=0 (10.8s)
+  overlap_batch      normal         swarmos            seed=1000002 done=24/24 makespan=525.2 col=0 (8.47s)
+  overlap_batch      normal         swarmos            seed=1000003 done=24/24 makespan=550.2 col=0 (8.74s)
+  overlap_batch      normal         swarmos            seed=1000004 done=24/24 makespan=656.1 col=0 (11.04s)
+  overlap_batch      normal         swarmos            seed=1000005 done=24/24 makespan=377.7 col=0 (6.71s)
+  overlap_batch      normal         swarmos            seed=1000006 done=24/24 makespan=394.7 col=0 (6.81s)
+  overlap_batch      normal         swarmos            seed=1000007 done=24/24 makespan=481.7 col=0 (8.55s)
+  overlap_batch      normal         swarmos            seed=1000008 done=24/24 makespan=605.4 col=0 (10.34s)
+  overlap_batch      normal         swarmos            seed=1000009 done=24/24 makespan=465.5 col=0 (8.33s)
+  overlap_batch      normal         swarmos            seed=1000010 done=24/24 makespan=404.2 col=0 (6.6s)
+  overlap_batch      normal         swarmos            seed=1000011 done=24/24 makespan=486.3 col=0 (8.44s)
+  overlap_batch      normal         swarmos            seed=1000012 done=24/24 makespan=385.9 col=0 (6.25s)
+  overlap_batch      normal         swarmos            seed=1000013 done=24/24 makespan=497.1 col=0 (8.03s)
+  overlap_batch      normal         swarmos            seed=1000014 done=24/24 makespan=435.8 col=0 (7.01s)
+  overlap_batch      normal         swarmos            seed=1000015 done=24/24 makespan=634.6 col=0 (10.13s)
+  overlap_batch      normal         swarmos            seed=1000016 done=24/24 makespan=520.5 col=0 (8.19s)
+  overlap_batch      normal         swarmos            seed=1000017 done=24/24 makespan=372.6 col=0 (6.1s)
+  overlap_batch      normal         swarmos            seed=1000018 done=24/24 makespan=468.2 col=0 (7.41s)
+  overlap_batch      normal         swarmos            seed=1000019 done=24/24 makespan=435.5 col=0 (7.24s)
+  overlap_batch      normal         swarmos            seed=1000020 done=24/24 makespan=524.0 col=0 (9.21s)
+  overlap_batch      normal         swarmos+EAI        seed=1000001 done=24/24 makespan=610.9 col=0 (14.79s)
+  overlap_batch      normal         swarmos+EAI        seed=1000002 done=24/24 makespan=525.2 col=0 (14.29s)
+  overlap_batch      normal         swarmos+EAI        seed=1000003 done=24/24 makespan=550.2 col=0 (14.47s)
+  overlap_batch      normal         swarmos+EAI        seed=1000004 done=24/24 makespan=656.1 col=0 (17.76s)
+  overlap_batch      normal         swarmos+EAI        seed=1000005 done=24/24 makespan=377.7 col=0 (8.47s)
+  overlap_batch      normal         swarmos+EAI        seed=1000006 done=24/24 makespan=394.7 col=0 (8.12s)
+  overlap_batch      normal         swarmos+EAI        seed=1000007 done=24/24 makespan=481.7 col=0 (10.63s)
+  overlap_batch      normal         swarmos+EAI        seed=1000008 done=24/24 makespan=605.4 col=0 (13.97s)
+  overlap_batch      normal         swarmos+EAI        seed=1000009 done=24/24 makespan=465.5 col=0 (10.23s)
+  overlap_batch      normal         swarmos+EAI        seed=1000010 done=24/24 makespan=404.2 col=0 (8.76s)
+  overlap_batch      normal         swarmos+EAI        seed=1000011 done=24/24 makespan=486.3 col=0 (11.79s)
+  overlap_batch      normal         swarmos+EAI        seed=1000012 done=24/24 makespan=385.9 col=0 (8.62s)
+  overlap_batch      normal         swarmos+EAI        seed=1000013 done=24/24 makespan=497.1 col=0 (11.11s)
+  overlap_batch      normal         swarmos+EAI        seed=1000014 done=24/24 makespan=435.8 col=0 (10.28s)
+  overlap_batch      normal         swarmos+EAI        seed=1000015 done=24/24 makespan=634.6 col=0 (15.2s)
+  overlap_batch      normal         swarmos+EAI        seed=1000016 done=24/24 makespan=520.5 col=0 (10.89s)
+  overlap_batch      normal         swarmos+EAI        seed=1000017 done=24/24 makespan=372.6 col=0 (8.6s)
+  overlap_batch      normal         swarmos+EAI        seed=1000018 done=24/24 makespan=468.2 col=0 (9.94s)
+  overlap_batch      normal         swarmos+EAI        seed=1000019 done=24/24 makespan=435.5 col=0 (10.24s)
+  overlap_batch      normal         swarmos+EAI        seed=1000020 done=24/24 makespan=524.0 col=0 (12.36s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000001 done=24/24 makespan=464.8 col=0 (9.86s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000002 done=24/24 makespan=478.3 col=0 (11.27s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000003 done=24/24 makespan=594.4 col=0 (14.48s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000004 done=24/24 makespan=476.3 col=0 (11.4s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000005 done=24/24 makespan=474.9 col=0 (9.93s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000006 done=24/24 makespan=522.6 col=0 (12.47s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000007 done=24/24 makespan=451.8 col=0 (10.73s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000008 done=24/24 makespan=420.5 col=0 (9.36s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000009 done=24/24 makespan=419.9 col=0 (9.74s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000010 done=24/24 makespan=401.4 col=0 (9.57s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000011 done=24/24 makespan=629.1 col=0 (15.26s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000012 done=24/24 makespan=360.9 col=0 (8.52s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000013 done=24/24 makespan=527.6 col=0 (12.6s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000014 done=24/24 makespan=527.5 col=0 (11.85s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000015 done=24/24 makespan=473.1 col=0 (10.29s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000016 done=24/24 makespan=592.0 col=0 (13.34s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000017 done=24/24 makespan=436.1 col=0 (10.45s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000018 done=24/24 makespan=395.4 col=0 (8.55s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000019 done=24/24 makespan=354.6 col=0 (7.95s)
+  overlap_batch      normal         swarmos+EAI+PC     seed=1000020 done=24/24 makespan=434.9 col=0 (10.04s)
+  overlap_batch      normal         swarmos+AU         seed=1000001 done=24/24 makespan=559.6 col=0 (10.02s)
+  overlap_batch      normal         swarmos+AU         seed=1000002 done=24/24 makespan=424.8 col=0 (7.43s)
+  overlap_batch      normal         swarmos+AU         seed=1000003 done=24/24 makespan=534.2 col=0 (9.18s)
+  overlap_batch      normal         swarmos+AU         seed=1000004 done=24/24 makespan=515.7 col=0 (9.67s)
+  overlap_batch      normal         swarmos+AU         seed=1000005 done=24/24 makespan=550.5 col=0 (9.74s)
+  overlap_batch      normal         swarmos+AU         seed=1000006 done=24/24 makespan=406.5 col=0 (6.59s)
+  overlap_batch      normal         swarmos+AU         seed=1000007 done=24/24 makespan=386.3 col=0 (7.13s)
+  overlap_batch      normal         swarmos+AU         seed=1000008 done=24/24 makespan=581.8 col=0 (11.02s)
+  overlap_batch      normal         swarmos+AU         seed=1000009 done=24/24 makespan=439.6 col=0 (7.8s)
+  overlap_batch      normal         swarmos+AU         seed=1000010 done=24/24 makespan=335.0 col=0 (5.69s)
+  overlap_batch      normal         swarmos+AU         seed=1000011 done=24/24 makespan=547.5 col=0 (9.81s)
+  overlap_batch      normal         swarmos+AU         seed=1000012 done=24/24 makespan=625.9 col=0 (11.01s)
+  overlap_batch      normal         swarmos+AU         seed=1000013 done=24/24 makespan=438.0 col=0 (7.62s)
+  overlap_batch      normal         swarmos+AU         seed=1000014 done=24/24 makespan=456.0 col=0 (7.67s)
+  overlap_batch      normal         swarmos+AU         seed=1000015 done=24/24 makespan=584.5 col=0 (9.94s)
+  overlap_batch      normal         swarmos+AU         seed=1000016 done=24/24 makespan=494.0 col=0 (8.62s)
+  overlap_batch      normal         swarmos+AU         seed=1000017 done=24/24 makespan=540.9 col=0 (9.7s)
+  overlap_batch      normal         swarmos+AU         seed=1000018 done=24/24 makespan=633.0 col=0 (11.42s)
+  overlap_batch      normal         swarmos+AU         seed=1000019 done=24/24 makespan=424.7 col=0 (7.36s)
+  overlap_batch      normal         swarmos+AU         seed=1000020 done=24/24 makespan=464.3 col=0 (8.15s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000001 done=24/24 makespan=362.8 col=0 (8.35s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000002 done=24/24 makespan=512.3 col=0 (12.33s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000003 done=24/24 makespan=592.7 col=0 (13.86s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000004 done=24/24 makespan=805.8 col=0 (20.59s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000005 done=24/24 makespan=440.2 col=0 (10.17s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000006 done=24/24 makespan=518.7 col=0 (12.2s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000007 done=24/24 makespan=491.1 col=0 (11.73s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000008 done=24/24 makespan=489.1 col=0 (12.13s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000009 done=24/24 makespan=541.1 col=0 (13.93s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000010 done=24/24 makespan=445.6 col=0 (10.71s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000011 done=24/24 makespan=545.1 col=0 (13.21s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000012 done=24/24 makespan=517.4 col=0 (11.69s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000013 done=24/24 makespan=517.2 col=0 (12.4s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000014 done=24/24 makespan=452.3 col=0 (10.74s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000015 done=24/24 makespan=686.0 col=0 (18.09s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000016 done=24/24 makespan=511.1 col=0 (12.18s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000017 done=24/24 makespan=449.4 col=0 (11.12s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000018 done=24/24 makespan=614.2 col=0 (16.25s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000019 done=24/24 makespan=488.3 col=0 (12.76s)
+  overlap_batch      normal         swarmos+EAI+PC+AU  seed=1000020 done=24/24 makespan=549.9 col=0 (14.65s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000001 done=36/36 makespan=571.6 col=0 (8.12s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000002 done=36/36 makespan=447.5 col=0 (6.63s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000003 done=30/36 makespan=None col=0 (47.76s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000004 done=36/36 makespan=538.9 col=0 (7.56s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000005 done=36/36 makespan=641.9 col=0 (9.22s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000006 done=36/36 makespan=590.2 col=0 (8.63s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000007 done=36/36 makespan=723.6 col=0 (10.5s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000008 done=34/36 makespan=None col=0 (45.11s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000009 done=32/36 makespan=None col=0 (46.71s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000010 done=31/36 makespan=None col=0 (51.26s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000011 done=33/36 makespan=None col=0 (46.89s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000012 done=36/36 makespan=551.4 col=0 (7.6s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000013 done=32/36 makespan=None col=0 (46.03s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000014 done=35/36 makespan=None col=0 (44.27s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000015 done=34/36 makespan=None col=0 (46.67s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000016 done=35/36 makespan=None col=0 (48.54s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000017 done=36/36 makespan=544.8 col=0 (7.7s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000018 done=36/36 makespan=525.4 col=0 (7.65s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000019 done=30/36 makespan=None col=0 (48.5s)
+  open_floor_batch   normal         stop_and_wait+F1+F6 seed=1000020 done=36/36 makespan=641.4 col=0 (9.59s)
+  open_floor_batch   normal         swarmos            seed=1000001 done=36/36 makespan=547.3 col=0 (14.18s)
+  open_floor_batch   normal         swarmos            seed=1000002 done=36/36 makespan=449.9 col=0 (11.55s)
+  open_floor_batch   normal         swarmos            seed=1000003 done=36/36 makespan=709.4 col=0 (19.59s)
+  open_floor_batch   normal         swarmos            seed=1000004 done=36/36 makespan=510.4 col=0 (13.38s)
+  open_floor_batch   normal         swarmos            seed=1000005 done=36/36 makespan=539.2 col=0 (13.32s)
+  open_floor_batch   normal         swarmos            seed=1000006 done=35/36 makespan=None col=0 (90.8s)
+  open_floor_batch   normal         swarmos            seed=1000007 done=36/36 makespan=616.9 col=0 (15.43s)
+  open_floor_batch   normal         swarmos            seed=1000008 done=36/36 makespan=659.4 col=0 (16.33s)
+  open_floor_batch   normal         swarmos            seed=1000009 done=36/36 makespan=623.7 col=0 (15.86s)
+  open_floor_batch   normal         swarmos            seed=1000010 done=36/36 makespan=585.2 col=0 (14.27s)
+  open_floor_batch   normal         swarmos            seed=1000011 done=36/36 makespan=629.3 col=0 (15.81s)
+  open_floor_batch   normal         swarmos            seed=1000012 done=35/36 makespan=None col=0 (96.7s)
+  open_floor_batch   normal         swarmos            seed=1000013 done=36/36 makespan=565.1 col=0 (15.09s)
+  open_floor_batch   normal         swarmos            seed=1000014 done=36/36 makespan=507.6 col=0 (12.69s)
+  open_floor_batch   normal         swarmos            seed=1000015 done=36/36 makespan=538.9 col=0 (13.85s)
+  open_floor_batch   normal         swarmos            seed=1000016 done=36/36 makespan=574.9 col=0 (15.31s)
+  open_floor_batch   normal         swarmos            seed=1000017 done=36/36 makespan=607.0 col=0 (15.15s)
+  open_floor_batch   normal         swarmos            seed=1000018 done=36/36 makespan=582.6 col=0 (14.47s)
+  open_floor_batch   normal         swarmos            seed=1000019 done=36/36 makespan=514.3 col=0 (13.17s)
+  open_floor_batch   normal         swarmos            seed=1000020 done=36/36 makespan=538.4 col=0 (13.73s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000001 done=36/36 makespan=547.3 col=0 (20.74s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000002 done=36/36 makespan=449.9 col=0 (15.48s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000003 done=36/36 makespan=709.4 col=0 (26.45s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000004 done=36/36 makespan=510.4 col=0 (17.72s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000005 done=36/36 makespan=539.2 col=0 (18.68s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000006 done=35/36 makespan=None col=0 (180.83s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000007 done=36/36 makespan=616.9 col=0 (22.53s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000008 done=36/36 makespan=659.4 col=0 (25.45s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000009 done=36/36 makespan=623.7 col=0 (23.96s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000010 done=36/36 makespan=585.2 col=0 (21.37s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000011 done=36/36 makespan=629.3 col=0 (22.86s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000012 done=35/36 makespan=None col=0 (179.46s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000013 done=36/36 makespan=565.1 col=0 (23.09s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000014 done=36/36 makespan=507.6 col=0 (18.73s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000015 done=36/36 makespan=538.9 col=0 (22.53s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000016 done=36/36 makespan=574.9 col=0 (22.63s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000017 done=36/36 makespan=607.0 col=0 (24.92s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000018 done=36/36 makespan=582.6 col=0 (23.29s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000019 done=36/36 makespan=514.3 col=0 (19.66s)
+  open_floor_batch   normal         swarmos+EAI        seed=1000020 done=36/36 makespan=538.4 col=0 (20.89s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000001 done=36/36 makespan=621.5 col=0 (23.54s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000002 done=36/36 makespan=469.6 col=0 (17.68s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000003 done=36/36 makespan=605.9 col=0 (24.22s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000004 done=36/36 makespan=707.8 col=0 (33.65s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000005 done=36/36 makespan=565.2 col=0 (21.09s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000006 done=36/36 makespan=593.3 col=0 (23.76s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000007 done=36/36 makespan=568.3 col=0 (22.93s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000008 done=36/36 makespan=506.2 col=0 (17.57s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000009 done=36/36 makespan=797.0 col=0 (35.07s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000010 done=36/36 makespan=693.1 col=0 (27.25s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000011 done=36/36 makespan=701.6 col=0 (29.92s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000012 done=36/36 makespan=492.7 col=0 (17.63s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000013 done=32/36 makespan=None col=0 (201.88s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000014 done=36/36 makespan=590.7 col=0 (22.2s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000015 done=36/36 makespan=535.5 col=0 (20.99s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000016 done=36/36 makespan=557.0 col=0 (20.7s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000017 done=36/36 makespan=582.1 col=0 (23.85s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000018 done=36/36 makespan=808.8 col=0 (32.73s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000019 done=36/36 makespan=620.0 col=0 (24.03s)
+  open_floor_batch   normal         swarmos+EAI+PC     seed=1000020 done=36/36 makespan=574.8 col=0 (23.74s)
+  open_floor_batch   normal         swarmos+AU         seed=1000001 done=36/36 makespan=610.9 col=0 (17.9s)
+  open_floor_batch   normal         swarmos+AU         seed=1000002 done=36/36 makespan=601.5 col=0 (16.92s)
+  open_floor_batch   normal         swarmos+AU         seed=1000003 done=36/36 makespan=648.2 col=0 (18.34s)
+  open_floor_batch   normal         swarmos+AU         seed=1000004 done=36/36 makespan=662.5 col=0 (18.65s)
+  open_floor_batch   normal         swarmos+AU         seed=1000005 done=33/36 makespan=None col=0 (107.49s)
+  open_floor_batch   normal         swarmos+AU         seed=1000006 done=36/36 makespan=636.4 col=0 (19.01s)
+  open_floor_batch   normal         swarmos+AU         seed=1000007 done=33/36 makespan=None col=0 (136.61s)
+  open_floor_batch   normal         swarmos+AU         seed=1000008 done=36/36 makespan=602.0 col=0 (16.7s)
+  open_floor_batch   normal         swarmos+AU         seed=1000009 done=36/36 makespan=750.6 col=0 (21.66s)
+  open_floor_batch   normal         swarmos+AU         seed=1000010 done=36/36 makespan=570.1 col=0 (15.15s)
+  open_floor_batch   normal         swarmos+AU         seed=1000011 done=36/36 makespan=638.2 col=0 (16.46s)
+  open_floor_batch   normal         swarmos+AU         seed=1000012 done=36/36 makespan=503.7 col=0 (13.49s)
+  open_floor_batch   normal         swarmos+AU         seed=1000013 done=36/36 makespan=461.3 col=0 (11.76s)
+  open_floor_batch   normal         swarmos+AU         seed=1000014 done=36/36 makespan=748.9 col=0 (21.53s)
+  open_floor_batch   normal         swarmos+AU         seed=1000015 done=36/36 makespan=622.5 col=0 (17.62s)
+  open_floor_batch   normal         swarmos+AU         seed=1000016 done=36/36 makespan=493.9 col=0 (13.6s)
+  open_floor_batch   normal         swarmos+AU         seed=1000017 done=36/36 makespan=572.7 col=0 (17.2s)
+  open_floor_batch   normal         swarmos+AU         seed=1000018 done=36/36 makespan=660.7 col=0 (19.71s)
+  open_floor_batch   normal         swarmos+AU         seed=1000019 done=36/36 makespan=468.2 col=0 (14.61s)
+  open_floor_batch   normal         swarmos+AU         seed=1000020 done=36/36 makespan=521.1 col=0 (14.71s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000001 done=36/36 makespan=546.4 col=0 (22.88s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000002 done=36/36 makespan=590.4 col=0 (25.79s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000003 done=36/36 makespan=709.7 col=0 (29.05s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000004 done=36/36 makespan=442.5 col=0 (15.13s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000005 done=36/36 makespan=537.7 col=0 (19.92s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000006 done=36/36 makespan=552.7 col=0 (21.39s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000007 done=36/36 makespan=788.7 col=0 (32.55s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000008 done=36/36 makespan=593.3 col=0 (20.68s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000009 done=36/36 makespan=582.0 col=0 (25.39s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000010 done=36/36 makespan=578.0 col=0 (19.39s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000011 done=36/36 makespan=585.6 col=0 (22.38s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000012 done=36/36 makespan=523.5 col=0 (18.43s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000013 done=36/36 makespan=472.6 col=0 (17.14s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000014 done=36/36 makespan=763.5 col=0 (30.8s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000015 done=36/36 makespan=538.2 col=0 (18.76s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000016 done=36/36 makespan=579.8 col=0 (23.02s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000017 done=36/36 makespan=538.9 col=0 (19.7s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000018 done=36/36 makespan=661.3 col=0 (30.75s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000019 done=36/36 makespan=503.3 col=0 (21.94s)
+  open_floor_batch   normal         swarmos+EAI+PC+AU  seed=1000020 done=36/36 makespan=554.9 col=0 (23.22s)
+# Experiment `adv_dev_ablation_r2`
+
+- git: `a6e18041c8151077485fcdb63c6fc1769594cefa+uncommitted-changes`
+- code identity (sha256): `2ca5c3a304070d4595d338492d4f926296dd2f36b5bd7be5cd280ff555467d72`
+- created: 20260927T190833Z
+- seeds: [1000001, 1000002, 1000003, 1000004, 1000005, 1000006, 1000007, 1000008, 1000009, 1000010, 1000011, 1000012, 1000013, 1000014, 1000015, 1000016, 1000017, 1000018, 1000019, 1000020]
+- reference arm: `swarmos`
+- command: `PYTHONPATH=. python3 tools/run_experiment.py --name adv_dev_ablation_r2 --scenarios overlap_batch open_floor_batch --arms stop_and_wait+F1+F6 swarmos swarmos+EAI swarmos+EAI+PC swarmos+AU swarmos+EAI+PC+AU --reference swarmos --seeds 1000001 1000002 1000003 1000004 1000005 1000006 1000007 1000008 1000009 1000010 1000011 1000012 1000013 1000014 1000015 1000016 1000017 1000018 1000019 1000020 --workers 4 --target-pct 20`
+
+Makespan for runs that did not finish is CENSORED at the scenario cap. That understates the failing arm's true time, so it flatters the arm that finishes less; a censored target is marked MET only when the treatment never failed a seed the reference finished.
+
+## open_floor_batch/normal
+
+| arm | DNF | tasks done (mean) | makespan censored (mean s) | collisions | margin breaches | safety FAIL runs | wait-cycles (mean) | persistent deadlocks >=1 s (mean) | stall releases (mean) | livelock episodes (mean) | replans (mean) | path eff. | min sep (m) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 10/20 | 34.3 | 1788.835 | 0 | 0 | 0 | 488.75 | 486.6 | 59.9 | 3.2 | 4261.15 | 0.9843 | 0.7522 |
+| swarmos | 2/20 | 35.9 | 814.975 | 0 | 0 | 0 | 117.95 | 45.5 | 5.75 | 0.1 | 4613.3 | 1.004 | 0.7508 |
+| swarmos+AU | 2/20 | 35.7 | 838.67 | 0 | 0 | 0 | 443.2 | 118.0 | 31.3 | 0.3 | 7728.45 | 1.0017 | 0.75 |
+| swarmos+EAI | 2/20 | 35.9 | 814.975 | 0 | 0 | 0 | 117.95 | 45.5 | 5.75 | 0.1 | 4613.3 | 1.004 | 0.7508 |
+| swarmos+EAI+PC | 1/20 | 35.8 | 729.555 | 0 | 0 | 0 | 186.1 | 54.65 | 34.25 | 0.1 | 5707.4 | 1.0008 | 0.7521 |
+| swarmos+EAI+PC+AU | 0/20 | 36.0 | 582.15 | 0 | 0 | 0 | 66.6 | 15.9 | 3.3 | 0.0 | 1671.85 | 1.0045 | 0.7501 |
+
+| arm | finish rate | makespan finished (mean / median s) | t90 censored (mean s) | throughput (tasks/min) | WAIT | YIELD | REROUTE | stop events | backtracks | conflicts / resolved | predicted | comm holds | invariant failures |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0.5 | 577.67 / 561.5 | 1148.03 | 2.225 | 59615.45 | 0.0 | 2025.65 | 1266.25 | 407.35 | 824.95 / 823.2 | 0.0 | None | 0 |
+| swarmos | 0.9 | 572.1944 / 570.0 | 473.58 | 3.5055 | 3314.0 | 12659.25 | 2250.75 | 929.25 | 203.95 | 125.3 / 122.05 | 222.05 | 0.0 | 0 |
+| swarmos+AU | 0.9 | 598.5222 / 606.45 | 520.91 | 3.3775 | 8171.2 | 14299.55 | 3777.55 | 944.15 | 419.7 | 215.3 / 212.05 | 497.6 | 0.0 | 0 |
+| swarmos+EAI | 0.9 | 572.1944 / 570.0 | 473.58 | 3.5055 | 3314.0 | 12659.25 | 2250.75 | 929.25 | 203.95 | 125.3 / 122.05 | 222.05 | 0.0 | 0 |
+| swarmos+EAI+PC | 0.95 | 610.0579 / 590.7 | 595.81 | 3.4665 | 5455.0 | 10503.15 | 2777.7 | 476.0 | 252.95 | 102.15 / 99.0 | 295.3 | 0.0 | 0 |
+| swarmos+EAI+PC+AU | 1.0 | 582.15 / 566.45 | 479.435 | 3.785 | 1022.65 | 5540.75 | 773.6 | 377.4 | 105.0 | 57.3 / 54.7 | 153.8 | 0.0 | 0 |
+
+| arm | floor entries (total) | floor pair-ticks (mean) | frozen pairs (total) | runs with a frozen pair | recovery actions (mean: stall releases + REROUTE) |
+|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0 | 0.0 | 0 | 0 | 2085.55 |
+| swarmos | 0 | 0.0 | 0 | 0 | 2256.5 |
+| swarmos+AU | 0 | 0.0 | 0 | 0 | 3808.85 |
+| swarmos+EAI | 0 | 0.0 | 0 | 0 | 2256.5 |
+| swarmos+EAI+PC | 0 | 0.0 | 0 | 0 | 2811.95 |
+| swarmos+EAI+PC+AU | 0 | 0.0 | 0 | 0 | 776.9 |
+
+Lookahead (observe-only scoring):
+
+- `swarmos`: precision 0.5589, recall 0.9844, mean lead 16.7625 ticks (TP 2467, FP 1947, FN 39)
+- `swarmos+AU`: precision 0.381, recall 0.8514, mean lead 16.004 ticks (TP 3666, FP 5956, FN 640)
+- `swarmos+EAI`: precision 0.5589, recall 0.9844, mean lead 16.7625 ticks (TP 2467, FP 1947, FN 39)
+- `swarmos+EAI+PC`: precision 0.3379, recall 0.9692, mean lead 19.5985 ticks (TP 1980, FP 3880, FN 63)
+- `swarmos+EAI+PC+AU`: precision 0.366, recall 0.9738, mean lead 20.3785 ticks (TP 1116, FP 1933, FN 30)
+
+| comparison | metric | n | mean improvement % | 95% CI % | wins | >= target? |
+|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 vs swarmos | makespan_censored_s | 20 | -200.75 | [-305.0, -96.49] | 5/20 | not met |
+| stop_and_wait+F1+F6 vs swarmos | makespan_s (both finished) | 8 | -5.61 | [-15.75, 4.52] | 3/8 | not met |
+| stop_and_wait+F1+F6 vs swarmos | t90_censored_s | 20 | -141.38 | [-248.98, -33.77] | 4/20 | not met |
+| stop_and_wait+F1+F6 vs swarmos | tasks_complete | 20 | -4.44 | [-7.41, -1.47] | 2/20 | not met |
+| swarmos+AU vs swarmos | makespan_censored_s | 20 | -39.19 | [-102.35, 23.96] | 10/20 | not met |
+| swarmos+AU vs swarmos | makespan_s (both finished) | 16 | -6.45 | [-16.56, 3.67] | 8/16 | not met |
+| swarmos+AU vs swarmos | t90_censored_s | 20 | -10.2 | [-27.06, 6.66] | 9/20 | not met |
+| swarmos+AU vs swarmos | tasks_complete | 20 | -0.55 | [-1.86, 0.76] | 2/20 | not met |
+| swarmos+EAI vs swarmos | makespan_censored_s | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI vs swarmos | makespan_s (both finished) | 18 | 0.0 | [0.0, 0.0] | 0/18 | not met |
+| swarmos+EAI vs swarmos | t90_censored_s | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI vs swarmos | tasks_complete | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_censored_s | 20 | -20.76 | [-68.36, 26.84] | 8/20 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_s (both finished) | 17 | -8.71 | [-17.58, 0.16] | 6/17 | not met |
+| swarmos+EAI+PC vs swarmos | t90_censored_s | 20 | -26.25 | [-82.61, 30.11] | 12/20 | not met |
+| swarmos+EAI+PC vs swarmos | tasks_complete | 20 | -0.27 | [-1.53, 0.99] | 2/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_censored_s | 20 | 5.28 | [-9.19, 19.75] | 13/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_s (both finished) | 18 | -3.25 | [-11.83, 5.34] | 11/18 | not met |
+| swarmos+EAI+PC+AU vs swarmos | t90_censored_s | 20 | -1.64 | [-6.06, 2.77] | 8/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | tasks_complete | 20 | 0.29 | [-0.13, 0.7] | 2/20 | not met |
+
+- `stop_and_wait+F1+F6 vs swarmos`: treatment-only DNF seeds [1000003, 1000008, 1000009, 1000010, 1000011, 1000013, 1000014, 1000015, 1000016, 1000019]; reference-only DNF seeds [1000006, 1000012]
+
+- `swarmos+AU vs swarmos`: treatment-only DNF seeds [1000005, 1000007]; reference-only DNF seeds [1000006, 1000012]
+
+- `swarmos+EAI vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI+PC vs swarmos`: treatment-only DNF seeds [1000013]; reference-only DNF seeds [1000006, 1000012]
+
+- `swarmos+EAI+PC+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds [1000006, 1000012]
+
+## overlap_batch/normal
+
+| arm | DNF | tasks done (mean) | makespan censored (mean s) | collisions | margin breaches | safety FAIL runs | wait-cycles (mean) | persistent deadlocks >=1 s (mean) | stall releases (mean) | livelock episodes (mean) | replans (mean) | path eff. | min sep (m) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 14/20 | 21.2 | 2277.705 | 0 | 0 | 0 | 110.25 | 106.4 | 0.4 | 4.1 | 518.05 | 0.5645 | 0.752 |
+| swarmos | 0/20 | 24.0 | 491.605 | 0 | 0 | 0 | 28.15 | 2.15 | 1.15 | 1.25 | 625.35 | 0.8141 | 0.7517 |
+| swarmos+AU | 0/20 | 24.0 | 497.14 | 0 | 0 | 0 | 37.85 | 7.85 | 0.55 | 1.1 | 727.65 | 0.8333 | 0.752 |
+| swarmos+EAI | 0/20 | 24.0 | 491.605 | 0 | 0 | 0 | 28.15 | 2.15 | 1.15 | 1.25 | 625.35 | 0.8141 | 0.7517 |
+| swarmos+EAI+PC | 0/20 | 24.0 | 471.805 | 0 | 0 | 0 | 35.25 | 13.5 | 0.9 | 0.75 | 729.15 | 0.8481 | 0.7539 |
+| swarmos+EAI+PC+AU | 0/20 | 24.0 | 526.515 | 0 | 0 | 0 | 37.35 | 9.8 | 0.7 | 1.4 | 856.8 | 0.835 | 0.7503 |
+
+| arm | finish rate | makespan finished (mean / median s) | t90 censored (mean s) | throughput (tasks/min) | WAIT | YIELD | REROUTE | stop events | backtracks | conflicts / resolved | predicted | comm holds | invariant failures |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0.3 | 592.35 / 497.05 | 908.34 | 1.0805 | 6873.75 | 0.0 | 227.75 | 303.1 | 105.8 | 202.05 / 201.75 | 0.0 | None | 0 |
+| swarmos | 1.0 | 491.605 / 484.0 | 412.275 | 3.0155 | 236.15 | 2442.55 | 278.2 | 168.7 | 45.2 | 36.55 / 35.3 | 73.55 | 0.0 | 0 |
+| swarmos+AU | 1.0 | 497.14 / 504.85 | 412.525 | 2.9775 | 340.15 | 2587.35 | 324.15 | 194.55 | 79.6 | 40.9 / 39.35 | 79.9 | 0.0 | 0 |
+| swarmos+EAI | 1.0 | 491.605 / 484.0 | 412.275 | 3.0155 | 236.15 | 2442.55 | 278.2 | 168.7 | 45.2 | 36.55 / 35.3 | 73.55 | 0.0 | 0 |
+| swarmos+EAI+PC | 1.0 | 471.805 / 468.95 | 401.37 | 3.124 | 353.25 | 2674.6 | 330.1 | 174.6 | 84.6 | 34.0 / 32.05 | 74.9 | 0.0 | 0 |
+| swarmos+EAI+PC+AU | 1.0 | 526.515 / 514.75 | 436.085 | 2.811 | 448.45 | 2992.95 | 388.6 | 211.1 | 97.85 | 38.2 / 36.6 | 88.2 | 0.0 | 0 |
+
+| arm | floor entries (total) | floor pair-ticks (mean) | frozen pairs (total) | runs with a frozen pair | recovery actions (mean: stall releases + REROUTE) |
+|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0 | 0.0 | 0 | 0 | 228.15 |
+| swarmos | 0 | 0.0 | 0 | 0 | 279.35 |
+| swarmos+AU | 0 | 0.0 | 0 | 0 | 324.7 |
+| swarmos+EAI | 0 | 0.0 | 0 | 0 | 279.35 |
+| swarmos+EAI+PC | 0 | 0.0 | 0 | 0 | 331.0 |
+| swarmos+EAI+PC+AU | 0 | 0.0 | 0 | 0 | 389.3 |
+
+Lookahead (observe-only scoring):
+
+- `swarmos`: precision 0.4874, recall 0.9767, mean lead 15.515 ticks (TP 714, FP 751, FN 17)
+- `swarmos+AU`: precision 0.5016, recall 0.9707, mean lead 15.2045 ticks (TP 794, FP 789, FN 24)
+- `swarmos+EAI`: precision 0.4874, recall 0.9767, mean lead 15.515 ticks (TP 714, FP 751, FN 17)
+- `swarmos+EAI+PC`: precision 0.4476, recall 0.9735, mean lead 19.7395 ticks (TP 662, FP 817, FN 18)
+- `swarmos+EAI+PC+AU`: precision 0.4215, recall 0.966, mean lead 18.8265 ticks (TP 738, FP 1013, FN 26)
+
+| comparison | metric | n | mean improvement % | 95% CI % | wins | >= target? |
+|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 vs swarmos | makespan_censored_s | 20 | -383.08 | [-506.29, -259.88] | 3/20 | not met |
+| stop_and_wait+F1+F6 vs swarmos | makespan_s (both finished) | 6 | -14.59 | [-52.73, 23.55] | 3/6 | not met |
+| stop_and_wait+F1+F6 vs swarmos | t90_censored_s | 20 | -123.21 | [-234.19, -12.23] | 6/20 | not met |
+| stop_and_wait+F1+F6 vs swarmos | tasks_complete | 20 | -11.67 | [-20.26, -3.07] | 0/20 | not met |
+| swarmos+AU vs swarmos | makespan_censored_s | 20 | -3.58 | [-14.93, 7.77] | 13/20 | not met |
+| swarmos+AU vs swarmos | makespan_s (both finished) | 20 | -3.58 | [-14.93, 7.77] | 13/20 | not met |
+| swarmos+AU vs swarmos | t90_censored_s | 20 | -1.72 | [-11.35, 7.91] | 11/20 | not met |
+| swarmos+AU vs swarmos | tasks_complete | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI vs swarmos | makespan_censored_s | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI vs swarmos | makespan_s (both finished) | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI vs swarmos | t90_censored_s | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI vs swarmos | tasks_complete | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_censored_s | 20 | 1.85 | [-7.49, 11.19] | 12/20 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_s (both finished) | 20 | 1.85 | [-7.49, 11.19] | 12/20 | not met |
+| swarmos+EAI+PC vs swarmos | t90_censored_s | 20 | 1.59 | [-5.76, 8.94] | 10/20 | not met |
+| swarmos+EAI+PC vs swarmos | tasks_complete | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_censored_s | 20 | -8.69 | [-16.8, -0.58] | 4/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_s (both finished) | 20 | -8.69 | [-16.8, -0.58] | 4/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | t90_censored_s | 20 | -6.98 | [-16.39, 2.44] | 9/20 | not met |
+| swarmos+EAI+PC+AU vs swarmos | tasks_complete | 20 | 0.0 | [0.0, 0.0] | 0/20 | not met |
+
+- `stop_and_wait+F1+F6 vs swarmos`: treatment-only DNF seeds [1000001, 1000003, 1000004, 1000005, 1000006, 1000007, 1000010, 1000011, 1000012, 1000014, 1000016, 1000018, 1000019, 1000020]; reference-only DNF seeds none
+
+- `swarmos+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI+PC vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI+PC+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+

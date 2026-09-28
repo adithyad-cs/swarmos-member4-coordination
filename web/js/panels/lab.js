@@ -86,6 +86,17 @@ export class LabPanel {
           any robot is contained. Off by default, and off changes nothing: the trace
           hash is identical either way.</div>
       </div>
+      <div class="field">
+        <label class="field__label" for="lab-advanced">Advanced intelligence</label>
+        <select class="field__control" id="lab-advanced">
+          <option value="off" selected>Off (shipped product)</option>
+          <option value="on">Edge AI + proactive coordination + live auction</option>
+        </select>
+        <div class="field__hint">Edge AI predicts pair conflicts and the robot may
+          pre-hold; tasks are allocated by robot bids exchanged over the radio under
+          WMS leases. Advisory only: the safety kernel still decides every motion.
+          Live counters appear in Analytics.</div>
+      </div>
       <div class="btn-row">
         <button class="btn btn--primary" id="lab-start">Start</button>
         <button class="btn" id="lab-pause">Pause</button>
@@ -133,6 +144,7 @@ export class LabPanel {
       fleet_size: Number(this.el.querySelector("#lab-fleet").value),
       seed: Number(this.el.querySelector("#lab-seed").value),
       integrity: this.el.querySelector("#lab-integrity").value === "on",
+      advanced: this.el.querySelector("#lab-advanced").value === "on",
     };
   }
 

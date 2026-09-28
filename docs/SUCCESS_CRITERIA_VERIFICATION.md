@@ -1,5 +1,36 @@
 # Success criteria - measured, including the two defects the measurement found
 
+> **CURRENT C2 STATUS (2026-09-27): MET for the product-default configuration,
+> under frozen protocol v3.** Full result: `docs/C2_V3_PRODUCT_RESULT.md`;
+> narrative: `docs/JUDGE_NARRATIVE_C2_V3.md`. All figures are simulation.
+>
+> - **Primary** (`overlap_batch`, SWARMOS product vs textbook stop-and-wait +
+>   F1 + F6, 40 fresh seeds 600001-600040):
+>   - capped time reduction **+48.9 %, 95 % CI [+35.3, +62.5]**;
+>   - finish rate SWARMOS 40/40 vs reference 21/40;
+>   - no seed failed only by SWARMOS;
+>   - all five frozen conditions passed.
+> - **Speed caveat:** on seeds where both finished, **+17.5 %, CI [+1.4,
+>   +33.6]**. That is below 20 % if speed alone is considered; the primary gain
+>   is substantially reliability.
+> - **Open floor (secondary):**
+>   - capped **+33.7 %, CI [+4.5, +62.8]**;
+>   - finish rate 40/40 vs 15/40;
+>   - SWARMOS is **slower** when both finish (-44.4 %, CI [-105.8, +17.1]).
+> - **Safety (240 runs):**
+>   - 0 collisions, 0 invariant failures;
+>   - SWARMOS had 0 margin breaches and 0 frozen pairs;
+>   - the only margin breach was the tuned reference arm, open floor, 0.748 m.
+> - **Integrity:**
+>   - replay 240/240 exact;
+>   - code identity `f3dabbf0d732bfc218a1ab31f906299ca1baee5c4b1de148534b16c0d023094f`.
+>
+> **The C2 sections below are HISTORY and are SUPERSEDED.** They cover the
+> avg_completion_s measurement (NOT MET, -19.3 %) and the 2026-09-26
+> fixed-batch measurement (NOT MET, parity). They are kept unchanged as the
+> record of how the result was reached: v1 NOT MET, then root cause, then
+> fixes, then v2 on the evaluated arm, then v3 on the product.
+
 SWARMOS / SIH26123. This document records what was measured, on what code, with
 what result. It replaced an earlier version that reported **C1 PASS** and noted
 that the stop-and-wait baseline was "also collision-free". Both of those
@@ -234,6 +265,9 @@ us the safety property - not that they bought it.
 
 ## C2 - 20 percent reduction in average task completion time
 
+> SUPERSEDED (history). Current C2 status: the box at the top of this file and
+> `docs/C2_V3_PRODUCT_RESULT.md`.
+
 **Criterion.** SwarmOS reduces `avg_completion_s` by at least 20 percent against
 the stop-and-wait baseline, paired by scenario and seed.
 
@@ -307,6 +341,9 @@ Remaining work on C2, in the order that would change a conclusion:
 
 ## Final powered result
 
+> SUPERSEDED (history): an avg_completion_s measurement from before the fixed-batch
+> protocol. Current C2 status: the box at the top of this file.
+
 Reproduced with `tools/verify_criteria_powered.py 9000 9`; 3 scenarios x 9 seeds
 x 2 arms = 54 runs, 27 pairs, wall clock 2319.9 s. Log:
 `reports/criteria_after_envelope_fix.log`.
@@ -356,3 +393,170 @@ reading of C2 today is "not met on a biased statistic, and not yet measured on a
 unbiased one", and fixing the statistic is the first roadmap item - not because
 it is likely to flip the sign, but because the current number cannot support
 either conclusion.
+
+---
+
+## 2026-09-26 addendum - C2 re-measured the way SIH defines it
+
+> SUPERSEDED (history) by the frozen v1 -> v2 -> v3 evaluations of
+> 2026-09-27. Current C2 status: the box at the top of this file and
+> `docs/C2_V3_PRODUCT_RESULT.md`.
+
+The section above scored C2 on `avg_completion_s` over an open arrival stream,
+which is survivorship-biased (only finished tasks count, and a run finished
+1-28 tasks). SIH26123 asks for *total task-completion time versus traditional
+stop-and-wait on overlapping paths*. That is only defined for a FIXED workload,
+so it is now measured as **makespan on a fixed batch**, the definition used by
+the lifelong-MAPF literature (Maoudj et al., CASE 2024).
+
+Every number below comes from a stored experiment directory containing the
+config, git revision, every run with its trace hash, and the summary. Anyone
+can re-run a stored run and check the hash:
+
+    PYTHONPATH=. python3 tools/replay_check.py reports/experiments/<dir>
+
+### Setup
+
+- `overlap_batch`: single-file aisles, picks on the south wall, drops on the
+  north wall, so loaded and empty robots meet head-on in the same aisles.
+  8 robots, 24 tasks, cap 3000 s.
+- `open_floor_batch`: the `rush_50` two-way-aisle floor, 12 robots, 36 tasks,
+  cap 3000 s.
+- Arms:
+  - `stop_and_wait`: textbook, `STUCK_TICKS=30`. This is the SIH arm.
+  - `baseline`: tuned, `STUCK_TICKS=8`.
+  - `swarmos`: the product policy.
+  - flagged variants of `swarmos`.
+  - `noop`: the negative control.
+- 9 paired seeds (11 13 17 19 23 29 31 37 41), with a Student-t 95% CI on the
+  per-seed percentage reduction.
+- A run that hits the cap is did-not-finish (DNF), and its makespan is CENSORED
+  at the cap. That understates the failing arm's time, so censoring can never
+  create an improvement.
+
+### Defects the new instruments found first (fixed before measuring)
+
+1. **Backtrack jog outside the verified envelope.**
+   - A fresh path began at the centre of the robot's current cell. A robot a
+     few cm past it drove back first.
+   - That motion lay outside the straight swept segment the kernel clears. It
+     pushed pairs inside the 0.75 m floor, where the kernel vetoes every move
+     of both robots.
+   - Fixed in the engine (`_drop_backtrack`), for all arms.
+   - Measured on seed 11: deadlock cycles 221 -> 27, stall releases in the
+     hundreds -> 1.
+2. **Idle robots parked on drop stations.** A drop station is a cell in a
+   single-file row, so a parked robot blocked it. Batch scenarios now park
+   idle robots on the perimeter ring, for both arms.
+
+### Result (`reports/experiments/20260926T212555Z_c2_benchmark`, `..._deadlock_breakers`)
+
+| scenario | arm | DNF | mean makespan, censored (s) | persistent deadlocks >=1 s | collisions |
+|---|---|---|---|---|---|
+| overlap_batch | stop_and_wait | 1/9 | 855 | 31.7 | 0 |
+| overlap_batch | baseline (tuned) | 0/9 | 569 | 3.4 | 0 |
+| overlap_batch | swarmos | 4/9 | 1718 | 257.1 | 0 |
+| overlap_batch | swarmos + mutual-hold break + separating exemption | **0/9** | **619** | **8.1** | 0 |
+| open_floor_batch | stop_and_wait | 3/9 | 1379 | 199.8 | 0 |
+| open_floor_batch | baseline (tuned) | 3/9 | 1380 | 4.0 | 0 |
+| open_floor_batch | swarmos | 8/9 | 2773 | 34.7 | 0 |
+| open_floor_batch | swarmos + both breakers | 4/9 | 1725 | 101.2 | 0 |
+| both | noop (no coordination) | 0/9 | 311 / 448 | - | **316 / 639** |
+
+**Paired makespan reduction vs textbook stop-and-wait (positive = SWARMOS faster):**
+
+- `overlap_batch`:
+  - `swarmos`: -226.6%, CI [-449.6, -3.6]
+  - `swarmos` + both breakers: **-5.5%, CI [-42.3, +31.2]** (parity)
+- `open_floor_batch`:
+  - `swarmos`: -245.1%, CI [-412.5, -77.7]
+  - `swarmos` + both breakers: -138.4%, CI [-315.6, +38.8]
+
+**C2 verdict: NOT MET.**
+
+- The best SWARMOS variant reaches statistical parity with textbook
+  stop-and-wait on the overlapping-paths floor and still trails it on the open
+  floor.
+- The tuned baseline beats both, which shows how much of this benchmark comes
+  down to the deadlock-recovery timeout rather than to negotiation.
+- This is published as measured.
+- The no-coordination control is fastest only because it drives through other
+  robots: 316-639 contact violations. That is why fast-and-unsafe is not a
+  comparison arm.
+
+### What did help, and what did not (ablation)
+
+| change | effect on SWARMOS (vs `swarmos`) | adopted? |
+|---|---|---|
+| backtrack fix (engine, all arms) | removed the dominant wedge on the traced seed | yes (defect fix) |
+| mutual-hold break (ladder) | overlap: persistent deadlocks 257 -> 15; open floor: WORSE (DNF 8 -> 9) | not on its own |
+| + separating-motion exemption (kernel) | overlap DNF 4 -> 0, makespan 1718 -> 619 s; open-floor DNF 8 -> 4 | see safety evidence below |
+| one-way lanes on single-file segments | worse on both floors (overlap DNF 8/9) | no - rejected |
+| observe-only lookahead | identical motion (same trace); adds prediction scoring | yes (explainability only) |
+
+### Safety evidence for the separating-motion exemption
+
+- Its first version collided in 5 of 6 configurations. That was before the
+  backtrack fix, whose off-segment jog breaks the exemption's reasoning. The
+  version measured here is the same rule after that fix.
+- 18 benchmark runs: 0 collisions.
+- `..._exemption_safety`: `rush_50` (50 robots), `narrow_aisle_deadlock`,
+  `blocked_aisle` and `corridor_demo`, 9 seeds x 3000 ticks, 36 runs:
+  0 collisions, 0 invariant failures.
+- `..._comm_degradation`: 9 radio conditions x 5 seeds: 0 collisions.
+- 9000-tick runs: see the long-run section below.
+
+### Communication degradation (`..._comm_degradation`, rush_50, 16 robots, 1200 ticks, 5 seeds)
+
+| condition | swarmos (fallback ON) collisions | swarmos without fallback collisions |
+|---|---|---|
+| normal | 0 | 0 |
+| 10% loss | 0 | 0 |
+| 30% loss | 0 | 2 |
+| 100 ms latency | 0 | 0 |
+| 500 ms latency | 0 | 3 |
+| 3 s fleet-wide outage | 0 | 12 |
+| 6 s fleet-wide outage | 0 | 15 |
+| single-robot blackout | 0 | 4 |
+| EAST zone partition | 0 | 1 |
+
+Task completion stays in the same band across conditions (5-7 tasks per run
+in this short window). The fleet degrades gracefully instead of failing.
+Before this work the product shipped without the fallback: the right-hand
+column was the real behaviour of the system.
+
+### Predictive lookahead, scored (observe-only)
+
+| floor | precision | recall | mean lead |
+|---|---|---|---|
+| open floor | 0.71 | 0.95 | 16.4 ticks (1.6 s) |
+| single-file overlap floor | 0.18 | 0.90 | 17.6 ticks |
+
+Precision is low on the single-file floor: many predicted head-on meetings
+never reach the conflict band because the ladder holds one robot earlier. Per
+the scoring rule, that counts as a false positive.
+
+### Long-run safety (`..._long_run_safety`, 9 seeds; rush_50 at 50 robots for 9000 ticks, narrow_aisle_deadlock and blocked_aisle to their scenario end)
+
+| scenario | arm | collisions | invariant FAIL runs | margin breaches (sum) | min sep (m) | tasks (mean) |
+|---|---|---|---|---|---|---|
+| rush_50 | swarmos | 0 | 0 | 88 | 0.724 | 24.2 |
+| rush_50 | swarmos + both breakers | 0 | 0 | 259 | 0.722 | 38.3 |
+| narrow_aisle_deadlock | swarmos | 0 | 0 | 5 | 0.730 | 5.6 |
+| narrow_aisle_deadlock | swarmos + both breakers | 0 | 0 | 4 | 0.740 | 6.2 |
+| blocked_aisle | swarmos | 0 | 0 | 21 | 0.722 | 8.8 |
+| blocked_aisle | swarmos + both breakers | 0 | 0 | 31 | 0.727 | 10.6 |
+
+**Decision on the breakers: kept behind their flags, OFF in the product.**
+
+- Across 126 runs the separating-motion exemption produced no collision and no
+  invariant failure, and it improves throughput.
+- But it is a relaxation of the safety kernel's veto, and it measurably spends
+  more of the safety margin: margin breaches on the dense floor rose from 88 to
+  259, with minimum separation still >= 0.722 m.
+- The project rule is not to weaken the kernel, so this is presented as an
+  evaluated option with its evidence, not switched on silently.
+- The mutual-hold break alone made the open floor worse, so it is not enabled
+  on its own either.
+- Enable both with `SwarmPolicy(mutual_hold_break=True,
+  separating_exemption=True)`, or the `swarmos_mhb_sep` experiment arm.

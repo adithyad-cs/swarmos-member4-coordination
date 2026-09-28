@@ -1,0 +1,29 @@
+# Comm-degradation safety measurement, before/after the perception fallback
+# 3 seeds (11 13 17) x 1200 ticks; rush_50 fleet 16, narrow_aisle_deadlock fleet 24
+# fb=0: kernel sees radio peers only (code as it stood); fb=1: perception fallback on
+# faults: loss30 @t100, lat500 @t100, outage6s = 100% loss for 60 ticks @t300,
+#         blackout1 = COMM_BLACKOUT one robot @t300, partitionE = EAST zone 300 ticks @t100
+fb=0 rush_50                normal      collisions=0 tasks=14 ['c5d61678', '0599fae5', 'cf3f0baa']
+fb=0 rush_50                loss30      collisions=6 tasks=13 ['6574184c', '04976855', 'cbac3645']
+fb=0 rush_50                lat500      collisions=1 tasks=19 ['69d9bf48', '675343b3', 'adde3a33']
+fb=0 rush_50                outage6s    collisions=9 tasks=19 ['f9123924', '7de3cf6d', '0a53497d']
+fb=0 rush_50                blackout1   collisions=3 tasks=20 ['4ee89c68', 'd10d1882', '3f7e5b12']
+fb=0 rush_50                partitionE  collisions=1 tasks=15 ['704f8722', '90818321', '5a9a9729']
+fb=0 narrow_aisle_deadlock  normal      collisions=0 tasks=9 ['aa536c26', '12ecbce8', '9ed2bf21']
+fb=0 narrow_aisle_deadlock  loss30      collisions=10 tasks=8 ['022987ba', '0f0225d0', 'e8ac839a']
+fb=0 narrow_aisle_deadlock  lat500      collisions=2 tasks=12 ['a20deb25', '3470eed4', '3a588a85']
+fb=0 narrow_aisle_deadlock  outage6s    collisions=20 tasks=14 ['739b9070', '47dd174c', 'da279bab']
+fb=0 narrow_aisle_deadlock  blackout1   collisions=0 tasks=11 ['c7a01b8c', '3b0065a6', 'b636199e']
+fb=0 narrow_aisle_deadlock  partitionE  collisions=0 tasks=10 ['aa536c26', '1168c756', '220f845f']
+fb=1 rush_50                normal      collisions=0 tasks=14 ['c5d61678', '0599fae5', 'cf3f0baa']
+fb=1 rush_50                loss30      collisions=0 tasks=16 ['57866065', 'b428a6dd', '3597eb3f']
+fb=1 rush_50                lat500      collisions=0 tasks=9 ['e1b3a2bb', '00cc6974', '175d4445']
+fb=1 rush_50                outage6s    collisions=0 tasks=16 ['84431ee0', '0c1c3333', '9df9648d']
+fb=1 rush_50                blackout1   collisions=0 tasks=15 ['f0b0e671', '0599fae5', '476d7816']
+fb=1 rush_50                partitionE  collisions=0 tasks=14 ['1202a837', '90818321', 'dfe31011']
+fb=1 narrow_aisle_deadlock  normal      collisions=0 tasks=9 ['aa536c26', '12ecbce8', '9ed2bf21']
+fb=1 narrow_aisle_deadlock  loss30      collisions=0 tasks=4 ['f344a421', 'e177c9cc', '1643ac66']
+fb=1 narrow_aisle_deadlock  lat500      collisions=0 tasks=13 ['c74f32d4', '4d6c4541', '52b97f38']
+fb=1 narrow_aisle_deadlock  outage6s    collisions=0 tasks=10 ['48fcaa22', 'cdec158b', '2c732134']
+fb=1 narrow_aisle_deadlock  blackout1   collisions=0 tasks=11 ['c7a01b8c', '3b0065a6', 'b636199e']
+fb=1 narrow_aisle_deadlock  partitionE  collisions=0 tasks=10 ['aa536c26', '1168c756', '220f845f']

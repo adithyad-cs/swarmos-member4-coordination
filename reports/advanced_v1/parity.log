@@ -1,0 +1,11 @@
+{
+ "kind": "forest",
+ "horizon_ticks": 25,
+ "shipped_sha256": "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c",
+ "refit_sha256": "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c",
+ "refit_reproduces_artifact": true,
+ "test_rows": 292602,
+ "max_abs_prob_diff": 0.0,
+ "mean_abs_prob_diff": 0.0,
+ "decision_disagreements": 0
+}

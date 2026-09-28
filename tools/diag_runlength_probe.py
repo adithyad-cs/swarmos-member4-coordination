@@ -39,5 +39,3 @@ while next_cp < len(CHECKPOINTS):
              statuses.get("WAITING", 0), k["collisions"], k["tasks_pending"],
              k["stall_releases"]))
     next_cp += 1
-
-# File contains AI-generated response based on internal company sources

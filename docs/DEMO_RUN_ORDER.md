@@ -110,20 +110,22 @@ working. That is our most novel contribution."
 with SWARMOS arbitration and once with a baseline. Identical up to the tick where
 the two policies first disagree - and we show you that tick."
 
-Then, deliberately: "Two results, and I will give you both.
+Then say: "What you are watching is one seed, an illustration. This live view
+still runs the pre-v3 SWARMOS settings. The numbers I am about to quote come
+from a frozen simulation benchmark, not from this screen."
 
-Zero collisions in 27 paired 9000-tick runs - that criterion is met. But the
-baseline also scored zero, so zero collisions proves we are safe, not that we are
-better.
+Then use the lines of **Beat 5 (C2 v3 PRODUCT result)** in the addendum below,
+quoted exactly, caveats included:
 
-Our throughput target was 20 percent over baseline. We measured minus 19 percent,
-with a 95 percent confidence interval of minus 36 to minus 3. We did not hit it,
-and we are telling you rather than picking a friendlier chart. We also found out
-why: in these scenarios the task supply runs out before the run does, so the
-comparison is measuring an empty warehouse, and `avg_completion_s` is
-survivorship-biased - a policy that finishes 3 tasks looks 'faster' than one that
-finishes 12. Fixing the statistic is our next work item, and it is written up in
-`docs/SUCCESS_CRITERIA_VERIFICATION.md`."
+- +48.9 %, CI +35.3 to +62.5;
+- 40/40 vs 21/40;
+- +17.5 % common-finish;
+- open floor slower when both finish.
+
+(Superseded script, kept for the record: the earlier version of this beat
+quoted "minus 19 percent, CI minus 36 to minus 3". That was the old
+avg_completion_s statistic, before the fixed-batch protocol. Never quote it
+as current.)
 
 This beat wins more credit than a fake win would. Judges have seen dozens of
 teams claim a round improvement number with n=1.
@@ -137,8 +139,9 @@ teams claim a round improvement number with n=1.
 **Say:** "Every run emits a trace hash. Same scenario and same seed gives a
 byte-identical hash, so any incident in this system can be replayed exactly.
 For a safety-critical fleet that is the difference between a bug report and an
-investigation. 575 automated tests, six modules, and the coordination decision
-budget is 100 milliseconds a tick with measured headroom."
+investigation. 672 automated tests, six modules, and the coordination decision
+budget is 100 milliseconds a tick with measured headroom. Every one of the 240
+C2 benchmark runs replays bit-exactly."
 
 Stop talking. Invite questions.
 
@@ -155,7 +158,69 @@ Stop talking. Invite questions.
 
 ## What never to do on stage
 
-- Do not claim the 20 percent throughput target was met.
+- Do not claim SWARMOS is 20 percent faster in general. C2 is met on the
+  overlapping-paths floor for the product default (+48.9 %, mostly
+  reliability). Common-finish speed is +17.5 %, and the open floor is slower
+  when both finish.
+- Do not present the live Compare tab as the benchmark result.
 - Do not call the ML layer a safety feature. It is advisory, by design.
 - Do not resize the window mid-demo.
 - Do not open a code editor. If asked, open the file they asked for and nothing else.
+
+---
+
+## Addendum (2026-09-26) - new beats, all backed by stored measurements
+
+### Beat 3b - predicted conflict, explained (use `corridor_demo`)
+
+1. In the Lab, pick scenario `corridor_demo` (6 robots, 12 tasks, single-file
+   aisles), seed 11, then press Start.
+2. Open the Inspector and click a robot heading into an aisle. Within the
+   first minute a **Predicted conflicts** card appears. Read it aloud:
+   - "Predicted head-on with R0xx in N ticks";
+   - the risk band and its six terms;
+   - "Decision: YIELD - yielding to R0xx, utility margin ...";
+   - then the outcome.
+3. Line: *"Every robot predicts from the paths its neighbours already broadcast
+   within 15 m. No central planner, no extra messages. Every decision is
+   recorded with why."*
+4. The Analytics tab shows the **Safety invariants** block: verdict PASS,
+   INV-1..4 at 0, minimum separation, margin breaches and lookahead
+   precision/recall.
+5. This is one seed, used as an illustration. The C2 numbers come only from
+   the frozen multi-seed benchmark (`docs/C2_V3_PRODUCT_RESULT.md`).
+
+### Beat 4b - pull the network, safety holds
+
+- Inject `link_impair` with a 100% drop and a duration, which is a fleet-wide
+  outage (API: `{"fault":"link_impair","drop_pct":100,"ticks":60}`), or
+  `comm_blackout`.
+- Line: *"Before this release, a 6-second outage caused 15 collisions in five
+  runs. Robots now fall back to onboard sensing when they cannot hear a
+  neighbour: zero, across nine radio conditions."* Source:
+  `reports/experiments/*_comm_degradation`.
+
+### Beat 5 - the honest measurement (C2 v3 PRODUCT result, 2026-09-27)
+
+Supersedes the 2026-09-26 "C2 is not met / parity" beat. Source:
+`docs/C2_V3_PRODUCT_RESULT.md`; say "simulation benchmark" every time.
+
+- Line: *"Under a protocol frozen before the run, on 40 fresh seeds, SWARMOS as
+  shipped beat textbook stop-and-wait on the overlapping-paths floor by +48.9 %,
+  95 % CI +35.3 to +62.5. It finished 40 of 40 batches; stop-and-wait finished
+  21. All five pre-registered conditions passed, and all 240 runs replay
+  bit-exactly."*
+- Line, immediately after, unprompted: *"Most of that is reliability. Where both
+  finish, we are +17.5 % faster, CI +1.4 to +33.6, which is under 20 % on speed
+  alone. On the open floor we finish 40 of 40 against 15, but when both finish
+  we are slower."*
+- Safety line: *"0 collisions and 0 invariant failures in 240 runs. The only
+  margin breach, 0.748 m, came from the tuned stop-and-wait reference, not from
+  SWARMOS."*
+- The negative control collides hundreds of times, which proves the safety
+  monitor is real.
+- Offer the replay check:
+  `tools/replay_check.py reports/experiments/20260927T130822Z_c2v3_frozen --all --require-identity --workers 4`.
+- **Do not present the live Compare tab as the benchmark.** Its SWARMOS arm uses
+  the pre-v3 settings (without F1/F3/F5/F6) and its ghost arm is tuned
+  stop-and-wait without F1/F6. It is a one-seed illustration.

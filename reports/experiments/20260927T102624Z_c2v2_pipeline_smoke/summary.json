@@ -1,0 +1,211 @@
+{
+  "overlap_batch/normal": {
+    "arms": {
+      "baseline+F1+F6": {
+        "avg_wait_s_mean": 122.395,
+        "backtracks_mean": 63.0,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": null,
+        "compute_p95_ms_mean": 1.1885,
+        "conflicts_mean": 192.5,
+        "deadlocks_formed_mean": 73.0,
+        "did_not_finish": 1,
+        "finish_rate": 0.5,
+        "floor_entries_total": 0,
+        "floor_pair_ticks_mean": 0.0,
+        "frozen_pairs_total": 0,
+        "held_work_ticks_mean": 1425.0,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 3.0,
+        "makespan_censored_mean": 1682.4,
+        "makespan_finished_mean": 364.8,
+        "makespan_finished_median": 364.8,
+        "margin_breaches_total": 0,
+        "min_separation_m_min": 0.772,
+        "msgs_per_robot_tick_mean": null,
+        "path_efficiency_mean": 0.7355,
+        "persistent_deadlocks_mean": 0.0,
+        "predicted_conflicts_mean": 0.0,
+        "recovery_actions_mean": 155.5,
+        "replans_mean": 377.5,
+        "reroute_count_mean": 155.5,
+        "resolved_conflicts_mean": 192.5,
+        "runs": 2,
+        "runs_with_frozen_pair": 0,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 0.0,
+        "stop_events_mean": 260.0,
+        "t90_censored_mean": 419.35,
+        "tasks_complete_mean": 23.5,
+        "throughput_tpm_mean": 2.205,
+        "wait_count_mean": 1269.5,
+        "yield_count_mean": 0.0
+      },
+      "stop_and_wait+F1+F6": {
+        "avg_wait_s_mean": 142.9,
+        "backtracks_mean": 103.0,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": null,
+        "compute_p95_ms_mean": 1.2755,
+        "conflicts_mean": 284.5,
+        "deadlocks_formed_mean": 102.0,
+        "did_not_finish": 1,
+        "finish_rate": 0.5,
+        "floor_entries_total": 0,
+        "floor_pair_ticks_mean": 0.0,
+        "frozen_pairs_total": 0,
+        "held_work_ticks_mean": 6105.5,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 5.0,
+        "makespan_censored_mean": 1764.2,
+        "makespan_finished_mean": 528.4,
+        "makespan_finished_median": 528.4,
+        "margin_breaches_total": 0,
+        "min_separation_m_min": 0.7864,
+        "msgs_per_robot_tick_mean": null,
+        "path_efficiency_mean": 0.6323,
+        "persistent_deadlocks_mean": 84.0,
+        "predicted_conflicts_mean": 0.0,
+        "recovery_actions_mean": 180.0,
+        "replans_mean": 426.5,
+        "reroute_count_mean": 179.0,
+        "resolved_conflicts_mean": 284.5,
+        "runs": 2,
+        "runs_with_frozen_pair": 0,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 1.0,
+        "stop_events_mean": 360.5,
+        "t90_censored_mean": 617.15,
+        "tasks_complete_mean": 23.0,
+        "throughput_tpm_mean": 1.58,
+        "wait_count_mean": 5926.5,
+        "yield_count_mean": 0.0
+      },
+      "swarmos+F1+F3+F5+F6": {
+        "avg_wait_s_mean": 136.825,
+        "backtracks_mean": 131.0,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": 0.0,
+        "compute_p95_ms_mean": 2.2085,
+        "conflicts_mean": 43.0,
+        "deadlocks_formed_mean": 51.0,
+        "did_not_finish": 0,
+        "finish_rate": 1.0,
+        "floor_entries_total": 0,
+        "floor_pair_ticks_mean": 0.0,
+        "frozen_pairs_total": 0,
+        "held_work_ticks_mean": 3176.0,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 0.5,
+        "lookahead": {
+          "fn": 2,
+          "fp": 93,
+          "mean_lead_ticks": 13.87,
+          "precision": 0.4746,
+          "recall": 0.9767,
+          "tp": 84
+        },
+        "makespan_censored_mean": 499.95,
+        "makespan_finished_mean": 499.95,
+        "makespan_finished_median": 499.95,
+        "margin_breaches_total": 0,
+        "min_separation_m_min": 0.756,
+        "msgs_per_robot_tick_mean": 2.4969,
+        "path_efficiency_mean": 0.8599,
+        "persistent_deadlocks_mean": 28.5,
+        "predicted_conflicts_mean": 88.5,
+        "recovery_actions_mean": 334.0,
+        "replans_mean": 734.5,
+        "reroute_count_mean": 334.0,
+        "resolved_conflicts_mean": 41.5,
+        "runs": 2,
+        "runs_with_frozen_pair": 0,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 0.0,
+        "stop_events_mean": 197.5,
+        "t90_censored_mean": 425.75,
+        "tasks_complete_mean": 24.0,
+        "throughput_tpm_mean": 2.91,
+        "wait_count_mean": 443.5,
+        "yield_count_mean": 2402.0
+      }
+    },
+    "comparisons": {
+      "baseline+F1+F6 vs stop_and_wait+F1+F6": {
+        "makespan_censored_s": {
+          "ci95_high_pct": 3339.72,
+          "ci95_low_pct": -3719.63,
+          "mean_improvement_pct": -189.96,
+          "n": 2,
+          "not_admissible": "treatment did not finish on 1 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 1
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": 379.58,
+          "ci95_low_pct": -327.86,
+          "mean_improvement_pct": 25.86,
+          "n": 2,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 1
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 86.69,
+          "ci95_low_pct": -81.76,
+          "mean_improvement_pct": 2.46,
+          "n": 2,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 1
+        }
+      },
+      "swarmos+F1+F3+F5+F6 vs stop_and_wait+F1+F6": {
+        "makespan_censored_s": {
+          "ci95_high_pct": 607.12,
+          "ci95_low_pct": -526.28,
+          "mean_improvement_pct": 40.42,
+          "n": 2,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 1
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": 248.57,
+          "ci95_low_pct": -194.3,
+          "mean_improvement_pct": 27.14,
+          "n": 2,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 2
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 62.3,
+          "ci95_low_pct": -53.21,
+          "mean_improvement_pct": 4.55,
+          "n": 2,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 1
+        }
+      }
+    },
+    "dnf_pairs": {
+      "baseline+F1+F6 vs stop_and_wait+F1+F6": {
+        "reference_only_dnf_seeds": [
+          102
+        ],
+        "treatment_only_dnf_seeds": [
+          101
+        ]
+      },
+      "swarmos+F1+F3+F5+F6 vs stop_and_wait+F1+F6": {
+        "reference_only_dnf_seeds": [
+          102
+        ],
+        "treatment_only_dnf_seeds": []
+      }
+    }
+  }
+}

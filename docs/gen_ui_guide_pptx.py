@@ -736,5 +736,3 @@ def build():
 
 if __name__ == "__main__":
     build()
-
-# File contains AI-generated response based on internal company sources

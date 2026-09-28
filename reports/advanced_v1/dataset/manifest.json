@@ -1,0 +1,138 @@
+{
+  "counts": {
+    "test": {
+      "pos_y10": 8850,
+      "pos_y15": 12954,
+      "pos_y25": 20144,
+      "rows": 292602,
+      "runs": 30
+    },
+    "train": {
+      "pos_y10": 27572,
+      "pos_y15": 40558,
+      "pos_y25": 63196,
+      "rows": 867020,
+      "runs": 90
+    },
+    "validation": {
+      "pos_y10": 9214,
+      "pos_y15": 13582,
+      "pos_y25": 21324,
+      "rows": 296332,
+      "runs": 30
+    }
+  },
+  "dataset_version": "edge-conflict-ds-v1",
+  "features": [
+    "dist_m",
+    "closing_mps",
+    "heading_cos",
+    "tcpa_s",
+    "dcpa_m",
+    "la_min_m",
+    "la_lead_ticks",
+    "my_speed",
+    "peer_speed",
+    "my_remaining_m",
+    "peer_remaining_m",
+    "neighbours_3m",
+    "peer_holding",
+    "msg_age_ticks",
+    "my_yield_streak",
+    "peer_yield_streak",
+    "my_free_nbrs",
+    "path_overlap",
+    "my_has_task",
+    "peer_has_task"
+  ],
+  "files": {
+    "test": {
+      "file": "test.jsonl.gz",
+      "sha256": "6e393cfdbdb3185eedaba5104988341edbb315a8f8564d561fb3e5e87c5f0bfd"
+    },
+    "train": {
+      "file": "train.jsonl.gz",
+      "sha256": "f81a8065d4c3880ee797777267d3c11eea1d29d8f1d06081b0aebd0a3f2e72bc"
+    },
+    "validation": {
+      "file": "validation.jsonl.gz",
+      "sha256": "a65cfedbd5e5cd0019ae848d5c1d695bb15ded2de0f92b0f60b43543c1cf7eaf"
+    }
+  },
+  "generator": "tools/edge_ai_dataset.py",
+  "horizons_ticks": [
+    10,
+    15,
+    25
+  ],
+  "label": "true pair distance < CONFLICT_M (0.97 m) within the next H arbitration ticks",
+  "policy": "V0 product (app/product.make_swarmos_policy, advanced flags OFF)",
+  "sample_every_ticks": 4,
+  "scenarios": {
+    "open_floor_batch": {},
+    "overlap_batch": {},
+    "rush_50": {
+      "fleet_size": 16
+    }
+  },
+  "seeds": {
+    "test": [
+      1300001,
+      1300002,
+      1300003,
+      1300004,
+      1300005,
+      1300006,
+      1300007,
+      1300008,
+      1300009,
+      1300010
+    ],
+    "train": [
+      1100001,
+      1100002,
+      1100003,
+      1100004,
+      1100005,
+      1100006,
+      1100007,
+      1100008,
+      1100009,
+      1100010,
+      1100011,
+      1100012,
+      1100013,
+      1100014,
+      1100015,
+      1100016,
+      1100017,
+      1100018,
+      1100019,
+      1100020,
+      1100021,
+      1100022,
+      1100023,
+      1100024,
+      1100025,
+      1100026,
+      1100027,
+      1100028,
+      1100029,
+      1100030
+    ],
+    "validation": [
+      1200001,
+      1200002,
+      1200003,
+      1200004,
+      1200005,
+      1200006,
+      1200007,
+      1200008,
+      1200009,
+      1200010
+    ]
+  },
+  "split_rule": "by run (seed); no run contributes rows to two splits",
+  "tick_cap": 4000
+}

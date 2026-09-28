@@ -1,0 +1,86 @@
+/home/user/swarmos-member4-coordination/tools/audit_system.py:498: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient
+PASS  core         scenario blocked_aisle: builds, spawns, moves, runs 300 ticks                   racks=868 robots=12 odo=321.7m tasks=49 sim_time=30.0
+PASS  core         scenario corridor_demo: builds, spawns, moves, runs 300 ticks                   racks=160 robots=6 odo=102.7m tasks=12 sim_time=30.0
+PASS  core         scenario narrow_aisle_deadlock: builds, spawns, moves, runs 300 ticks           racks=624 robots=12 odo=258.2m tasks=42 sim_time=30.0
+PASS  core         scenario open_floor_batch: builds, spawns, moves, runs 300 ticks                racks=868 robots=12 odo=340.4m tasks=36 sim_time=30.0
+PASS  core         scenario overlap_batch: builds, spawns, moves, runs 300 ticks                   racks=624 robots=8 odo=235.3m tasks=24 sim_time=30.0
+PASS  core         scenario rush_50: builds, spawns, moves, runs 300 ticks                         racks=868 robots=12 odo=340.4m tasks=65 sim_time=30.0
+PASS  core         task lifecycle: created -> assigned -> picked -> completed                      statuses=['ASSIGNED', 'CARRYING', 'COMPLETE', 'PENDING'] completed=9
+PASS  core         batch termination: fixed batch ends when all tasks done                         makespan=276.3 ticks=2764
+PASS  core         batch cap: unfinished batch is reported did_not_finish                          dnf=True makespan=None tick=200
+PASS  core         determinism: same seed -> identical trace hash (swarmos + baseline)             same=[True, True, True] seeds_differ=True
+PASS  core         task stream depends on seed only (identical across policies)                    tasks=56
+PASS  core         idle parking keeps idle robots off station cells (batch)                        idle robots on stations: []
+PASS  coordination radio exchange: messages delivered, bounded range, O(k)                         delivered=47408 out_of_range=0 msgs/robot/tick=6.584444
+PASS  coordination path intent exchange: broadcast states carry movement_intent                    8/8 states carry a path
+PASS  coordination graded ladder: PROCEED, SLOW, YIELD, WAIT and REROUTE all issued                verdicts={'PROCEED': 25818, 'SLOW': 13795, 'YIELD': 2842, 'WAIT': 542, 'REROUTE': 203}
+PASS  coordination contest / negotiation runs with utility terms                                   contests=551 won=696 with_terms_now=1
+PASS  coordination failure detection confirms a failed robot and releases its task                 confirmed=1 task=T005 released=True
+PASS  coordination deadlock audit + stall release produce bounded recovery                         deadlock={'deadlocks_formed': 88, 'persistent_deadlocks': 2, 'persistent_threshold_ticks': 10, 'deadlock_cycle_ticks': 495, 'mean_duration_ticks': 5.62, 'max_duration_ticks': 142, 'unresolved': 0} stall_releases=4
+PASS  coordination reservation / auction / conflict libraries import and run                       imported (unit-tested in tests/test_reservation.py, test_auction.py, test_conflict.py; not in the live arbitration path by design)
+PASS  coordination perception fallback adds nothing on a healthy radio                             hash identical, sensed_blocks=0
+PASS  coordination headline config: separating exemption and mutual-hold break OFF                 sep=False mhb=False traffic=False fallback=True monitor=True
+PASS  safety       negative control FAILS INV-1 and names the pair                                 INV-1=24 first={'tick': 35, 'robot_a': 'R007', 'robot_b': 'R014', 'distance_m': 0.637}
+PASS  safety       swarmos: all invariants PASS, min separation >= 0.70 m                          counts={'INV-1': 0, 'INV-2': 0, 'INV-3': 0, 'INV-4': 0} min_sep=0.7534 L2=0
+PASS  safety       baseline: all invariants PASS, min separation >= 0.70 m                         counts={'INV-1': 0, 'INV-2': 0, 'INV-3': 0, 'INV-4': 0} min_sep=0.7549 L2=0
+PASS  safety       stop_and_wait: all invariants PASS, min separation >= 0.70 m                    counts={'INV-1': 0, 'INV-2': 0, 'INV-3': 0, 'INV-4': 0} min_sep=0.7524 L2=0
+PASS  safety       unauthorised movement detected (INV-2)                                          teleport caught
+PASS  safety       movement while held detected (INV-3)                                            held robot motion caught
+PASS  safety       illegal status transition detected (INV-4)                                      failed->MOVING caught
+PASS  safety       monitor OFF lets collisions happen (kernel is doing the work)                   collisions without kernel=46
+PASS  prediction   product lookahead is observe-only (trace identical)                             lookahead={'threshold_m': 0.97, 'tolerance_ticks': 3, 'prediction_episodes': 21, 'actual_conflicts': 20, 'resolved_conflicts': 16, 'open_conflicts': 4, 'true_positives': 18, 'false_positives': 3, 'false_negatives': 2, 'precision': 0.8571, 'recall': 0.9, 'mean_lead_ticks': 15.33, 'median_lead_ticks': 15, 'avg_horizon_ticks': 15.0}
+PASS  prediction   decision records: risk terms, decisions, outcomes, deterministic digest         records=26 resolved=26 digest=81fb5a92c587
+PASS  prediction   snapshot/frame carries decisions and safety summary                             decisions_in_frame=True kpi_keys_ok=True
+PASS  faults       ROBOT_FAILURE: robot stays FAILED and visible, onboard brake, fleet continues   robot=R011 still_in_frame=True
+PASS  faults       BATTERY_DRAIN: battery set low, robot heads to charger, recovers                robot=R001 phases=['TO_CHARGER', 'TO_DROP', 'TO_PICK'] charged=True battery=94.5
+PASS  faults       BLOCK_AISLE + CLEAR_BLOCKAGE: cells blocked, no robot plans into them, cleared  blocked=21 paths_through=[] cleared=21
+PASS  faults       ROGUE_ROBOT (integrity ON): lie detected by quorum and contained                rogue=R011 contained=1 accusations=4
+PASS  faults       ROGUE_ROBOT (integrity OFF): recorded as rogue, not contained (documented)      rogue=R011
+PASS  faults       LINK_IMPAIR: loss reaches radio, collision-free, timed restore                  dropped=1636 restored=True latency_ticks=1
+PASS  faults       LINK_IMPAIR 100% (fleet outage): 0 collisions, restores                         sensed_blocks=494 collisions=0
+PASS  faults       ZONE_PARTITION: cross-boundary drops, lifts on schedule                         drops during=1424
+PASS  faults       TASK_BURST (demand spike): tasks added and served                               tasks 37 -> 146
+PASS  faults       KILL_ML: advisory off, robot behaviour unchanged (law 3)                        hash_equal=True
+PASS  faults       COMM_BLACKOUT: silenced, sovereign entry, restored and rejoins                  entries=5 rejoins=4
+PASS  faults       every FaultKind is handled (no silent no-op)                                    missing=[]
+PASS  faults       fault runs are deterministic (same fault, same seed, same hash)                 [('ROBOT_FAILURE', True), ('LINK_IMPAIR', True), ('ROGUE_ROBOT', True), ('COMM_BLACKOUT', True), ('BLOCK_AISLE', True)]
+PASS  api          pages and read-only endpoints respond                                           {'/': 200, '/index.html': 200, '/landing.html': 200, '/api/health': 200, '/api/scenarios': 200, '/api/status': 200, '/api/cosim/status': 200}
+PASS  api          error paths are readable, never 500                                             bad={} malformed_json=400
+PASS  api          run lifecycle: start -> step -> pause -> resume -> pause -> stop                hash=ae2966930c35
+PASS  api          websocket /ws/fleet: hello then frames with decisions + safety                  hello_keys=['collision_distance_m', 'config', 'fleet', 'running', 'scenario', 'schema_version'] frame_keys=['decisions', 'events', 'kpis', 'robots', 'running', 'schema_version', 'sim_time', 'tasks', 'tick', 'timestamp']
+PASS  api-faults   live inject robot_failure (selected robot=None)                                 {"ok": true, "fault": "ROBOT_FAILURE", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "ROBOT_FAILURE", "applied": true, "robot_id": "R00 [offered in Lab]
+PASS  api-faults   live inject robot_failure (selected robot=R002)                                 {"ok": true, "fault": "ROBOT_FAILURE", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "ROBOT_FAILURE", "applied": true, "robot_id": "R00 [offered in Lab]
+PASS  api-faults   live inject comm_blackout (selected robot=None)                                 {"ok": true, "fault": "COMM_BLACKOUT", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "COMM_BLACKOUT", "applied": true, "robot_id": "R00 [offered in Lab]
+PASS  api-faults   live inject comm_blackout (selected robot=R002)                                 {"ok": true, "fault": "COMM_BLACKOUT", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "COMM_BLACKOUT", "applied": true, "robot_id": "R00 [offered in Lab]
+PASS  api-faults   live inject link_impair (selected robot=None)                                   {"ok": true, "fault": "LINK_IMPAIR", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "LINK_IMPAIR", "applied": true, "drop_pct": 10.0, "l [offered in Lab]
+PASS  api-faults   live inject link_impair (selected robot=R002)                                   {"ok": true, "fault": "LINK_IMPAIR", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "LINK_IMPAIR", "applied": true, "drop_pct": 10.0, "l [offered in Lab]
+PASS  api-faults   live inject blocked_aisle (selected robot=None)                                 {"ok": true, "fault": "BLOCK_AISLE", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "BLOCK_AISLE", "applied": true, "cells_blocked": 21, [offered in Lab]
+PASS  api-faults   live inject blocked_aisle (selected robot=R002)                                 {"ok": true, "fault": "BLOCK_AISLE", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "BLOCK_AISLE", "applied": true, "cells_blocked": 21, [offered in Lab]
+PASS  api-faults   live inject clear_blockage (selected robot=None)                                {"ok": true, "fault": "CLEAR_BLOCKAGE", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "CLEAR_BLOCKAGE", "applied": false, "cells_cleare
+PASS  api-faults   live inject clear_blockage (selected robot=R002)                                {"ok": true, "fault": "CLEAR_BLOCKAGE", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "CLEAR_BLOCKAGE", "applied": false, "cells_cleare
+PASS  api-faults   live inject rogue_agent (selected robot=None)                                   {"ok": true, "fault": "ROGUE_ROBOT", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "ROGUE_ROBOT", "applied": true, "robot_id": "R001",  [offered in Lab]
+PASS  api-faults   live inject rogue_agent (selected robot=R002)                                   {"ok": true, "fault": "ROGUE_ROBOT", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "ROGUE_ROBOT", "applied": true, "robot_id": "R002",  [offered in Lab]
+PASS  api-faults   live inject battery_drain (selected robot=None)                                 {"ok": true, "fault": "BATTERY_DRAIN", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "BATTERY_DRAIN", "applied": true, "robots": ["R001
+PASS  api-faults   live inject battery_drain (selected robot=R002)                                 {"ok": true, "fault": "BATTERY_DRAIN", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "BATTERY_DRAIN", "applied": true, "robots": ["R002
+PASS  api-faults   live inject zone_partition (selected robot=None)                                {"ok": true, "fault": "ZONE_PARTITION", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "ZONE_PARTITION", "applied": true, "zone": "EAST"
+PASS  api-faults   live inject zone_partition (selected robot=R002)                                {"ok": true, "fault": "ZONE_PARTITION", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "ZONE_PARTITION", "applied": true, "zone": "EAST"
+PASS  api-faults   live inject task_burst (selected robot=None)                                    {"ok": true, "fault": "TASK_BURST", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "TASK_BURST", "applied": true, "count": 20}}
+PASS  api-faults   live inject task_burst (selected robot=R002)                                    {"ok": true, "fault": "TASK_BURST", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "TASK_BURST", "applied": true, "count": 20}, "ignored
+PASS  api-faults   live inject kill_ml (selected robot=None)                                       {"ok": true, "fault": "KILL_ML", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "KILL_ML", "applied": true, "ml_enabled": false}}
+PASS  api-faults   live inject kill_ml (selected robot=R002)                                       {"ok": true, "fault": "KILL_ML", "detail": {"tick": 21, "sim_time": 2.1, "kind": "fault", "fault_kind": "KILL_ML", "applied": true, "ml_enabled": false}, "ignor
+PASS  api-faults   co-sim inject ROBOT_FAILURE lands on both arms                                  {"ok": true, "fault": "ROBOT_FAILURE", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject BATTERY_DRAIN lands on both arms                                  {"ok": true, "fault": "BATTERY_DRAIN", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject BLOCK_AISLE lands on both arms                                    {"ok": true, "fault": "BLOCK_AISLE", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject CLEAR_BLOCKAGE lands on both arms                                 {"ok": true, "fault": "CLEAR_BLOCKAGE", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject ROGUE_ROBOT lands on both arms                                    {"ok": true, "fault": "ROGUE_ROBOT", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject LINK_IMPAIR lands on both arms                                    {"ok": true, "fault": "LINK_IMPAIR", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject ZONE_PARTITION lands on both arms                                 {"ok": true, "fault": "ZONE_PARTITION", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject TASK_BURST lands on both arms                                     {"ok": true, "fault": "TASK_BURST", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject KILL_ML lands on both arms                                        {"ok": true, "fault": "KILL_ML", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api-faults   co-sim inject COMM_BLACKOUT lands on both arms                                  {"ok": true, "fault": "COMM_BLACKOUT", "arms": ["swarmos", "baseline"], "tick": 1}
+PASS  api          websocket /ws/cosim: hello + frame with both arms                               hello=cosim_hello frame_keys=['arms', 'compute', 'delta', 'divergence_tick', 'lockstep', 'policy_config', 'scenario', 'schema_version']
+PASS  api          explain endpoint: policy view, decisions, safety                                verdict=PASS
+PASS  benchmark    benchmark endpoint returns JSON-safe paired stats                               usable=[]
+------------------------------------------------------------------------------
+82 pass, 0 FAIL

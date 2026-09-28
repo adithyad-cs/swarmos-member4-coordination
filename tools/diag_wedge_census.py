@@ -86,5 +86,3 @@ if goal is not None:
         print("*** nearest_navigable(goal) is None")
 else:
     print("*** _goal_for() is None while a task is held -- confirmed root cause")
-
-# File contains AI-generated response based on internal company sources

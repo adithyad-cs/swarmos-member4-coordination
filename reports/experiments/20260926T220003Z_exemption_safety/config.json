@@ -1,0 +1,151 @@
+{
+  "arms": {
+    "swarmos_mhb_sep": "SWARMOS + mutual-hold break + separating-motion exemption (kernel change, under evaluation)"
+  },
+  "command": "PYTHONPATH=. python3 tools/run_experiment.py --name exemption_safety --scenarios rush_50 narrow_aisle_deadlock blocked_aisle corridor_demo --arms swarmos_mhb_sep --ticks 3000 --workers 4",
+  "conditions": {
+    "normal": []
+  },
+  "created_utc": "20260926T220003Z",
+  "git": "a6e18041c8151077485fcdb63c6fc1769594cefa+uncommitted-changes",
+  "name": "exemption_safety",
+  "overrides": {},
+  "python": "3.11.15",
+  "reference": "swarmos_mhb_sep",
+  "scenarios": {
+    "blocked_aisle": {
+      "aisle_period": 4,
+      "aisle_width": 2,
+      "batch": false,
+      "cross_period": 10,
+      "cross_width": 2,
+      "description": "A busy run where a central aisle segment is sealed at t=20 s and reopened at t=80 s, invalidating in-flight reservations and forcing a fleet-wide reroute.",
+      "duration_s": 150.0,
+      "fleet_size": 40,
+      "height": 40,
+      "idle_parking": false,
+      "initial_burst": 20,
+      "injections": [
+        {
+          "at_s": 20.0,
+          "at_tick": 200,
+          "kind": "BLOCK_AISLE",
+          "params": {
+            "cx": 30,
+            "cy0": 8,
+            "cy1": 30
+          }
+        },
+        {
+          "at_s": 80.0,
+          "at_tick": 800,
+          "kind": "CLEAR_BLOCKAGE",
+          "params": {}
+        }
+      ],
+      "name": "blocked_aisle",
+      "proves": "Reservation invalidation, replanning under a changed map, and that the safety invariant counter stays at zero through the disruption.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 1.2,
+      "title": "Aisle blocked mid-run",
+      "width": 60
+    },
+    "corridor_demo": {
+      "aisle_period": 3,
+      "aisle_width": 1,
+      "batch": true,
+      "cross_period": 999,
+      "cross_width": 1,
+      "description": "A compact single-file floor for the live demo: 6 robots, a fixed batch of 12 tasks, head-on encounters in the aisles within the first minute. Watch the Inspector's predicted conflicts: each shows the lead time, the risk terms, the decision taken and the outcome.",
+      "duration_s": 900.0,
+      "fleet_size": 6,
+      "height": 12,
+      "idle_parking": true,
+      "initial_burst": 12,
+      "injections": [],
+      "name": "corridor_demo",
+      "proves": "Predicted conflict -> decision -> avoidance -> completion, with the safety invariants shown live. One seed is an illustration; the C2 claim rests only on the multi-seed overlap_batch benchmark.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 0.0,
+      "title": "Corridor demo, 6 robots",
+      "width": 28
+    },
+    "narrow_aisle_deadlock": {
+      "aisle_period": 3,
+      "aisle_width": 1,
+      "batch": false,
+      "cross_period": 999,
+      "cross_width": 1,
+      "description": "Cross aisles removed so every aisle is a single-file corridor with only two exits. Robots are forced into head-on and swap conflicts that a naive first-come planner deadlocks on.",
+      "duration_s": 180.0,
+      "fleet_size": 24,
+      "height": 28,
+      "idle_parking": false,
+      "initial_burst": 16,
+      "injections": [],
+      "name": "narrow_aisle_deadlock",
+      "proves": "Deadlock detection and the graded verdict ladder, plus deterministic lock arbitration when two robots claim the same cell on the same tick.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 0.9,
+      "title": "Narrow aisle deadlock",
+      "width": 40
+    },
+    "rush_50": {
+      "aisle_period": 4,
+      "aisle_width": 2,
+      "batch": false,
+      "cross_period": 10,
+      "cross_width": 2,
+      "description": "Fifty heterogeneous robots on the full floor with a 30-task opening burst and a sustained 1.5 tasks/s arrival rate. This is the default state the demo opens in.",
+      "duration_s": null,
+      "fleet_size": 50,
+      "height": 40,
+      "idle_parking": false,
+      "initial_burst": 30,
+      "injections": [],
+      "name": "rush_50",
+      "proves": "Sustained 10 Hz coordination at fleet scale, zero collisions, and the throughput lead over the stop-and-wait baseline.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 1.5,
+      "title": "Rush hour, 50 robots",
+      "width": 60
+    }
+  },
+  "seeds": [
+    11,
+    13,
+    17,
+    19,
+    23,
+    29,
+    31,
+    37,
+    41
+  ],
+  "target_pct": 20.0,
+  "tick_limit": 3000
+}

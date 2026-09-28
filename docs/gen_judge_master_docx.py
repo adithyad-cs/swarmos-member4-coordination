@@ -381,9 +381,9 @@ def main():
         "other in a crossing aisle.",
         "The verdict kind and its reason string (e.g. 'crossing R012 at 1.10 m') "
         "update live per robot; watch one SLOW down rather than stop dead.",
-        "This grading is why we beat stop-and-wait on throughput -- the "
-        "biggest single source of the gap is that a mere crossing gets a SLOW, "
-        "not a full stop.",
+        "Grading keeps traffic moving: a mere crossing gets a SLOW, not a full "
+        "stop. The C2 result itself is quoted only from the frozen benchmark "
+        "in section 6.",
         ("Why not just always stop to be maximally safe?",
          "We measured it: an always-stop kernel vetoed 35% of all robot-ticks "
          "and wedged head-on traffic completely, because neither robot was "
@@ -446,77 +446,67 @@ def main():
         "the KPI delta panel updates live with the paired reduction percentage.",
         "Same warehouse, same tasks, same seed -- the only variable that "
         "changed is the coordination brain.",
-        ("What is the honest current result of this comparison?",
-         "See section 6 below -- as of 2026-09-22 the throughput-time "
-         "reduction criterion (target >=20%) is measured NOT MET, mean +2.0%, "
-         "95% CI [-5.9%, +9.8%]. We report this directly rather than hide it."),
+        ("Is this live comparison the C2 result?",
+         "No. It is a one-seed illustration, and its SWARMOS arm still uses "
+         "the pre-v3 settings (without F1/F3/F5/F6). C2 is quoted only from "
+         "the frozen v3 simulation benchmark in section 6."),
     )
 
     # ------------------------------------------------------------------ baseline comparison honest numbers
-    h1(doc, "6. Baseline vs SWARMOS -- Honest Current Comparison")
+    h1(doc, "6. Baseline vs SWARMOS -- C2 v3 Product Result (simulation benchmark)")
     body(doc,
-        "This directly answers the question 'why does baseline sometimes beat "
-        "SWARMOS, and what is the point of SWARMOS then'.")
-    body(doc, "What 'baseline' is:", bold=True)
+        "Source: docs/C2_V3_PRODUCT_RESULT.md (frozen protocol "
+        "docs/C2_FROZEN_PROTOCOL_V3.md). Every number below is a SIMULATION "
+        "benchmark result, not a physical-world or certification claim.")
+    body(doc, "Product configuration:", bold=True)
+    bullet(doc, "SWARMOS product default = F1 + F3 + F5 + F6. F1: path-aware "
+                "safety check (only ever vetoes more). F3: the robot not "
+                "closing keeps right of way. F5: standoff breaker (replans; "
+                "grants no motion). F6: 300-tick stall-release cooldown.")
+    bullet(doc, "F2(a) and F2(b) remain OFF. Safety floor 0.75 m, unchanged.")
+    bullet(doc, "Reference arms: textbook stop-and-wait + F1 + F6 (the C2 "
+                "reference) and tuned stop-and-wait + F1 + F6. F1 and F6 are "
+                "shared; F3 and F5 are SWARMOS-only.")
+    body(doc, "Primary C2 result (overlap_batch, 40 fresh seeds 600001-600040):", bold=True)
+    make_table(doc, ["Measure", "SWARMOS product", "Textbook stop-and-wait + F1 + F6"], [
+        ["Capped time reduction (paired)", "+48.9%, 95% CI [+35.3%, +62.5%]", "reference"],
+        ["Finish rate", "40/40", "21/40"],
+        ["Seeds failed by SWARMOS only", "none", "-"],
+        ["Common-finish speed (21 seeds)", "+17.5%, CI [+1.4%, +33.6%]", "reference"],
+        ["Frozen decision conditions", "all five passed", "-"],
+    ], widths=[2.4, 2.4, 2.0])
     body(doc,
-        "StopAndWaitPolicy (app/sim/policy.py) -- the classical AGV controller: "
-        "no negotiation, no reservations, no joint planning, no learning. If a "
-        "conflict is detected, stop. It is deliberately tuned to be a FAIR "
-        "reference, not a strawman -- it uses the same HARD_STOP_M=0.75 m safety "
-        "floor SWARMOS uses, and its own STUCK_TICKS recovery threshold was "
-        "swept and tuned rather than left at an arbitrary default.")
-
-    body(doc, "Measured result, 2026-09-22 (tools/verify_criteria_powered.py, 1800 ticks, seeds 11/13/17, 3 scenarios):", bold=True)
-    make_table(doc, ["Scenario (fleet)", "Seed", "Baseline avg_completion_s", "SWARMOS avg_completion_s", "Reduction"], [
-        ["blocked_aisle (40)", "11", "102.30", "103.85", "-1.5%"],
-        ["blocked_aisle (40)", "13", "96.48", "84.27", "+12.7%"],
-        ["blocked_aisle (40)", "17", "87.30", "78.68", "+9.9%"],
-        ["narrow_aisle_deadlock (24)", "11", "76.87", "79.28", "-3.1%"],
-        ["narrow_aisle_deadlock (24)", "13", "81.70", "78.52", "+3.9%"],
-        ["narrow_aisle_deadlock (24)", "17", "117.48", "112.37", "+4.3%"],
-        ["rush_50 (50)", "11", "89.34", "106.68", "-19.4%"],
-        ["rush_50 (50)", "13", "85.20", "87.58", "-2.8%"],
-        ["rush_50 (50)", "17", "100.54", "86.75", "+13.7%"],
-    ], widths=[1.9, 0.5, 1.4, 1.4, 1.0])
+        "Verdict: C2 is MET for the product-default configuration under the "
+        "frozen v3 rule. Speed caveat: on seeds where both finished the gain is "
+        "+17.5%, below a 20% threshold if speed alone is considered; the larger "
+        "primary gain is substantially driven by SWARMOS completing batches the "
+        "reference does not (a DNF counts at the 3000 s cap).")
+    body(doc, "Secondary (open_floor_batch):", bold=True)
+    bullet(doc, "Capped improvement +33.7%, 95% CI [+4.5%, +62.8%]; finish rate "
+                "40/40 vs 15/40.")
+    bullet(doc, "When both arms finish, SWARMOS is SLOWER on this scenario "
+                "(mean -44.4%, CI [-105.8%, +17.1%], faster on 4 of 15 seeds). "
+                "SWARMOS is not universally faster.")
+    body(doc, "Safety (all 240 runs):", bold=True)
+    bullet(doc, "0 collisions, 0 invariant failures. SWARMOS: 0 margin breaches, "
+                "0 frozen pairs. The only margin breach in the entire benchmark "
+                "came from the tuned reference arm on open_floor_batch at "
+                "0.748 m (inside the 0.75 m margin, outside the 0.70 m contact "
+                "threshold).")
+    body(doc, "Integrity:", bold=True)
+    bullet(doc, "240 runs = 3 arms x 2 scenarios x 40 seeds; seeds fresh and "
+                "fixed before the run; protocol byte-identical after the run; "
+                "replay 240/240 exact with code-identity and arm-config match.")
+    bullet(doc, "Code identity f3dabbf0d732bfc218a1ab31f906299ca1baee5c4b1de148534b16c0d023094f. "
+                "Pre-freeze gate: pytest 672 passed; UI verifier 39 pass / 1 "
+                "known warning / 0 fail; backend audit 82/0; browser audit 26/0.")
+    bullet(doc, "Remaining asymmetries favour the reference: its separating "
+                "rule inside the margin and its global view.")
     body(doc,
-        "Paired mean reduction: +2.0% (std dev 10.3%, 95% CI [-5.9%, +9.8%]). "
-        "Target for the throughput-time criterion is >=20%. Verdict: NOT MET -- "
-        "the whole confidence interval sits below the bar.")
-
-    body(doc, "Why baseline sometimes wins on raw completion time:", bold=True)
-    bullet(doc, "The graded ladder trades a guaranteed full stop for negotiated "
-                "give-way. On some seeds this genuinely produces a faster "
-                "resolution; on others the negotiation overhead (contests, "
-                "commit windows) costs more time than a simple stop would have.")
-    bullet(doc, "The gridlock defect fixed on 2026-09-22 (see section 7) was "
-                "artificially depressing SWARMOS numbers at fleet 40-50 before "
-                "today -- those specific runs above were re-measured AFTER the "
-                "fix, and the comparison is now honest rather than gridlock-"
-                "contaminated.")
-    bullet(doc, "avg_completion_s is a small-sample statistic at 1800 ticks "
-                "(3-26 completions per arm per run) -- the CI in the table above "
-                "is wide because the sample is genuinely small, not because the "
-                "measurement is broken. tools/verify_criteria_powered.py exists "
-                "specifically to widen the sample (9000 ticks, 9 seeds).")
-
-    body(doc, "So what IS the point of SWARMOS, if C2 is not currently met?", bold=True)
-    bullet(doc, "C1 (zero collisions under full arbitration) is MET: 0 "
-                "collisions in the SWARMOS arm across every measured run, "
-                "against a baseline that also holds 0 here because it is "
-                "equally conservative -- the honest comparison is on WHERE "
-                "each policy spends its caution, not just the collision count.")
-    bullet(doc, "The real differentiators are the capabilities baseline "
-                "structurally cannot have at all: it has no integrity layer "
-                "(defenceless against a lying robot, N9), no advisory-firewall "
-                "architecture to demonstrate (N5), no counterfactual replay for "
-                "auditability (N3), and no degradation ladder under packet loss "
-                "(N6). These are qualitative, structural claims, not a single "
-                "completion-time number.")
-    bullet(doc, "The throughput claim is not abandoned -- it is reported "
-                "honestly as NOT YET MET, with the exact gap (need +18pp) and "
-                "the exact next step specified in "
-                "docs/SUCCESS_CRITERIA_VERIFICATION.md and reproducible with "
-                "tools/verify_criteria_powered.py.")
+        "History: the 2026-09-22 avg_completion_s comparison (+2.0%, NOT MET) "
+        "and the frozen v1 fixed-batch evaluation (NOT MET) are superseded; "
+        "they are kept in docs/SUCCESS_CRITERIA_VERIFICATION.md and "
+        "docs/C2_FROZEN_PROTOCOL.md.")
 
     # ------------------------------------------------------------------ limitations fixed today
     h1(doc, "7. Known Limitations -- Fixed This Session (2026-09-22)")
@@ -612,5 +602,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# File contains AI-generated response based on internal company sources

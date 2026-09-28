@@ -1,0 +1,692 @@
+{
+  "open_floor_batch/normal": {
+    "arms": {
+      "baseline": {
+        "avg_wait_s_mean": 162.862,
+        "backtracks_mean": 1301.225,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": null,
+        "compute_p95_ms_mean": 1.476,
+        "conflicts_mean": 1511.375,
+        "deadlocks_formed_mean": 908.3,
+        "did_not_finish": 23,
+        "finish_rate": 0.425,
+        "held_work_ticks_mean": 50914.55,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 4.7,
+        "makespan_censored_mean": 1964.0225,
+        "makespan_finished_mean": 562.4059,
+        "makespan_finished_median": 532.9,
+        "margin_breaches_total": 2,
+        "min_separation_m_min": 0.7447,
+        "msgs_per_robot_tick_mean": null,
+        "path_efficiency_mean": 0.9261,
+        "persistent_deadlocks_mean": 35.9,
+        "predicted_conflicts_mean": 0.0,
+        "replans_mean": 12889.8,
+        "reroute_count_mean": 6294.95,
+        "resolved_conflicts_mean": 1509.8,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 204.75,
+        "stop_events_mean": 2037.925,
+        "t90_censored_mean": 1192.99,
+        "tasks_complete_mean": 33.6,
+        "throughput_tpm_mean": 2.0428,
+        "wait_count_mean": 44619.6,
+        "yield_count_mean": 0.0
+      },
+      "stop_and_wait": {
+        "avg_wait_s_mean": 155.079,
+        "backtracks_mean": 642.675,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": null,
+        "compute_p95_ms_mean": 1.5671,
+        "conflicts_mean": 1205.1,
+        "deadlocks_formed_mean": 670.95,
+        "did_not_finish": 31,
+        "finish_rate": 0.225,
+        "held_work_ticks_mean": 88799.3,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 5.05,
+        "makespan_censored_mean": 2465.02,
+        "makespan_finished_mean": 622.3111,
+        "makespan_finished_median": 585.6,
+        "margin_breaches_total": 2,
+        "min_separation_m_min": 0.7402,
+        "msgs_per_robot_tick_mean": null,
+        "path_efficiency_mean": 0.987,
+        "persistent_deadlocks_mean": 649.125,
+        "predicted_conflicts_mean": 0.0,
+        "replans_mean": 6140.825,
+        "reroute_count_mean": 2922.225,
+        "resolved_conflicts_mean": 1202.625,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 202.45,
+        "stop_events_mean": 1757.725,
+        "t90_censored_mean": 1586.445,
+        "tasks_complete_mean": 31.4,
+        "throughput_tpm_mean": 1.298,
+        "wait_count_mean": 85877.075,
+        "yield_count_mean": 0.0
+      },
+      "swarmos": {
+        "avg_wait_s_mean": 254.7328,
+        "backtracks_mean": 5263.875,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": 0.0,
+        "compute_p95_ms_mean": 3.9413,
+        "conflicts_mean": 495.5,
+        "deadlocks_formed_mean": 1852.375,
+        "did_not_finish": 38,
+        "finish_rate": 0.05,
+        "held_work_ticks_mean": 211954.875,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 10.175,
+        "lookahead": {
+          "fn": 1966,
+          "fp": 24929,
+          "mean_lead_ticks": 17.3502,
+          "precision": 0.4173,
+          "recall": 0.9008,
+          "tp": 17854
+        },
+        "makespan_censored_mean": 2887.645,
+        "makespan_finished_mean": 752.9,
+        "makespan_finished_median": 752.9,
+        "margin_breaches_total": 98,
+        "min_separation_m_min": 0.715,
+        "msgs_per_robot_tick_mean": 3.7292,
+        "path_efficiency_mean": 0.9928,
+        "persistent_deadlocks_mean": 501.5,
+        "predicted_conflicts_mean": 1100.175,
+        "replans_mean": 59377.75,
+        "reroute_count_mean": 29228.3,
+        "resolved_conflicts_mean": 489.975,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 927.25,
+        "stop_events_mean": 1198.45,
+        "t90_censored_mean": 2246.295,
+        "tasks_complete_mean": 29.88,
+        "throughput_tpm_mean": 0.7055,
+        "wait_count_mean": 76538.15,
+        "yield_count_mean": 106191.275
+      },
+      "swarmos_mhb": {
+        "avg_wait_s_mean": 203.133,
+        "backtracks_mean": 6246.275,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": 0.0,
+        "compute_p95_ms_mean": 3.7833,
+        "conflicts_mean": 519.35,
+        "deadlocks_formed_mean": 1291.2,
+        "did_not_finish": 32,
+        "finish_rate": 0.2,
+        "held_work_ticks_mean": 162599.9,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 6.575,
+        "lookahead": {
+          "fn": 2443,
+          "fp": 26017,
+          "mean_lead_ticks": 15.7483,
+          "precision": 0.4133,
+          "recall": 0.8824,
+          "tp": 18331
+        },
+        "makespan_censored_mean": 2534.065,
+        "makespan_finished_mean": 670.325,
+        "makespan_finished_median": 650.55,
+        "margin_breaches_total": 70,
+        "min_separation_m_min": 0.7221,
+        "msgs_per_robot_tick_mean": 3.7449,
+        "path_efficiency_mean": 1.0038,
+        "persistent_deadlocks_mean": 251.3,
+        "predicted_conflicts_mean": 1150.025,
+        "replans_mean": 65352.625,
+        "reroute_count_mean": 32360.025,
+        "resolved_conflicts_mean": 514.55,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 704.9,
+        "stop_events_mean": 898.825,
+        "t90_censored_mean": 1694.1125,
+        "tasks_complete_mean": 31.05,
+        "throughput_tpm_mean": 1.1275,
+        "wait_count_mean": 89285.9,
+        "yield_count_mean": 41032.1
+      }
+    },
+    "comparisons": {
+      "baseline vs stop_and_wait": {
+        "makespan_censored_s": {
+          "ci95_high_pct": 26.39,
+          "ci95_low_pct": -92.5,
+          "mean_improvement_pct": -33.06,
+          "n": 40,
+          "not_admissible": "treatment did not finish on 5 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 16
+        },
+        "makespan_s (both finished)": {
+          "ci95_high_pct": 48.15,
+          "ci95_low_pct": -15.34,
+          "mean_improvement_pct": 16.41,
+          "n": 4,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 3
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": 15.54,
+          "ci95_low_pct": -113.02,
+          "mean_improvement_pct": -48.74,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 22
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 24.59,
+          "ci95_low_pct": 2.12,
+          "mean_improvement_pct": 13.35,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 22
+        }
+      },
+      "swarmos vs stop_and_wait": {
+        "makespan_censored_s": {
+          "ci95_high_pct": -28.38,
+          "ci95_low_pct": -150.22,
+          "mean_improvement_pct": -89.3,
+          "n": 40,
+          "not_admissible": "treatment did not finish on 9 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 2
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": -95.06,
+          "ci95_low_pct": -255.44,
+          "mean_improvement_pct": -175.25,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 7
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 15.48,
+          "ci95_low_pct": -10.74,
+          "mean_improvement_pct": 2.37,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 12
+        }
+      },
+      "swarmos_mhb vs stop_and_wait": {
+        "makespan_censored_s": {
+          "ci95_high_pct": -4.79,
+          "ci95_low_pct": -108.37,
+          "mean_improvement_pct": -56.58,
+          "n": 40,
+          "not_admissible": "treatment did not finish on 7 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 6
+        },
+        "makespan_s (both finished)": {
+          "ci95_high_pct": 380.46,
+          "ci95_low_pct": -458.8,
+          "mean_improvement_pct": -39.17,
+          "n": 2,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 0
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": -41.06,
+          "ci95_low_pct": -193.45,
+          "mean_improvement_pct": -117.25,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 14
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 22.55,
+          "ci95_low_pct": -8.52,
+          "mean_improvement_pct": 7.02,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 18
+        }
+      }
+    },
+    "dnf_pairs": {
+      "baseline vs stop_and_wait": {
+        "reference_only_dnf_seeds": [
+          900002,
+          900004,
+          900006,
+          900010,
+          900020,
+          900022,
+          900024,
+          900025,
+          900028,
+          900037,
+          900038,
+          900039,
+          900040
+        ],
+        "treatment_only_dnf_seeds": [
+          900001,
+          900011,
+          900021,
+          900027,
+          900030
+        ]
+      },
+      "swarmos vs stop_and_wait": {
+        "reference_only_dnf_seeds": [
+          900015,
+          900024
+        ],
+        "treatment_only_dnf_seeds": [
+          900001,
+          900007,
+          900008,
+          900011,
+          900012,
+          900014,
+          900021,
+          900027,
+          900030
+        ]
+      },
+      "swarmos_mhb vs stop_and_wait": {
+        "reference_only_dnf_seeds": [
+          900013,
+          900015,
+          900017,
+          900022,
+          900024,
+          900039
+        ],
+        "treatment_only_dnf_seeds": [
+          900008,
+          900011,
+          900012,
+          900014,
+          900021,
+          900027,
+          900030
+        ]
+      }
+    }
+  },
+  "overlap_batch/normal": {
+    "arms": {
+      "baseline": {
+        "avg_wait_s_mean": 131.0528,
+        "backtracks_mean": 380.5,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": null,
+        "compute_p95_ms_mean": 0.8161,
+        "conflicts_mean": 246.75,
+        "deadlocks_formed_mean": 98.875,
+        "did_not_finish": 20,
+        "finish_rate": 0.5,
+        "held_work_ticks_mean": 4515.725,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 4.85,
+        "makespan_censored_mean": 1814.2475,
+        "makespan_finished_mean": 628.495,
+        "makespan_finished_median": 514.25,
+        "margin_breaches_total": 0,
+        "min_separation_m_min": 0.7573,
+        "msgs_per_robot_tick_mean": null,
+        "path_efficiency_mean": 0.5848,
+        "persistent_deadlocks_mean": 0.7,
+        "predicted_conflicts_mean": 0.0,
+        "replans_mean": 1158.35,
+        "reroute_count_mean": 545.45,
+        "resolved_conflicts_mean": 246.45,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 6.525,
+        "stop_events_mean": 342.85,
+        "t90_censored_mean": 1096.31,
+        "tasks_complete_mean": 20.95,
+        "throughput_tpm_mean": 1.5413,
+        "wait_count_mean": 3970.275,
+        "yield_count_mean": 0.0
+      },
+      "stop_and_wait": {
+        "avg_wait_s_mean": 194.9082,
+        "backtracks_mean": 273.2,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": null,
+        "compute_p95_ms_mean": 0.8715,
+        "conflicts_mean": 384.275,
+        "deadlocks_formed_mean": 126.85,
+        "did_not_finish": 19,
+        "finish_rate": 0.525,
+        "held_work_ticks_mean": 18675.6,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 5.8,
+        "makespan_censored_mean": 1843.705,
+        "makespan_finished_mean": 797.5333,
+        "makespan_finished_median": 606.9,
+        "margin_breaches_total": 0,
+        "min_separation_m_min": 0.7527,
+        "msgs_per_robot_tick_mean": null,
+        "path_efficiency_mean": 0.551,
+        "persistent_deadlocks_mean": 123.0,
+        "predicted_conflicts_mean": 0.0,
+        "replans_mean": 1300.375,
+        "reroute_count_mean": 607.275,
+        "resolved_conflicts_mean": 383.575,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 22.15,
+        "stop_events_mean": 473.8,
+        "t90_censored_mean": 1344.575,
+        "tasks_complete_mean": 22.1,
+        "throughput_tpm_mean": 1.45,
+        "wait_count_mean": 18068.325,
+        "yield_count_mean": 0.0
+      },
+      "swarmos": {
+        "avg_wait_s_mean": 167.321,
+        "backtracks_mean": 2331.75,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": 0.0,
+        "compute_p95_ms_mean": 1.9855,
+        "conflicts_mean": 142.7,
+        "deadlocks_formed_mean": 312.275,
+        "did_not_finish": 20,
+        "finish_rate": 0.5,
+        "held_work_ticks_mean": 58946.825,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 3.625,
+        "lookahead": {
+          "fn": 586,
+          "fp": 3682,
+          "mean_lead_ticks": 18.6135,
+          "precision": 0.5818,
+          "recall": 0.8973,
+          "tp": 5122
+        },
+        "makespan_censored_mean": 1789.8375,
+        "makespan_finished_mean": 579.675,
+        "makespan_finished_median": 590.7,
+        "margin_breaches_total": 32,
+        "min_separation_m_min": 0.72,
+        "msgs_per_robot_tick_mean": 2.6578,
+        "path_efficiency_mean": 0.688,
+        "persistent_deadlocks_mean": 47.85,
+        "predicted_conflicts_mean": 226.9,
+        "replans_mean": 16202.55,
+        "reroute_count_mean": 7999.325,
+        "resolved_conflicts_mean": 140.175,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 157.55,
+        "stop_events_mean": 260.3,
+        "t90_censored_mean": 752.24,
+        "tasks_complete_mean": 23.02,
+        "throughput_tpm_mean": 1.4872,
+        "wait_count_mean": 18471.5,
+        "yield_count_mean": 32586.55
+      },
+      "swarmos_mhb": {
+        "avg_wait_s_mean": 164.5825,
+        "backtracks_mean": 3177.75,
+        "collisions_total": 0,
+        "comm_hold_ticks_mean": 0.0,
+        "compute_p95_ms_mean": 1.8283,
+        "conflicts_mean": 113.925,
+        "deadlocks_formed_mean": 412.125,
+        "did_not_finish": 18,
+        "finish_rate": 0.55,
+        "held_work_ticks_mean": 51196.275,
+        "invariant_failures_total": 0,
+        "livelock_episodes_mean": 3.925,
+        "lookahead": {
+          "fn": 937,
+          "fp": 2999,
+          "mean_lead_ticks": 16.1852,
+          "precision": 0.5469,
+          "recall": 0.7944,
+          "tp": 3620
+        },
+        "makespan_censored_mean": 1652.3575,
+        "makespan_finished_mean": 549.7409,
+        "makespan_finished_median": 538.45,
+        "margin_breaches_total": 21,
+        "min_separation_m_min": 0.7221,
+        "msgs_per_robot_tick_mean": 2.5496,
+        "path_efficiency_mean": 0.6924,
+        "persistent_deadlocks_mean": 12.75,
+        "predicted_conflicts_mean": 186.525,
+        "replans_mean": 20544.975,
+        "reroute_count_mean": 10361.725,
+        "resolved_conflicts_mean": 111.5,
+        "runs": 40,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 176.0,
+        "stop_events_mean": 229.075,
+        "t90_censored_mean": 903.82,
+        "tasks_complete_mean": 22.85,
+        "throughput_tpm_mean": 1.6835,
+        "wait_count_mean": 27181.0,
+        "yield_count_mean": 14394.725
+      }
+    },
+    "comparisons": {
+      "baseline vs stop_and_wait": {
+        "makespan_censored_s": {
+          "ci95_high_pct": -13.88,
+          "ci95_low_pct": -132.99,
+          "mean_improvement_pct": -73.44,
+          "n": 40,
+          "not_admissible": "treatment did not finish on 12 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 13
+        },
+        "makespan_s (both finished)": {
+          "ci95_high_pct": 21.4,
+          "ci95_low_pct": -25.78,
+          "mean_improvement_pct": -2.19,
+          "n": 9,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 2
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": -2.12,
+          "ci95_low_pct": -143.6,
+          "mean_improvement_pct": -72.86,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 21
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 34.22,
+          "ci95_low_pct": -20.67,
+          "mean_improvement_pct": 6.77,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 14
+        }
+      },
+      "swarmos vs stop_and_wait": {
+        "makespan_censored_s": {
+          "ci95_high_pct": -15.41,
+          "ci95_low_pct": -155.26,
+          "mean_improvement_pct": -85.34,
+          "n": 40,
+          "not_admissible": "treatment did not finish on 10 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 15
+        },
+        "makespan_s (both finished)": {
+          "ci95_high_pct": 38.11,
+          "ci95_low_pct": -28.87,
+          "mean_improvement_pct": 4.62,
+          "n": 11,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 6
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": 31.82,
+          "ci95_low_pct": -50.26,
+          "mean_improvement_pct": -9.22,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 22
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 40.91,
+          "ci95_low_pct": -10.35,
+          "mean_improvement_pct": 15.28,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 15
+        }
+      },
+      "swarmos_mhb vs stop_and_wait": {
+        "makespan_censored_s": {
+          "ci95_high_pct": 0.51,
+          "ci95_low_pct": -140.28,
+          "mean_improvement_pct": -69.89,
+          "n": 40,
+          "not_admissible": "treatment did not finish on 8 seed(s) the reference finished; censoring would flatter it",
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 16
+        },
+        "makespan_s (both finished)": {
+          "ci95_high_pct": 38.22,
+          "ci95_low_pct": -22.47,
+          "mean_improvement_pct": 7.87,
+          "n": 13,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 7
+        },
+        "t90_censored_s": {
+          "ci95_high_pct": 21.59,
+          "ci95_low_pct": -76.73,
+          "mean_improvement_pct": -27.57,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 20
+        },
+        "tasks_complete": {
+          "ci95_high_pct": 35.34,
+          "ci95_low_pct": -8.86,
+          "mean_improvement_pct": 13.24,
+          "n": 40,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 12
+        }
+      }
+    },
+    "dnf_pairs": {
+      "baseline vs stop_and_wait": {
+        "reference_only_dnf_seeds": [
+          900006,
+          900013,
+          900015,
+          900016,
+          900026,
+          900029,
+          900030,
+          900031,
+          900036,
+          900037,
+          900038
+        ],
+        "treatment_only_dnf_seeds": [
+          900001,
+          900003,
+          900007,
+          900008,
+          900014,
+          900019,
+          900021,
+          900022,
+          900028,
+          900035,
+          900039,
+          900040
+        ]
+      },
+      "swarmos vs stop_and_wait": {
+        "reference_only_dnf_seeds": [
+          900004,
+          900005,
+          900013,
+          900016,
+          900023,
+          900026,
+          900030,
+          900031,
+          900038
+        ],
+        "treatment_only_dnf_seeds": [
+          900003,
+          900007,
+          900010,
+          900014,
+          900018,
+          900019,
+          900032,
+          900034,
+          900035,
+          900039
+        ]
+      },
+      "swarmos_mhb vs stop_and_wait": {
+        "reference_only_dnf_seeds": [
+          900004,
+          900012,
+          900013,
+          900015,
+          900016,
+          900020,
+          900026,
+          900036,
+          900038
+        ],
+        "treatment_only_dnf_seeds": [
+          900001,
+          900003,
+          900010,
+          900017,
+          900024,
+          900025,
+          900032,
+          900034
+        ]
+      }
+    }
+  }
+}

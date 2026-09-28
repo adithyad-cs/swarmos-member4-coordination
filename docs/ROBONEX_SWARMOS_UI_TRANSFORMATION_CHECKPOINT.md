@@ -301,7 +301,8 @@ coordination-behaviour problem inside the region sections 25 and 26 lock, so it 
 scope for this task. It is worth noting that the path-legibility work above will make the
 gridlock *more* visible, not less. This should be the next task.
 
-Also still open from earlier work: criterion C2 (throughput gain) measured mean **-19.3
-pct**, 95 pct CI [-36.0, -2.6] against a >= +20 pct target, published honestly in
-`docs/SUCCESS_CRITERIA_VERIFICATION.md`. C1 (zero collisions) is met across 27 paired
+Also still open from earlier work (at the time of this checkpoint; SUPERSEDED - current
+C2 status is `docs/C2_V3_PRODUCT_RESULT.md`): criterion C2 (throughput gain) measured
+mean **-19.3 pct**, 95 pct CI [-36.0, -2.6] against a >= +20 pct target, published
+honestly in `docs/SUCCESS_CRITERIA_VERIFICATION.md`. C1 (zero collisions) is met across 27 paired
 9000-tick runs.

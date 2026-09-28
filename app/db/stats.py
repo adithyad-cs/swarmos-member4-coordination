@@ -314,5 +314,3 @@ def paired(
         lower_is_better=lower_is_better,
         target_pct=target_pct,
     )
-
-# File contains AI-generated response based on internal company sources

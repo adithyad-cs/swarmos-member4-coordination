@@ -86,7 +86,7 @@ map.ghostSource = () => cosim.ghostSource(store.scenario, store.seed);
 
 const panels = {
   fleet: new FleetPanel($("panel-fleet"), map),
-  inspector: new InspectorPanel($("panel-inspector")),
+  inspector: new InspectorPanel($("panel-inspector"), transport),
   lab: new LabPanel($("panel-lab"), transport),
   cosim: new CosimPanel($("panel-cosim"), cosim),
   analytics: new AnalyticsPanel($("panel-analytics")),
@@ -375,5 +375,3 @@ paintMapInfo();
 panels.lab.init();
 panels.cosim.init();
 transport.connect();
-
-// File contains AI-generated response based on internal company sources

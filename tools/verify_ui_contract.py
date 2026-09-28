@@ -187,6 +187,29 @@ def check_option_values():
         record("PASS", "option-values",
                "all %d offered faults map onto FaultKind" % len(fault_ids))
 
+    # Compare-tab faults are sent VERBATIM to cosim.inject(), which calls
+    # FaultKind(name) with no alias table, so each id must be an exact
+    # FaultKind value. DEMAND_SPIKE once sat here and failed on every click.
+    cosim_js = os.path.join(WEB, "js", "panels", "cosim.js")
+    try:
+        with open(cosim_js, encoding="utf-8") as fh:
+            src = fh.read()
+    except OSError as exc:                                    # pragma: no cover
+        record("WARN", "option-values", "cannot read cosim.js: %s" % exc)
+        return
+    block = re.search(r"const FAULTS\s*=\s*\[(.*?)\];", src, re.S)
+    cosim_ids = re.findall(r'\[\s*"([A-Z_]+)"', block.group(1)) if block else []
+    if not cosim_ids:
+        record("FAIL", "option-values", "cosim.js: no FAULTS table found")
+        return
+    bad = [f for f in cosim_ids if f not in known]
+    if bad:
+        record("FAIL", "option-values",
+               "cosim.js offers faults the engine does not know: %s" % ", ".join(bad))
+    else:
+        record("PASS", "option-values",
+               "all %d Compare-tab faults are exact FaultKind values" % len(cosim_ids))
+
 
 # --------------------------------------------------------------------------
 # 3. every advertised keystroke must be bound
@@ -451,20 +474,23 @@ def check_api():
 # 7. the landing page must say exactly what sections 6-13 require
 # --------------------------------------------------------------------------
 
-# Verbatim from ROBONEX_SWARMOS_FINAL_UI_UX_MASTER_PROMPT.docx. Kept as data so
-# a copy edit to the page fails loudly instead of drifting off spec.
+# Verbatim from the approved Claude Design export "ROBONEX Landing.dc.html"
+# (the visual/content source of truth as of the final landing integration).
+# Kept as data so a copy edit to the page fails loudly instead of drifting
+# off spec. The design's hero headline has a <br> between "for" and
+# "autonomous" (kept, to match the design's own markup exactly), so that
+# line is checked as two pieces rather than one continuous string.
 LANDING_COPY = [
     ("ROBONEX", "section 6/7 wordmark and hero title"),
-    ("SMART INDIA HACKATHON", "section 6 SIH line"),
+    ("Smart India Hackathon", "section 6 SIH line"),
     ("SWARMOS", "section 6/9 product name"),
-    ("Distributed intelligence for autonomous warehouse fleets.", "section 7 lede"),
-    ("DECENTRALIZED MULTI-AMR COORDINATION", "section 9 card kicker"),
-    ("Decentralized coordination", "section 9 capability 1"),
+    ("Distributed intelligence for", "section 7 lede (line 1, before the <br>)"),
+    ("autonomous warehouse fleets.", "section 7 lede (line 2, after the <br>)"),
+    ("Decentralized multi-AMR coordination", "section 9 capability 1"),
     ("Real-time conflict resolution", "section 9 capability 2"),
-    ("Dynamic task allocation", "section 9 capability 3"),
-    ("Spatio-temporal coordination", "section 9 capability 4"),
-    ("Failure recovery", "section 9 capability 5"),
-    ("Edge intelligence", "section 9 capability 6"),
+    ("Dynamic fleet intelligence", "section 9 capability 3"),
+    ("Failure recovery", "section 9 capability 4"),
+    ("Edge-AI based congestion prediction", "section 9 capability 5"),
     ("FLEET STATUS", "section 11 status row 1"),
     ("AMR NETWORK", "section 11 status row 2"),
     ("ENTER SWARMOS", "section 12 call to action"),
@@ -600,6 +626,50 @@ def check_render_payload():
 
 # --------------------------------------------------------------------------
 
+def check_imports():
+    """Every format helper a module USES must be IMPORTED by that module.
+
+    `node --check` is a syntax check only; an unimported helper is a
+    ReferenceError that fires at runtime, on every frame, and only in a real
+    browser. That is exactly how the Analytics safety block shipped broken
+    (metres() used, not imported) - caught by tools/audit_browser.mjs, and now
+    statically here.
+    """
+    fmt_path = os.path.join(WEB, "js", "format.js")
+    with open(fmt_path, encoding="utf-8") as fh:
+        fmt_src = fh.read()
+    funcs = set(re.findall(r"export function (\w+)", fmt_src))
+    consts = set(re.findall(r"export const (\w+)", fmt_src))
+    exports = funcs | consts
+    bad = []
+    checked = 0
+    for dirpath, _dirs, files in os.walk(os.path.join(WEB, "js")):
+        for fname in files:
+            if not fname.endswith(".js") or fname == "format.js":
+                continue
+            path = os.path.join(dirpath, fname)
+            with open(path, encoding="utf-8") as fh:
+                src = fh.read()
+            imported = set()
+            for block in re.findall(r"import\s*\{([^}]*)\}\s*from\s*\"[^\"]*format\.js\"", src):
+                imported |= {n.strip().split(" as ")[-1] for n in block.split(",") if n.strip()}
+            code = re.sub(r"//[^\n]*|/\*.*?\*/", "", src, flags=re.S)
+            for name in sorted(exports):
+                # A function counts as used only when CALLED (a helper name can
+                # also be a CSS class inside markup, e.g. class="num").
+                pat = (r"(?<![\w.$-])%s\s*\(" if name in funcs
+                       else r"(?<![\w.$-])%s\b") % re.escape(name)
+                used = re.search(pat, code)
+                local = re.search(r"(?:function|const|let|var)\s+%s\b" % re.escape(name), code)
+                if used and not local and name not in imported:
+                    bad.append("%s uses %s" % (os.path.relpath(path, ROOT), name))
+            checked += 1
+    if bad:
+        record("FAIL", "imports", "format helpers used but not imported: " + "; ".join(bad))
+    else:
+        record("PASS", "imports", "all format helpers used in %d modules are imported" % checked)
+
+
 CHECKS = [
     ("dom-ids", check_dom_ids),
     ("option-values", check_option_values),
@@ -610,6 +680,7 @@ CHECKS = [
     ("landing", check_landing),
     ("rail-default", check_rail_default),
     ("render-payload", check_render_payload),
+    ("imports", check_imports),
 ]
 
 

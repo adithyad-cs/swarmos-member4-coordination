@@ -424,5 +424,3 @@ def test_run_ab_excludes_and_names_barren_seeds():
     assert summary["treatment_collisions"] == 0
     assert "baseline_collisions" in summary
     assert isinstance(result.render(), str)
-
-# File contains AI-generated response based on internal company sources

@@ -76,5 +76,3 @@ __all__ = [
     "ArmResult", "BenchmarkResult", "run_one", "run_ab", "message_scaling",
     "DEFAULT_SEEDS", "DEFAULT_TICKS",
 ]
-
-# File contains AI-generated response based on internal company sources

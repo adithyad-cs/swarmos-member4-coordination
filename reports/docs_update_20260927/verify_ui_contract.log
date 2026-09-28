@@ -1,0 +1,51 @@
+/home/user/swarmos-member4-coordination/tools/verify_ui_contract.py:410: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient
+
+SWARMOS UI CONTRACT VERIFIER
+==============================================================================
+WARN  dom-ids         declared in html, never read by JS: kpi-avg-completion, kpi-collisions, kpi-p95, kpi-replans, kpi-tasks-complete, kpi-tasks-per-min, kpi-verdicts, lp-card-title, lp-title, lp-transition, tab-analytics, tab-cosim, tab-fleet, tab-inspector, tab-lab
+PASS  dom-ids         61 referenced ids all resolve
+PASS  option-values   lab.js scenario option value is `s.name`
+PASS  option-values   all 6 scenarios expose 'name': blocked_aisle, corridor_demo, narrow_aisle_deadlock, open_floor_batch, overlap_batch, rush_50
+PASS  option-values   all 5 offered faults map onto FaultKind
+PASS  option-values   all 5 Compare-tab faults are exact FaultKind values
+PASS  keyboard        every advertised key is bound (0, Esc, R)
+PASS  keyboard        global keydown guards text entry
+PASS  tokens          35 canvas tokens all declared
+PASS  tokens          --map-grid vs --map-floor contrast 1.206
+PASS  tokens          --map-grid-major vs --map-floor contrast 1.355
+PASS  tokens          --map-grid-major stays below --line-default
+PASS  map-units       all named map thresholds compared in their own unit
+PASS  css-classes     115 emitted classes all styled
+PASS  landing         all 14 mandated strings present
+PASS  landing         no commercial content (section 14)
+PASS  landing         no nav element (sections 6, 31)
+PASS  landing         ENTER SWARMOS starts the real run then opens the dashboard
+PASS  landing         status degrades honestly when the server is silent
+PASS  landing         landing.css honours prefers-reduced-motion
+PASS  landing         landing.css imports the canonical tokens
+PASS  rail-default    shell boots with the rail closed
+PASS  rail-default    rail element boots closed
+PASS  rail-default    boot primes the default panel without revealing the rail
+PASS  rail-default    rail handle is available at every width
+PASS  render-payload  all 6 warehouse keys map.js reads are produced by the normaliser
+PASS  imports         all format helpers used in 12 modules are imported
+PASS  api             GET /api/scenarios -> blocked_aisle, corridor_demo, narrow_aisle_deadlock, open_floor_batch, overlap_batch, rush_50
+PASS  api             start/step/pause/resume ok for 'blocked_aisle'
+PASS  api             start/step/pause/resume ok for 'corridor_demo'
+PASS  api             start/step/pause/resume ok for 'narrow_aisle_deadlock'
+PASS  api             start/step/pause/resume ok for 'open_floor_batch'
+PASS  api             start/step/pause/resume ok for 'overlap_batch'
+PASS  api             start/step/pause/resume ok for 'rush_50'
+PASS  api             inject 'robot_failure' accepted
+PASS  api             inject 'comm_blackout' accepted
+PASS  api             inject 'link_impair' accepted
+PASS  api             inject 'blocked_aisle' accepted
+PASS  api             inject 'rogue_agent' accepted
+PASS  api             5 of 10 FaultKind values are reachable from the UI
+------------------------------------------------------------------------------
+39 pass, 1 warn, 0 FAIL
+
+All machine-checkable UI contracts hold.
+Now walk docs/UI_VERIFICATION_CHECKLIST.md for the things only
+a human eye can confirm (canvas pixels, focus rings, motion).

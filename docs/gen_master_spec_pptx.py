@@ -542,13 +542,14 @@ def build(out_path: str) -> str:
 
     # ---------------------------------------------------------- 18 criteria
     s = new_slide(prs, "Success criteria - measured",
-                  "C1 is met after we found and fixed two real defects. C2 is "
-                  "not met, and we say so.")
+                  "C1 met after two real defects were fixed. C2 met for the "
+                  "product default in a frozen simulation benchmark (v3) - "
+                  "mostly reliability.")
     kpi_cards(s, [
-        ("9000", "ticks per run, 27 paired", ACCENT),
-        ("7 -> 0", "SwarmOS collisions", OK),
-        ("-19.3 pct", "C2 mean, sign negative", BAD),
-        ("20 pct", "C2 bar - not met", BAD),
+        ("+48.9 pct", "C2 v3, CI [+35.3, +62.5], sim", OK),
+        ("40/40 vs 21/40", "batches finished (overlap)", OK),
+        ("+17.5 pct", "both-finished speed, CI [+1.4, +33.6]", WARN),
+        ("0", "collisions, 240 runs", OK),
     ], y=1.45, h=1.4)
     bullets(s, [
         "C1: met on the current code - 27 paired runs, 3 scenarios, 9 seeds, "
@@ -558,18 +559,20 @@ def build(out_path: str) -> str:
         "C1 is necessary, not differentiating: the stop-and-wait control is "
         "collision-free too. What it shows is that negotiation, containment and "
         "sovereign fallback did not cost us safety - not that they bought it.",
-        "C2: NOT MET. Mean -19.3 percent, 95 percent CI [-36.0, -2.6]. It got "
-        "worse when we fixed defect 2, which is the right direction: a sound "
-        "step bound withholds speed the arbiter used to grant.",
-        "Two findings matter more than that number. Task supply, not run length, "
-        "binds - 9000 ticks of blocked_aisle is byte-identical to 1800. And "
-        "avg_completion_s across arms is survivorship-biased: one seed scored "
-        "+25.9 percent for us only because we finished 3 tasks to the baseline's "
-        "12.",
+        "C2 (current): frozen protocol v3, product default (F1+F3+F5+F6, F2 "
+        "off, 0.75 m floor) vs textbook stop-and-wait + F1 + F6 on "
+        "overlap_batch, 40 fresh seeds: +48.9 percent, 95 percent CI [+35.3, "
+        "+62.5]; 40/40 vs 21/40 finished; all five frozen conditions passed; "
+        "240/240 replayed exactly. Simulation only.",
+        "Caveats we state first: where both finish, +17.5 percent [+1.4, +33.6] "
+        "- below 20 percent on speed alone. Open floor: capped +33.7 percent "
+        "[+4.5, +62.8], 40/40 vs 15/40, but SWARMOS is slower when both finish. "
+        "History: the earlier avg_completion_s result (-19.3 percent, NOT MET) "
+        "is superseded.",
     ], y=3.1, size=13, gap=9)
-    note(s, "Full record in docs/SUCCESS_CRITERIA_VERIFICATION.md, raw log in "
-            "reports/criteria_after_envelope_fix.log. Reproduce with "
-            "tools/verify_criteria_powered.py 9000 9.", y=6.75, color=WARN)
+    note(s, "C2: docs/C2_V3_PRODUCT_RESULT.md, reports/c2v3/. C1 history: "
+            "docs/SUCCESS_CRITERIA_VERIFICATION.md, "
+            "reports/criteria_after_envelope_fix.log.", y=6.75, color=WARN)
 
     # ------------------------------------------------------- 19 c1 root cause
     s = new_slide(prs, "How C1 was actually won",
@@ -660,9 +663,11 @@ def build(out_path: str) -> str:
          "out of the safety path and documented why. The intelligence in the "
          "safety path is the arbitration, not a model."],
         ["Did you hit the 20 percent target?",
-         "No. +2.3 percent mean, and the measurement is under-powered at n of 1 "
-         "to 16 tasks. Here is the table, and here is the run that would settle "
-         "it."],
+         "In a frozen simulation benchmark, for the product default on the "
+         "overlapping-paths floor: +48.9 percent, 95 percent CI [+35.3, +62.5], "
+         "40/40 vs 21/40 batches finished. Mostly reliability: where both "
+         "finish it is +17.5 percent [+1.4, +33.6], and the open floor is "
+         "slower when both finish."],
         ["What happens when the network dies?",
          "Sovereign mode. Speed capped at half, margin widened by 0.35 m, "
          "existing reservations only. Visible in the UI and in a KPI."],
@@ -693,8 +698,10 @@ def build(out_path: str) -> str:
         ],
         "We do not claim",
         [
-            "The 20 percent completion-time reduction. Measured at +2.3 "
-            "percent, under-powered, and not yet answered.",
+            "That SWARMOS is universally faster. C2 (+48.9 percent, simulation) "
+            "is mostly reliability; where both finish it is +17.5 percent, and "
+            "slower on the open floor.",
+            "Physical-world certification. Every C2 number is simulation.",
             "That our forecaster is good. It is worse than persistence and we "
             "published the number.",
             "Operation at 500 robots. Untested, therefore unclaimed.",

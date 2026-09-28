@@ -923,5 +923,3 @@ if __name__ == "__main__":
     p = Presentation(path)
     print("Wrote: %s" % path)
     print("Slides: %d" % len(p.slides.__iter__.__self__._sldIdLst))
-
-# File contains AI-generated response based on internal company sources

@@ -1,0 +1,209 @@
+{
+  "blocked_aisle/normal": {
+    "arms": {
+      "swarmos": {
+        "avg_wait_s_mean": 5.8378,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 14.6888,
+        "deadlocks_formed_mean": 428.3333,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 232,
+          "fp": 2365,
+          "mean_lead_ticks": 16.3767,
+          "precision": 0.4079,
+          "recall": 0.8753,
+          "tp": 1629
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 21,
+        "min_separation_m_min": 0.722,
+        "msgs_per_robot_tick_mean": 11.8541,
+        "path_efficiency_mean": 0.9569,
+        "persistent_deadlocks_mean": 66.1111,
+        "replans_mean": 4024.2222,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 62.8889,
+        "tasks_complete_mean": 8.78
+      },
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 7.5922,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 14.1499,
+        "deadlocks_formed_mean": 494.6667,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 242,
+          "fp": 2044,
+          "mean_lead_ticks": 16.5333,
+          "precision": 0.4431,
+          "recall": 0.8704,
+          "tp": 1626
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 31,
+        "min_separation_m_min": 0.727,
+        "msgs_per_robot_tick_mean": 11.9524,
+        "path_efficiency_mean": 0.9654,
+        "persistent_deadlocks_mean": 41.4444,
+        "replans_mean": 5449.6667,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 67.4444,
+        "tasks_complete_mean": 10.56
+      }
+    },
+    "comparisons": {
+      "swarmos_mhb_sep vs swarmos": {
+        "tasks_complete": {
+          "ci95_high_pct": 77.3,
+          "ci95_low_pct": -14.71,
+          "mean_improvement_pct": 31.3,
+          "n": 9,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 5
+        }
+      }
+    }
+  },
+  "narrow_aisle_deadlock/normal": {
+    "arms": {
+      "swarmos": {
+        "avg_wait_s_mean": 10.5133,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 6.8919,
+        "deadlocks_formed_mean": 193.3333,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 70,
+          "fp": 1120,
+          "mean_lead_ticks": 16.67,
+          "precision": 0.4111,
+          "recall": 0.9178,
+          "tp": 782
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 5,
+        "min_separation_m_min": 0.73,
+        "msgs_per_robot_tick_mean": 9.3457,
+        "path_efficiency_mean": 0.6594,
+        "persistent_deadlocks_mean": 28.6667,
+        "replans_mean": 1497.3333,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 22.6667,
+        "tasks_complete_mean": 5.56
+      },
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 16.6056,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 6.6498,
+        "deadlocks_formed_mean": 237.7778,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 209,
+          "fp": 949,
+          "mean_lead_ticks": 15.5167,
+          "precision": 0.4647,
+          "recall": 0.7977,
+          "tp": 824
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 4,
+        "min_separation_m_min": 0.74,
+        "msgs_per_robot_tick_mean": 9.3858,
+        "path_efficiency_mean": 0.6657,
+        "persistent_deadlocks_mean": 18.3333,
+        "replans_mean": 2048.8889,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 23.6667,
+        "tasks_complete_mean": 6.22
+      }
+    },
+    "comparisons": {
+      "swarmos_mhb_sep vs swarmos": {
+        "tasks_complete": {
+          "ci95_high_pct": 185.29,
+          "ci95_low_pct": -40.84,
+          "mean_improvement_pct": 72.22,
+          "n": 9,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 5
+        }
+      }
+    }
+  },
+  "rush_50/normal": {
+    "arms": {
+      "swarmos": {
+        "avg_wait_s_mean": 83.6322,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 39.3633,
+        "deadlocks_formed_mean": 6147.3333,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 1302,
+          "fp": 38481,
+          "mean_lead_ticks": 20.1956,
+          "precision": 0.1899,
+          "recall": 0.8739,
+          "tp": 9022
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 88,
+        "min_separation_m_min": 0.724,
+        "msgs_per_robot_tick_mean": 22.2194,
+        "path_efficiency_mean": 0.954,
+        "persistent_deadlocks_mean": 1553.3333,
+        "replans_mean": 102526.8889,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 2040.4444,
+        "tasks_complete_mean": 24.22
+      },
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 87.8,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 48.1087,
+        "deadlocks_formed_mean": 6625.7778,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 3314,
+          "fp": 47211,
+          "mean_lead_ticks": 15.1789,
+          "precision": 0.2815,
+          "recall": 0.8481,
+          "tp": 18499
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 259,
+        "min_separation_m_min": 0.722,
+        "msgs_per_robot_tick_mean": 18.6868,
+        "path_efficiency_mean": 0.947,
+        "persistent_deadlocks_mean": 727.3333,
+        "replans_mean": 120632.1111,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 1667.4444,
+        "tasks_complete_mean": 38.33
+      }
+    },
+    "comparisons": {
+      "swarmos_mhb_sep vs swarmos": {
+        "tasks_complete": {
+          "ci95_high_pct": 207.87,
+          "ci95_low_pct": -14.07,
+          "mean_improvement_pct": 96.9,
+          "n": 9,
+          "target_met": false,
+          "target_pct": 20.0,
+          "wins": 6
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "blocked_aisle/normal": {
+    "arms": {
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 7.5922,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 14.7072,
+        "deadlocks_formed_mean": 494.6667,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 242,
+          "fp": 2044,
+          "mean_lead_ticks": 16.5333,
+          "precision": 0.4431,
+          "recall": 0.8704,
+          "tp": 1626
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 31,
+        "min_separation_m_min": 0.727,
+        "msgs_per_robot_tick_mean": 11.9524,
+        "path_efficiency_mean": 0.9654,
+        "persistent_deadlocks_mean": 41.4444,
+        "replans_mean": 5449.6667,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 67.4444,
+        "tasks_complete_mean": 10.56
+      }
+    },
+    "comparisons": {}
+  },
+  "corridor_demo/normal": {
+    "arms": {
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 43.9522,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 1.1376,
+        "deadlocks_formed_mean": 23.2222,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 10,
+          "fp": 97,
+          "mean_lead_ticks": 15.5911,
+          "precision": 0.612,
+          "recall": 0.9387,
+          "tp": 153
+        },
+        "makespan_censored_mean": 157.9444,
+        "margin_breaches_total": 2,
+        "min_separation_m_min": 0.732,
+        "msgs_per_robot_tick_mean": 3.3659,
+        "path_efficiency_mean": 0.8027,
+        "persistent_deadlocks_mean": 3.3333,
+        "replans_mean": 383.3333,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 2.0,
+        "tasks_complete_mean": 12.0
+      }
+    },
+    "comparisons": {}
+  },
+  "narrow_aisle_deadlock/normal": {
+    "arms": {
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 16.6056,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 6.6167,
+        "deadlocks_formed_mean": 237.7778,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 209,
+          "fp": 949,
+          "mean_lead_ticks": 15.5167,
+          "precision": 0.4647,
+          "recall": 0.7977,
+          "tp": 824
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 4,
+        "min_separation_m_min": 0.74,
+        "msgs_per_robot_tick_mean": 9.3858,
+        "path_efficiency_mean": 0.6657,
+        "persistent_deadlocks_mean": 18.3333,
+        "replans_mean": 2048.8889,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 23.6667,
+        "tasks_complete_mean": 6.22
+      }
+    },
+    "comparisons": {}
+  },
+  "rush_50/normal": {
+    "arms": {
+      "swarmos_mhb_sep": {
+        "avg_wait_s_mean": 34.9333,
+        "collisions_total": 0,
+        "compute_p95_ms_mean": 33.1814,
+        "deadlocks_formed_mean": 1667.8889,
+        "did_not_finish": 0,
+        "lookahead": {
+          "fn": 745,
+          "fp": 9210,
+          "mean_lead_ticks": 15.5867,
+          "precision": 0.3422,
+          "recall": 0.8654,
+          "tp": 4791
+        },
+        "makespan_censored_mean": null,
+        "margin_breaches_total": 102,
+        "min_separation_m_min": 0.722,
+        "msgs_per_robot_tick_mean": 15.1552,
+        "path_efficiency_mean": 0.9442,
+        "persistent_deadlocks_mean": 181.8889,
+        "replans_mean": 23538.6667,
+        "runs": 9,
+        "safety_fail_runs": 0,
+        "stall_releases_mean": 309.5556,
+        "tasks_complete_mean": 23.67
+      }
+    },
+    "comparisons": {}
+  }
+}

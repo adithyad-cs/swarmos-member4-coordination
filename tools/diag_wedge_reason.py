@@ -75,6 +75,3 @@ for t in range(12):
         print("  -- task released / robot recovered, stopping early")
         break
     eng.step()
-
-
-# File contains AI-generated response based on internal company sources

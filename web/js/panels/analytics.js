@@ -10,7 +10,7 @@
  * a measurement and a gap is an absence, and conflating them is how charts lie.
  */
 import { store } from "../store.js";
-import { num, int, DASH } from "../format.js";
+import { num, int, metres, DASH } from "../format.js";
 
 const TICK_BUDGET_MS = 100;
 
@@ -47,7 +47,7 @@ export class AnalyticsPanel {
   }
 
   _build() {
-    this.el.innerHTML = CHARTS.map((c) => `
+    this.el.innerHTML = `<div id="safety-block"></div><div id="advanced-block"></div>` + CHARTS.map((c) => `
       <div class="chart">
         <div class="chart__head">
           <span class="chart__title">${c.title}</span>
@@ -62,7 +62,87 @@ export class AnalyticsPanel {
     this._built = true;
   }
 
+  /* Safety as explicit invariants, not "nothing crashed on screen". Every value
+   * is read from the engine's safety summary; a missing value renders DASH. */
+  _safety() {
+    const box = this.el.querySelector("#safety-block");
+    if (!box) return;
+    const k = store.kpis || {};
+    const s = k.safety || null;
+    const dl = k.deadlock || null;
+    const la = k.lookahead || null;
+    const counts = s && s.counts ? s.counts : {};
+    const row = (label, value) =>
+      `<div class="kv"><span class="kv__k">${label}</span><span class="kv__v num">${value}</span></div>`;
+    box.innerHTML = `
+      <div class="panel__section">
+        <h2 class="panel__title">Safety invariants</h2>
+        <div class="kv"><span class="kv__k">Verdict</span><span class="kv__v">
+          <span class="chip">${s ? s.verdict : DASH}</span></span></div>
+        ${row("INV-1 contact (&lt; 0.70 m)", s ? int(counts["INV-1"]) : DASH)}
+        ${row("INV-2 step authority", s ? int(counts["INV-2"]) : DASH)}
+        ${row("INV-3 motion while held", s ? int(counts["INV-3"]) : DASH)}
+        ${row("INV-4 status transitions", s ? int(counts["INV-4"]) : DASH)}
+        ${row("Min separation", s && s.min_separation_m != null ? metres(s.min_separation_m, 3) + " m" : DASH)}
+        ${row("Margin breaches (&lt; 0.75 m)", s ? int(s.margin_breaches) : DASH)}
+        ${row("Proximity pair-ticks (&lt; 1.0 m, informational)", s ? int(s.proximity_pair_ticks) : DASH)}
+        ${row("Persistent deadlocks (&ge; 1 s)", dl ? int(dl.persistent_deadlocks) : DASH)}
+        ${row("Lookahead precision / recall", la && la.precision != null ? `${num(la.precision, 2)} / ${num(la.recall, 2)}` : DASH)}
+        ${row("Median prediction lead", la && la.median_lead_ticks != null ? int(la.median_lead_ticks) + " ticks" : DASH)}
+        <div class="chain__note">Contact is a failed run. Margin breaches are near-miss
+          events at the kernel's 0.75 m floor. Proximity under 1.0 m includes normal
+          single-file following and is not a hazard count.</div>
+      </div>`;
+  }
+
+  /* Advanced intelligence: live counters from the running policy. A feature
+   * that is OFF says so; a value the engine did not report renders DASH. */
+  _advanced() {
+    const box = this.el.querySelector("#advanced-block");
+    if (!box) return;
+    const a = (store.kpis || {}).advanced || null;
+    const row = (label, value) =>
+      `<div class="kv"><span class="kv__k">${label}</span><span class="kv__v num">${value}</span></div>`;
+    if (!a) {
+      box.innerHTML = `<div class="panel__section" data-advanced="none">
+        <h2 class="panel__title">Advanced intelligence</h2>
+        <div class="chain__note">Not available for this controller.</div></div>`;
+      return;
+    }
+    const f = a.flags || {};
+    const on = (x) => (x ? "ON" : "OFF");
+    const e = a.edge_ai || {};
+    const m = e.model || null;
+    const p = a.proactive || {};
+    const au = a.auction || {};
+    const v = (x, fmt) => (x == null ? DASH : fmt ? fmt(x) : x);
+    box.innerHTML = `
+      <div class="panel__section" data-advanced="live">
+        <h2 class="panel__title">Advanced intelligence</h2>
+        <div class="kv"><span class="kv__k">Flags</span><span class="kv__v" id="adv-flags">
+          <span class="chip">EDGE_AI ${on(f.EDGE_AI_PREDICTOR)}</span>
+          <span class="chip">PREDICTIVE ${on(f.PREDICTIVE_COORDINATION)}</span>
+          <span class="chip">AUCTION ${on(f.LIVE_DISTRIBUTED_AUCTION)}</span></span></div>
+        ${row("Edge AI status", e.enabled ? v(e.status) : "off")}
+        ${row("Model", m ? `${m.version} · ${m.kind} · H ${m.horizon_ticks} ticks · ${String(m.sha256).slice(0, 12)}` : DASH)}
+        ${row("Predictions / positives", e.enabled ? `${int(e.calls)} / ${int(e.positives)}` : DASH)}
+        ${row("Mean inference", e.enabled && e.mean_inference_us != null ? num(e.mean_inference_us, 1) + " µs" : DASH)}
+        ${row("Pre-holds / resumes", p.enabled ? `${int(p.pre_holds)} / ${int(p.resumes)}` : DASH)}
+        ${row("Released: cleared / timeout / imminent", p.enabled ? `${int(p.released_cleared)} / ${int(p.released_timeout)} / ${int(p.released_imminent)}` : DASH)}
+        ${row("Auctions opened / re-auctions", au.auctions_opened != null ? `${int(au.auctions_opened)} / ${int(au.re_auctions)}` : DASH)}
+        ${row("Leases granted / expired / fallback", au.leases_granted != null ? `${int(au.leases_granted)} / ${int(au.leases_expired)} / ${int(au.fallback_allocations)}` : DASH)}
+        ${row("Bid messages / winner agreement", au.bid_messages != null ? `${int(au.bid_messages)} / ${au.winner_agreement_rate == null ? DASH : num(au.winner_agreement_rate * 100, 1) + " %"}` : DASH)}
+        ${row("Closed by robot consensus / WMS arbitration", au.closed_by_consensus != null ? `${int(au.closed_by_consensus)} / ${int(au.closed_by_arbitration)}` : DASH)}
+        ${row("Ownership violations", au.ownership_violations != null ? int(au.ownership_violations) : DASH)}
+        <div class="chain__note">Edge AI is advisory: it can only turn a proposal into a
+          hold. Every motion still passes the deterministic safety kernel. Leases are
+          registered by the WMS ledger; robots bid and agree over the peer radio.</div>
+      </div>`;
+  }
+
   _update() {
+    this._safety();
+    this._advanced();
     for (const c of CHARTS) {
       const data = store.history[c.key] || [];
       const last = [...data].reverse().find((v) => v != null);

@@ -1,0 +1,29 @@
+PASS  landing: loads with title, status rows and ENTER button  title="ROBONEX" net="ONLINE"
+PASS  landing: ENTER SWARMOS starts a run and opens the dashboard  url=http://127.0.0.1:8791/index.html running=true
+PASS  topbar: LINK live, scenario, seed, tick advancing  tick 9->22 link=Live scenario=rush_50
+PASS  map: static layer, paths and robots are drawn (non-blank canvases)  ink static=109752 robots=184 paths=411
+PASS  map: zoom in / out / fit update the ZOOM readout  zoom 1.00x -> 1.20x -> fit 1.00x
+PASS  map: cursor readout shows world coordinates  cursor="30.0, 20.0 m"
+PASS  KPI strip shows live numbers (no fake zeros before data)  tasks=0 collisions=0
+PASS  rail: toggle opens and closes the side panel  rail closed -> open -> closed
+PASS  Fleet tab: roster lists robots; clicking selects one  rows=8 selected=R001
+PASS  Inspector tab: verdict, decision chain, state, predicted conflicts   R001 · tick 65 -- No verdict recorded for this tick. Decision chain Advisory none ML layer made no proposal this tick. It is never required to. Binding Safety 
+PASS  Analytics tab: safety invariants block + four charts  charts=4 verdict=Verdict
+          PASS
+PASS  Lab tab: scenario list includes batch + demo scenarios  options=blocked_aisle,corridor_demo,narrow_aisle_deadlock,open_floor_batch,overlap_batch,rush_50
+PASS  Lab: start corridor_demo, pause, step, resume, stop  running=true paused=true step 16->17 resumed=true
+PASS  Lab: inject robot_failure with a robot selected  ok=true  ignored=[] error_banner=false
+PASS  Lab: inject comm_blackout with a robot selected  ok=true  ignored=[] error_banner=false
+PASS  Lab: inject link_impair with a robot selected  ok=true  ignored=["robot_id"] error_banner=false
+PASS  Lab: inject blocked_aisle with a robot selected  ok=true  ignored=["robot_id"] error_banner=false
+PASS  Lab: inject rogue_agent with a robot selected  ok=true  ignored=[] error_banner=false
+PASS  Lab: determinism receipt (capture + compare) produces hashes   Captured407b8c9f58148ada Re-run407b8c9f58148ada Identical. The run is bit-for-bit reproducible from the seed.
+PASS  Lab: stop ends the run  running=false
+PASS  Compare tab: start co-simulation, both arms stream, every fault button works  running=true faults=[["ROGUE_ROBOT",true],["ROBOT_FAILURE",true],["COMM_BLACKOUT",true],["LINK_IMPAIR",true],["TASK_BURST",true]]
+PASS  command palette: Ctrl+K opens, lists commands, Esc closes  open=true items=8 closed=true
+PASS  keyboard: 0 (fit) and R bound without errors  page errors unchanged (0)
+PASS  reconnect: dashboard reload keeps working after stop/start  link=Live robot ink=181
+PASS  no uncaught page exceptions during the whole session  
+PASS  no console errors during the whole session  
+------------------------------------------------------------------------------
+26 pass, 0 FAIL

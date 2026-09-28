@@ -1,17 +1,24 @@
 [project]
 name = "swarmos"
 version = "0.1.0"
-description = "SWARMOS — Distributed fleet coordination platform for autonomous mobile robots"
-requires-python = ">=3.11"
+description = "SWARMOS - Distributed fleet coordination platform for autonomous mobile robots"
+# The code uses PEP 604 "X | Y" annotations, so 3.10 is the real floor.
+requires-python = ">=3.10"
+# The API is written against raw Starlette on purpose (see app/api/server.py);
+# FastAPI is NOT a dependency.
 dependencies = [
     "pydantic>=2.0",
-    "fastapi>=0.100.0",
+    "starlette>=0.27",
     "uvicorn>=0.23.0",
+    # Required: without a websocket library uvicorn rejects /ws/fleet with 404
+    # and the dashboard never receives a frame.
+    "websockets>=10",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "httpx",
 ]
 
 [build-system]

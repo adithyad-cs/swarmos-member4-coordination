@@ -34,6 +34,7 @@ export class CosimClient {
 
     this.running = false;
     this.config = null;          // echoed back by the server, never guessed
+    this.policyConfig = null;    // what each arm ACTUALLY runs, read back server side
     this.tick = null;            // null, not 0, until a frame lands
     this.horizonTicks = null;
     this.lockstep = null;
@@ -111,6 +112,7 @@ export class CosimClient {
         this.running = Boolean(msg.running);
         this.config = msg.config || null;
         this.horizonTicks = msg.horizon_ticks ?? null;
+        this.policyConfig = msg.policy_config || this.policyConfig;
         break;
 
       case "cosim":
@@ -121,6 +123,7 @@ export class CosimClient {
         this.divergenceTick = msg.divergence_tick ?? null;
         this.delta = Array.isArray(msg.delta) ? msg.delta : [];
         this.compute = msg.compute || null;
+        this.policyConfig = msg.policy_config || this.policyConfig;
         this._applyArms(msg.arms || {});
         break;
 
@@ -130,6 +133,7 @@ export class CosimClient {
         this.horizonTicks = msg.horizon_ticks ?? this.horizonTicks;
         this.summary = msg.summary || null;
         if (this.summary && this.summary.delta) this.delta = this.summary.delta;
+        if (this.summary && this.summary.policy_config) this.policyConfig = this.summary.policy_config;
         break;
 
       case "cosim_reset":

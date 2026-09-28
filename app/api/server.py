@@ -52,6 +52,7 @@ two files cannot drift apart silently.
 from __future__ import annotations
 
 import asyncio
+import math
 import contextlib
 from pathlib import Path
 from typing import Any, Optional
@@ -184,6 +185,9 @@ async def sim_start(request: Request) -> JSONResponse:
         # Off unless asked for: the integrity layer changes nothing when off,
         # which is what keeps every previously recorded trace hash valid.
         integrity = bool(data.get("integrity", False))
+        # Advanced intelligence (Edge AI + proactive + live auction): off unless
+        # asked for; off is the shipped product configuration.
+        advanced = bool(data.get("advanced", False))
     except ValueError as exc:
         return _fail(str(exc))
 
@@ -206,6 +210,7 @@ async def sim_start(request: Request) -> JSONResponse:
         policy=policy,
         speed=speed,
         integrity=integrity,
+        advanced=advanced,
     )
     try:
         result = await manager.start(cfg)
@@ -258,11 +263,18 @@ async def sim_inject(request: Request) -> JSONResponse:
         value = data.get(key)
         if isinstance(value, str) and value.strip():
             params[key] = value.strip()
-    if data.get("count") is not None:
-        try:
-            params["count"] = int(data["count"])
-        except (TypeError, ValueError):
-            return _fail("Field 'count' must be a whole number.")
+    for key in ("count", "ticks"):
+        if data.get(key) is not None:
+            try:
+                params[key] = int(data[key])
+            except (TypeError, ValueError):
+                return _fail(f"Field '{key}' must be a whole number.")
+    for key in ("drop_pct", "latency_ms"):
+        if data.get(key) is not None:
+            try:
+                params[key] = float(data[key])
+            except (TypeError, ValueError):
+                return _fail(f"Field '{key}' must be a number.")
 
     try:
         result = await manager.inject(fault, **params)
@@ -390,6 +402,32 @@ async def trace_hash(request: Request) -> JSONResponse:
     return _ok(manager.trace_hash())
 
 
+async def explain(request: Request) -> JSONResponse:
+    """Why did this robot do what it did? The Decision Inspector's data.
+
+    Returns the policy's own explanation of the robot's last verdict (when the
+    policy offers one) plus the decision records - predicted conflict, risk
+    terms, the decision each robot took and why, and the outcome - that
+    involve this robot.
+    """
+    rid = request.path_params["robot_id"]
+    eng = manager.engine
+    if eng is None:
+        return _fail("There is no run to explain. Start a run first.")
+    if rid not in eng.robots:
+        return _fail(f"Unknown robot '{rid}'.", status=404)
+    policy_view = None
+    if hasattr(eng.policy, "explain"):
+        policy_view = eng.policy.explain(rid)
+    return _ok({
+        "robot_id": rid,
+        "tick": eng.tick,
+        "policy": policy_view,
+        "decisions": eng.decisions.for_robot(rid),
+        "safety": eng.safety_summary(),
+    })
+
+
 async def status(request: Request) -> JSONResponse:
     return _ok({"status": manager.status()})
 
@@ -451,8 +489,11 @@ async def benchmark_run(request: Request) -> JSONResponse:
     def _work():
         return bench.run_ab(
             scenario,
-            baseline_factory=lambda seed: _make_policy("baseline", seed),
-            treatment_factory=lambda seed: _make_policy("swarmos", seed),
+            # run_one calls the factory with NO arguments (benchmark.py). A
+            # one-argument lambda here made every request fail with a
+            # TypeError; _make_policy does not use the seed anyway.
+            baseline_factory=lambda: _make_policy("baseline", 0),
+            treatment_factory=lambda: _make_policy("swarmos", 0),
             seeds=seeds,
             ticks=ticks,
         )
@@ -466,7 +507,11 @@ async def benchmark_run(request: Request) -> JSONResponse:
     # Both are surfaced because the honest story needs both.
     throughput = result.compare("tasks_per_min", lower_is_better=False)
     latency = result.compare("avg_completion_s", lower_is_better=True)
-    return _ok(
+    # With too few usable seeds the paired statistics are NaN or infinite,
+    # which JSON cannot carry: the response used to crash with a ValueError.
+    # Non-finite values become null, which the UI renders as "--" - an
+    # absence, never a made-up number.
+    return _ok(_finite(
         {
             "scenario": scenario,
             "ticks": ticks,
@@ -477,7 +522,18 @@ async def benchmark_run(request: Request) -> JSONResponse:
             "safety": result.safety_summary(),
             "report": throughput.render(),
         }
-    )
+    ))
+
+
+def _finite(value):
+    """Recursively replace NaN and +/-inf with None so the payload is JSON."""
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {k: _finite(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_finite(v) for v in value]
+    return value
 
 
 # --------------------------------------------------------------------------
@@ -526,6 +582,7 @@ routes = [
     Route("/api/scenarios", scenarios, methods=["GET"]),
     Route("/api/trace/hash", trace_hash, methods=["GET"]),
     Route("/api/status", status, methods=["GET"]),
+    Route("/api/explain/{robot_id}", explain, methods=["GET"]),
     Route("/api/health", health, methods=["GET"]),
     Route("/api/benchmark/run", benchmark_run, methods=["POST"]),
     Route("/api/cosim/start", cosim_start, methods=["POST"]),
@@ -581,6 +638,3 @@ middleware = [
 
 
 app = Starlette(routes=routes, middleware=middleware, lifespan=lifespan)
-
-
-# File contains AI-generated response based on internal company sources

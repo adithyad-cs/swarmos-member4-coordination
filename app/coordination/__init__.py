@@ -143,6 +143,3 @@ __all__ = [
     "RadioStats",
     "R_COMM_M",
 ]
-
-
-# File contains AI-generated response based on internal company sources

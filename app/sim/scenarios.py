@@ -121,6 +121,21 @@ class ScenarioSpec:
     aisle_width: int = 2
     cross_width: int = 2
 
+    # Batch mode: a FIXED set of tasks (initial_burst, no arrivals) and the run
+    # ends when every one of them is complete, or at duration_s as a cap. This
+    # is the SIH C2 measurement: "total task-completion time" is only defined
+    # for a fixed workload, because an open arrival stream has no end and its
+    # average completion time is survivorship-biased (only finished tasks
+    # count). See docs/SUCCESS_CRITERIA_VERIFICATION.md.
+    batch: bool = False
+    # Idle robots drive to a parking cell on the 2-wide perimeter ring instead
+    # of stopping wherever they finished. Without it an idle robot sits on the
+    # drop station - a cell in a single-file row - and blocks that row for the
+    # whole fleet, which no real WMS allows. Applied to BOTH arms of any
+    # comparison (it is a floor-operations rule, not a coordination policy), and
+    # off for the legacy scenarios so their recorded trace hashes stay valid.
+    idle_parking: bool = False
+
     @property
     def duration_ticks(self) -> Optional[int]:
         if self.duration_s is None:
@@ -145,6 +160,8 @@ class ScenarioSpec:
             "cross_width": self.cross_width,
             "sensing": self.sensing.as_dict(),
             "injections": [i.as_dict() for i in self.injections],
+            "batch": self.batch,
+            "idle_parking": self.idle_parking,
         }
 
 
@@ -217,8 +234,93 @@ BLOCKED_AISLE = ScenarioSpec(
 )
 
 
+# ----------------------------------------------------------------------
+# Batch scenarios - the SIH C2 benchmark (fixed workload, makespan)
+# ----------------------------------------------------------------------
+
+OVERLAP_BATCH = ScenarioSpec(
+    name="overlap_batch",
+    title="Overlapping paths, fixed batch",
+    description=(
+        "The SIH C2 benchmark. Single-file aisles (the narrow_aisle_deadlock "
+        "floor), pick stations on the south wall and drop stations on the "
+        "north, so loaded robots travel north while empty robots return south "
+        "through the same aisles: overlapping, head-on paths by construction. "
+        "A fixed batch of 24 tasks for 8 robots; the run ends when all 24 are "
+        "complete (cap 3000 s, reported as did-not-finish if hit)."
+    ),
+    proves=(
+        "Total task-completion time (makespan) versus traditional "
+        "stop-and-wait on overlapping paths, with zero collisions."
+    ),
+    # Sized from measurement, not taste: a lone robot on this floor averages
+    # 0.59 m/s and drives 90-180 m per task (stations on opposite walls), so a
+    # task takes ~150 s uncontended. 24 tasks / 8 robots is ~450 s of ideal
+    # work; the 3000 s cap leaves room for contention without hiding a wedge.
+    fleet_size=8,
+    width=40,
+    height=28,
+    aisle_period=3,
+    cross_period=999,
+    aisle_width=1,
+    cross_width=1,
+    task_rate_per_s=0.0,
+    initial_burst=24,
+    duration_s=3000.0,          # cap; hitting it is reported as did-not-finish
+    batch=True,
+    idle_parking=True,
+)
+
+OPEN_FLOOR_BATCH = ScenarioSpec(
+    name="open_floor_batch",
+    title="Open floor, fixed batch",
+    description=(
+        "The rush_50 floor (two-way aisles, cross aisles) with 12 robots and a "
+        "fixed batch of 36 tasks. Reported alongside overlap_batch so any gain "
+        "is not shown only on single-file corridors."
+    ),
+    proves="Makespan on an ordinary two-way-aisle floor, zero collisions.",
+    fleet_size=12,
+    task_rate_per_s=0.0,
+    initial_burst=36,
+    duration_s=3000.0,
+    batch=True,
+    idle_parking=True,
+)
+
+
+CORRIDOR_DEMO = ScenarioSpec(
+    name="corridor_demo",
+    title="Corridor demo, 6 robots",
+    description=(
+        "A compact single-file floor for the live demo: 6 robots, a fixed "
+        "batch of 12 tasks, head-on encounters in the aisles within the first "
+        "minute. Watch the Inspector's predicted conflicts: each shows the "
+        "lead time, the risk terms, the decision taken and the outcome."
+    ),
+    proves=(
+        "Predicted conflict -> decision -> avoidance -> completion, with the "
+        "safety invariants shown live. One seed is an illustration; the C2 "
+        "claim rests only on the multi-seed overlap_batch benchmark."
+    ),
+    fleet_size=6,
+    width=28,
+    height=12,
+    aisle_period=3,
+    cross_period=999,
+    aisle_width=1,
+    cross_width=1,
+    task_rate_per_s=0.0,
+    initial_burst=12,
+    duration_s=900.0,
+    batch=True,
+    idle_parking=True,
+)
+
+
 SCENARIOS: dict[str, ScenarioSpec] = {
-    s.name: s for s in (RUSH_50, NARROW_AISLE_DEADLOCK, BLOCKED_AISLE)
+    s.name: s for s in (RUSH_50, NARROW_AISLE_DEADLOCK, BLOCKED_AISLE,
+                        OVERLAP_BATCH, OPEN_FLOOR_BATCH, CORRIDOR_DEMO)
 }
 
 DEFAULT_SCENARIO = "rush_50"
@@ -310,5 +412,3 @@ def realistic_variant(name: str) -> ScenarioSpec:
         sensing=SENSING_REALISTIC,
         injections=spec.injections,
     )
-
-# File contains AI-generated response based on internal company sources

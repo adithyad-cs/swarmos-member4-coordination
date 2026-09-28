@@ -1,0 +1,802 @@
+{
+  "chain": {
+    "10_task_complete": {
+      "completion_s": 22.8,
+      "kind": "task_complete",
+      "late": false,
+      "robot_id": "R006",
+      "sim_time": 22.8,
+      "task_id": "T022",
+      "tick": 228
+    },
+    "11_decision_inspector_records": [
+      {
+        "agreeing_bidders": 3,
+        "auction": "A-T022-v1",
+        "bidders": 8,
+        "bids": [
+          {
+            "cost": 3.0,
+            "factors": {
+              "battery_pct": 84.5,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 3.0
+            },
+            "robot": "R006"
+          },
+          {
+            "cost": 3.333,
+            "factors": {
+              "battery_pct": 93.6,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 3.333
+            },
+            "robot": "R005"
+          },
+          {
+            "cost": 3.333,
+            "factors": {
+              "battery_pct": 98.4,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 3.333
+            },
+            "robot": "R007"
+          },
+          {
+            "cost": 9.5,
+            "factors": {
+              "battery_pct": 94.1,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 9.5
+            },
+            "robot": "R002"
+          },
+          {
+            "cost": 24.167,
+            "factors": {
+              "battery_pct": 96.9,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 24.167
+            },
+            "robot": "R003"
+          },
+          {
+            "cost": 27.5,
+            "factors": {
+              "battery_pct": 93.9,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 27.5
+            },
+            "robot": "R001"
+          },
+          {
+            "cost": 45.0,
+            "factors": {
+              "battery_pct": 95.9,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 45.0
+            },
+            "robot": "R008"
+          },
+          {
+            "cost": 66.667,
+            "factors": {
+              "battery_pct": 99.0,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 66.667
+            },
+            "robot": "R004"
+          }
+        ],
+        "cost": 3.0,
+        "decided_by": "consensus",
+        "factors": {
+          "battery_pct": 84.5,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 3.0
+        },
+        "id": "D000004",
+        "latency_ticks": 6,
+        "lease": {
+          "expires_tick": 56,
+          "granted_tick": 6,
+          "owner": "R006",
+          "status": "ACTIVE",
+          "version": 1
+        },
+        "outcome": null,
+        "robots": [
+          "R001",
+          "R002",
+          "R003",
+          "R004",
+          "R005",
+          "R006",
+          "R007",
+          "R008"
+        ],
+        "round": 1,
+        "status": "WON",
+        "task": "T022",
+        "tick": 0,
+        "trigger": "allocation",
+        "version": 1,
+        "winner": "R006"
+      },
+      {
+        "agreeing_bidders": 3,
+        "auction": "A-T008-v1",
+        "bidders": 8,
+        "bids": [
+          {
+            "cost": 6.0,
+            "factors": {
+              "battery_pct": 84.5,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 6.0
+            },
+            "robot": "R006"
+          },
+          {
+            "cost": 9.167,
+            "factors": {
+              "battery_pct": 96.9,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 9.167
+            },
+            "robot": "R003"
+          },
+          {
+            "cost": 11.667,
+            "factors": {
+              "battery_pct": 93.6,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 11.667
+            },
+            "robot": "R005"
+          },
+          {
+            "cost": 15.0,
+            "factors": {
+              "battery_pct": 95.9,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 15.0
+            },
+            "robot": "R008"
+          },
+          {
+            "cost": 16.667,
+            "factors": {
+              "battery_pct": 98.4,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 16.667
+            },
+            "robot": "R007"
+          },
+          {
+            "cost": 17.5,
+            "factors": {
+              "battery_pct": 94.1,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 17.5
+            },
+            "robot": "R002"
+          },
+          {
+            "cost": 25.833,
+            "factors": {
+              "battery_pct": 93.9,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 25.833
+            },
+            "robot": "R001"
+          },
+          {
+            "cost": 53.333,
+            "factors": {
+              "battery_pct": 99.0,
+              "battery_s": 0.0,
+              "congestion_peers": 0,
+              "congestion_s": 0.0,
+              "risk_s": 0.0,
+              "travel_s": 53.333
+            },
+            "robot": "R004"
+          }
+        ],
+        "cost": 17.5,
+        "decided_by": "arbitration",
+        "factors": {
+          "battery_pct": 94.1,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 17.5
+        },
+        "id": "D000008",
+        "latency_ticks": 6,
+        "lease": {
+          "expires_tick": 56,
+          "granted_tick": 6,
+          "owner": "R002",
+          "status": "ACTIVE",
+          "version": 1
+        },
+        "outcome": null,
+        "robots": [
+          "R001",
+          "R002",
+          "R003",
+          "R004",
+          "R005",
+          "R006",
+          "R007",
+          "R008"
+        ],
+        "round": 1,
+        "status": "WON",
+        "task": "T008",
+        "tick": 0,
+        "trigger": "allocation",
+        "version": 1,
+        "winner": "R002"
+      },
+      {
+        "decision": {
+          "kind": "PROCEED",
+          "reason": "no peer within caution range",
+          "speed_scale": 1.0,
+          "utility_terms": {},
+          "winning_margin": null,
+          "yield_to": null
+        },
+        "detected_by": "R005",
+        "id": "D000012",
+        "outcome": null,
+        "peer": "R006",
+        "prediction": {
+          "confidence": 0.7908,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "probability": 0.6264,
+          "ttc_s": 1.5
+        },
+        "robots": [
+          "R005",
+          "R006"
+        ],
+        "tick": 19,
+        "trigger": "edge_ai"
+      },
+      {
+        "decision": {
+          "kind": "YIELD",
+          "reason": "PRE-HOLD for R005: edge AI predicts a conflict in 1.5 s (p=0.63, confidence 0.79); holding before it becomes imminent",
+          "speed_scale": 0.0,
+          "utility_terms": {},
+          "winning_margin": null,
+          "yield_to": "R005"
+        },
+        "detected_by": "R006",
+        "id": "D000013",
+        "outcome": null,
+        "peer": "R005",
+        "prediction": {
+          "confidence": 0.7908,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "probability": 0.6265,
+          "ttc_s": 1.5
+        },
+        "robots": [
+          "R005",
+          "R006"
+        ],
+        "tick": 19,
+        "trigger": "edge_ai"
+      },
+      {
+        "_conflict": false,
+        "action": "PRE-HOLD",
+        "coordination": "HOLD",
+        "held": "R006",
+        "id": "D000014",
+        "outcome": null,
+        "peer": "R005",
+        "peer_decision": {
+          "kind": "PROCEED",
+          "reason": "no peer within caution range",
+          "speed_scale": 1.0,
+          "utility_terms": {},
+          "winning_margin": null,
+          "yield_to": null
+        },
+        "prediction": {
+          "confidence": 0.7908,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "probability": 0.6265,
+          "ttc_s": 1.5
+        },
+        "robots": [
+          "R005",
+          "R006"
+        ],
+        "safety": {
+          "kernel_final": "YIELD",
+          "speed_scale": 0.0,
+          "verdict": "APPROVED"
+        },
+        "tick": 19,
+        "trigger": "proactive"
+      },
+      {
+        "decision": {
+          "kind": "PROCEED",
+          "reason": "no peer within caution range",
+          "speed_scale": 1.0,
+          "utility_terms": {},
+          "winning_margin": null,
+          "yield_to": null
+        },
+        "detected_by": "R005",
+        "id": "D000012",
+        "outcome": {
+          "result": "prediction_cleared",
+          "tick": 20
+        },
+        "peer": "R006",
+        "prediction": {
+          "confidence": 0.7908,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "probability": 0.6264,
+          "ttc_s": 1.5
+        },
+        "robots": [
+          "R005",
+          "R006"
+        ],
+        "tick": 19,
+        "trigger": "edge_ai"
+      },
+      {
+        "decision": {
+          "kind": "YIELD",
+          "reason": "PRE-HOLD for R005: edge AI predicts a conflict in 1.5 s (p=0.63, confidence 0.79); holding before it becomes imminent",
+          "speed_scale": 0.0,
+          "utility_terms": {},
+          "winning_margin": null,
+          "yield_to": "R005"
+        },
+        "detected_by": "R006",
+        "id": "D000013",
+        "outcome": {
+          "result": "prediction_cleared",
+          "tick": 20
+        },
+        "peer": "R005",
+        "prediction": {
+          "confidence": 0.7908,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "probability": 0.6265,
+          "ttc_s": 1.5
+        },
+        "robots": [
+          "R005",
+          "R006"
+        ],
+        "tick": 19,
+        "trigger": "edge_ai"
+      },
+      {
+        "action": "PRE-HOLD",
+        "coordination": "HOLD",
+        "held": "R006",
+        "id": "D000014",
+        "outcome": {
+          "conflict_during_hold": false,
+          "held_ticks": 5,
+          "reason": "cleared",
+          "result": "RESUMED",
+          "tick": 24
+        },
+        "peer": "R005",
+        "peer_decision": {
+          "kind": "PROCEED",
+          "reason": "no peer within caution range",
+          "speed_scale": 1.0,
+          "utility_terms": {},
+          "winning_margin": null,
+          "yield_to": null
+        },
+        "prediction": {
+          "confidence": 0.7908,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "probability": 0.6265,
+          "ttc_s": 1.5
+        },
+        "robots": [
+          "R005",
+          "R006"
+        ],
+        "safety": {
+          "kernel_final": "YIELD",
+          "speed_scale": 0.0,
+          "verdict": "APPROVED"
+        },
+        "tick": 19,
+        "trigger": "proactive"
+      }
+    ],
+    "1_task_and_auction": {
+      "auction": "A-T022-v1",
+      "round": 1,
+      "task": "T022",
+      "tick": 0,
+      "version": 1
+    },
+    "2_bids": [
+      {
+        "cost": 3.0,
+        "factors": {
+          "battery_pct": 84.5,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 3.0
+        },
+        "robot": "R006"
+      },
+      {
+        "cost": 3.333,
+        "factors": {
+          "battery_pct": 93.6,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 3.333
+        },
+        "robot": "R005"
+      },
+      {
+        "cost": 3.333,
+        "factors": {
+          "battery_pct": 98.4,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 3.333
+        },
+        "robot": "R007"
+      },
+      {
+        "cost": 9.5,
+        "factors": {
+          "battery_pct": 94.1,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 9.5
+        },
+        "robot": "R002"
+      },
+      {
+        "cost": 24.167,
+        "factors": {
+          "battery_pct": 96.9,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 24.167
+        },
+        "robot": "R003"
+      },
+      {
+        "cost": 27.5,
+        "factors": {
+          "battery_pct": 93.9,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 27.5
+        },
+        "robot": "R001"
+      },
+      {
+        "cost": 45.0,
+        "factors": {
+          "battery_pct": 95.9,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 45.0
+        },
+        "robot": "R008"
+      },
+      {
+        "cost": 66.667,
+        "factors": {
+          "battery_pct": 99.0,
+          "battery_s": 0.0,
+          "congestion_peers": 0,
+          "congestion_s": 0.0,
+          "risk_s": 0.0,
+          "travel_s": 66.667
+        },
+        "robot": "R004"
+      }
+    ],
+    "3_winner": {
+      "agreeing_bidders": 3,
+      "bidders": 8,
+      "cost": 3.0,
+      "factors": {
+        "battery_pct": 84.5,
+        "battery_s": 0.0,
+        "congestion_peers": 0,
+        "congestion_s": 0.0,
+        "risk_s": 0.0,
+        "travel_s": 3.0
+      },
+      "latency_ticks": 6,
+      "winner": "R006"
+    },
+    "4_lease": {
+      "expires_tick": 56,
+      "granted_tick": 6,
+      "owner": "R006",
+      "status": "ACTIVE",
+      "version": 1
+    },
+    "5_execution": {
+      "assigned": [
+        {
+          "eta_s": 3.0,
+          "kind": "task_assigned",
+          "priority": "HIGH",
+          "robot_id": "R006",
+          "sim_time": 0.6,
+          "task_id": "T022",
+          "tick": 6,
+          "via": "auction"
+        }
+      ],
+      "picked": [
+        {
+          "kind": "task_picked",
+          "robot_id": "R006",
+          "sim_time": 6.0,
+          "task_id": "T022",
+          "tick": 60
+        }
+      ]
+    },
+    "6_edge_ai_prediction": {
+      "decision": {
+        "kind": "YIELD",
+        "reason": "PRE-HOLD for R005: edge AI predicts a conflict in 1.5 s (p=0.63, confidence 0.79); holding before it becomes imminent",
+        "speed_scale": 0.0,
+        "utility_terms": {},
+        "winning_margin": null,
+        "yield_to": "R005"
+      },
+      "detected_by": "R006",
+      "id": "D000013",
+      "outcome": {
+        "result": "prediction_cleared",
+        "tick": 20
+      },
+      "peer": "R005",
+      "prediction": {
+        "confidence": 0.7908,
+        "horizon_ticks": 25,
+        "model": "edge-conflict-v1",
+        "probability": 0.6265,
+        "ttc_s": 1.5
+      },
+      "robots": [
+        "R005",
+        "R006"
+      ],
+      "tick": 19,
+      "trigger": "edge_ai"
+    },
+    "7_proactive_action": {
+      "action": "PRE-HOLD",
+      "coordination": "HOLD",
+      "held": "R006",
+      "peer": "R005",
+      "prediction": {
+        "confidence": 0.7908,
+        "horizon_ticks": 25,
+        "model": "edge-conflict-v1",
+        "probability": 0.6265,
+        "ttc_s": 1.5
+      },
+      "tick": 19
+    },
+    "8_safety_kernel": {
+      "final_verdict": {
+        "conflict_with": [
+          "R005"
+        ],
+        "edge_advisory": {
+          "confidence": 0.7908,
+          "held_since_tick": 19,
+          "horizon_ticks": 25,
+          "model": "edge-conflict-v1",
+          "peer": "R005",
+          "probability": 0.6265,
+          "ttc_s": 1.5
+        },
+        "kind": "YIELD",
+        "needs_replan": false,
+        "proactive": "PRE-HOLD",
+        "reason": "PRE-HOLD for R005: edge AI predicts a conflict in 1.5 s (p=0.63, confidence 0.79); holding before it becomes imminent",
+        "robot_id": "R006",
+        "speed_scale": 0.0,
+        "utility_terms": {},
+        "winning_margin": null,
+        "yield_to": "R005"
+      },
+      "kernel_final": "YIELD",
+      "speed_scale": 0.0,
+      "verdict": "APPROVED"
+    },
+    "9_conflict_clears_and_resume": {
+      "conflict_during_hold": false,
+      "held_ticks": 5,
+      "reason": "cleared",
+      "result": "RESUMED",
+      "tick": 24
+    }
+  },
+  "policy": {
+    "advanced": [
+      "EDGE_AI_PREDICTOR",
+      "PREDICTIVE_COORDINATION",
+      "LIVE_DISTRIBUTED_AUCTION"
+    ],
+    "class": "SwarmPolicy",
+    "edge_ai": true,
+    "edge_model": {
+      "features": 20,
+      "horizon_ticks": 25,
+      "kind": "forest",
+      "sha256": "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c",
+      "threshold": 0.5,
+      "version": "edge-conflict-v1"
+    },
+    "edge_status": "ok",
+    "fixes": [
+      "F1",
+      "F3",
+      "F5",
+      "F6"
+    ],
+    "integrity_enabled": false,
+    "leader_rule": true,
+    "live_auction": true,
+    "lookahead_h": 15,
+    "mutual_hold_break": false,
+    "name": "swarmos",
+    "perception_fallback": true,
+    "polyline_sweep": true,
+    "predictive_coordination": true,
+    "release_cooldown_ticks": 300,
+    "separating_exemption": false,
+    "standoff_breaker": true,
+    "traffic_rules_enabled": false
+  },
+  "replay": {
+    "decision_digest": "2f2fdf1d474d551bcd9806d7a8b5bccae8df8f436935bf28bc956b0392000c81",
+    "identical": true,
+    "replay_decision_digest": "2f2fdf1d474d551bcd9806d7a8b5bccae8df8f436935bf28bc956b0392000c81",
+    "replay_trace_hash": "1c2619f5e1a76067",
+    "trace_hash": "1c2619f5e1a76067"
+  },
+  "safety": {
+    "counts": {
+      "INV-1": 0,
+      "INV-2": 0,
+      "INV-3": 0,
+      "INV-4": 0
+    },
+    "failed": [],
+    "first_violation": {},
+    "floor_pair_ticks": 0,
+    "frozen_pairs": 0,
+    "invariants": {
+      "INV-1": "no footprint overlap: true pair distance >= 0.70 m",
+      "INV-2": "step authority: displacement <= granted speed x dt",
+      "INV-3": "no motion while held, failed or contained",
+      "INV-4": "legal status transitions (FAILED is terminal)"
+    },
+    "longest_floor_episode_ticks": 0,
+    "margin_breaches": 0,
+    "margin_floor_m": 0.75,
+    "min_separation_m": 0.76,
+    "proximity_pair_ticks": 3083,
+    "separation_hist": {
+      "bins_m": [
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95,
+        1.0
+      ],
+      "pair_ticks": [
+        0,
+        1432,
+        1186,
+        266,
+        90,
+        109
+      ]
+    },
+    "verdict": "PASS"
+  },
+  "scenario": "overlap_batch",
+  "seed": 1000001
+}

@@ -191,8 +191,8 @@ def main():
         "Open the Decision tab, select two robots crossing paths.",
         "One robot SLOWs rather than stopping dead; the reason string names "
         "the peer and the exact distance.",
-        "This grading is the single biggest reason we beat stop-and-wait on "
-        "throughput.",
+        "Grading keeps traffic moving instead of stopping everyone; the C2 "
+        "result is quoted only from the frozen benchmark slide.",
         ("Why not always stop to be maximally safe?",
          "Measured: an always-stop kernel vetoed 35% of all robot-ticks and "
          "wedged head-on traffic completely."))
@@ -235,10 +235,42 @@ def main():
         "ghosted); the delta panel updates live.",
         "Same warehouse, same tasks, same seed -- only the coordination brain "
         "changed.",
-        ("What is the current honest result?",
-         "Throughput-time reduction target is >=20%; current measured mean "
-         "is +2.0%, 95% CI [-5.9%, +9.8%] -- NOT MET, and we say so directly "
-         "rather than hide it."))
+        ("Is this live view the C2 result?",
+         "No -- it is a one-seed illustration, and its SWARMOS arm still uses "
+         "the pre-v3 settings. C2 is quoted only from the frozen v3 "
+         "simulation benchmark (next slides): +48.9%, 95% CI [+35.3%, "
+         "+62.5%], mostly reliability."))
+
+    # ---------------------------------------------------------------- C2 v3 result
+    s = blank_slide(prs)
+    add_kicker(s, "simulation benchmark -- frozen protocol v3 -- product default")
+    add_title(s, "C2 Result: SWARMOS Product vs Textbook Stop-and-Wait")
+    add_body(s, [
+        (None, "Product default: F1 + F3 + F5 + F6 (F6 = 300-tick release "
+               "cooldown). F2(a)/(b) OFF. Safety floor 0.75 m. Reference: "
+               "textbook stop-and-wait + F1 + F6.", None),
+        ("Primary", "overlap_batch, 40 fresh seeds (600001-600040): capped "
+                    "time reduction +48.9%, 95% CI [+35.3%, +62.5%]. Finish "
+                    "rate 40/40 vs 21/40. No seed failed only by SWARMOS. All "
+                    "five frozen conditions passed.", None),
+        ("Speed", "Seeds where both finished: +17.5%, CI [+1.4%, +33.6%] -- "
+                  "below 20% on speed alone. The primary gain is mostly "
+                  "finishing batches the reference does not.", None),
+        ("Open floor", "Capped +33.7% [+4.5%, +62.8%], finish 40/40 vs 15/40 "
+                       "-- but SWARMOS is SLOWER when both finish.", None),
+        ("Safety", "240 runs: 0 collisions, 0 invariant failures; SWARMOS 0 "
+                   "margin breaches, 0 frozen pairs. The only margin breach "
+                   "(0.748 m) was the tuned reference arm.", None),
+        ("Integrity", "Protocol frozen before the run and byte-identical "
+                      "after; 240/240 replayed exactly; code identity "
+                      "f3dabbf0...094f.", None),
+    ], size=14)
+    set_notes(s, (
+        "Source: docs/C2_V3_PRODUCT_RESULT.md. Say 'simulation benchmark'. Give "
+        "the speed caveat and the open-floor slowdown BEFORE anyone asks. Do "
+        "not say SWARMOS is universally faster, and do not claim hardware "
+        "certification."
+    ))
 
     # ---------------------------------------------------------------- honesty slide
     s = blank_slide(prs)
@@ -251,8 +283,10 @@ def main():
                "Table stakes, not novel.", None),
         (None, "Deadlock ladder (N4): classical wait-for cycle detection "
                "(Coffman). The visibility of the ladder is the value-add.", None),
-        (None, "Throughput-time criterion (C2, target >=20%): currently "
-               "NOT MET. Reported honestly with the exact gap and next step.", None),
+        (None, "C2 (target >=20%): MET for the product default in a frozen "
+               "SIMULATION benchmark, mostly via reliability. Speed where both "
+               "finish is +17.5% (below 20% alone); slower on the open floor "
+               "when both finish. No hardware certification.", None),
     ], size=16)
     set_notes(s, (
         "This slide is a credibility weapon, not a weakness. Say it BEFORE a "
@@ -286,5 +320,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# File contains AI-generated response based on internal company sources

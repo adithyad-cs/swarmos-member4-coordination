@@ -1,0 +1,174 @@
+train overlap_batch 1100001 5884
+train overlap_batch 1100002 5016
+train overlap_batch 1100003 6692
+train overlap_batch 1100004 5774
+train overlap_batch 1100005 5046
+train overlap_batch 1100006 4616
+train overlap_batch 1100007 6064
+train overlap_batch 1100008 4834
+train overlap_batch 1100009 4448
+train overlap_batch 1100010 5238
+train overlap_batch 1100011 3230
+train overlap_batch 1100012 4072
+train overlap_batch 1100013 6752
+train overlap_batch 1100014 6226
+train overlap_batch 1100015 4674
+train overlap_batch 1100016 4836
+train overlap_batch 1100017 5402
+train overlap_batch 1100018 5990
+train overlap_batch 1100019 3716
+train overlap_batch 1100020 4186
+train overlap_batch 1100021 5298
+train overlap_batch 1100022 3986
+train overlap_batch 1100023 4938
+train overlap_batch 1100024 6140
+train overlap_batch 1100025 4932
+train overlap_batch 1100026 5566
+train overlap_batch 1100027 3260
+train overlap_batch 1100028 5682
+train overlap_batch 1100029 4988
+train overlap_batch 1100030 5992
+train open_floor_batch 1100001 7080
+train open_floor_batch 1100002 6862
+train open_floor_batch 1100003 6048
+train open_floor_batch 1100004 8228
+train open_floor_batch 1100005 9392
+train open_floor_batch 1100006 6702
+train open_floor_batch 1100007 7840
+train open_floor_batch 1100008 7646
+train open_floor_batch 1100009 8846
+train open_floor_batch 1100010 6342
+train open_floor_batch 1100011 6470
+train open_floor_batch 1100012 7210
+train open_floor_batch 1100013 5992
+train open_floor_batch 1100014 8118
+train open_floor_batch 1100015 7128
+train open_floor_batch 1100016 8378
+train open_floor_batch 1100017 9430
+train open_floor_batch 1100018 8168
+train open_floor_batch 1100019 6730
+train open_floor_batch 1100020 4942
+train open_floor_batch 1100021 11172
+train open_floor_batch 1100022 6766
+train open_floor_batch 1100023 8682
+train open_floor_batch 1100024 7656
+train open_floor_batch 1100025 7994
+train open_floor_batch 1100026 7094
+train open_floor_batch 1100027 7314
+train open_floor_batch 1100028 7986
+train open_floor_batch 1100029 7996
+train open_floor_batch 1100030 11060
+train rush_50 1100001 18646
+train rush_50 1100002 14834
+train rush_50 1100003 17824
+train rush_50 1100004 13258
+train rush_50 1100005 14058
+train rush_50 1100006 21502
+train rush_50 1100007 15072
+train rush_50 1100008 13786
+train rush_50 1100009 12184
+train rush_50 1100010 11524
+train rush_50 1100011 15856
+train rush_50 1100012 13312
+train rush_50 1100013 15844
+train rush_50 1100014 13232
+train rush_50 1100015 13528
+train rush_50 1100016 17202
+train rush_50 1100017 21816
+train rush_50 1100018 15858
+train rush_50 1100019 13106
+train rush_50 1100020 17582
+train rush_50 1100021 17814
+train rush_50 1100022 16514
+train rush_50 1100023 17034
+train rush_50 1100024 19798
+train rush_50 1100025 13430
+train rush_50 1100026 13886
+train rush_50 1100027 27596
+train rush_50 1100028 17040
+train rush_50 1100029 15082
+train rush_50 1100030 14052
+validation overlap_batch 1200001 5530
+validation overlap_batch 1200002 4822
+validation overlap_batch 1200003 4108
+validation overlap_batch 1200004 4352
+validation overlap_batch 1200005 5282
+validation overlap_batch 1200006 5294
+validation overlap_batch 1200007 4988
+validation overlap_batch 1200008 5872
+validation overlap_batch 1200009 5376
+validation overlap_batch 1200010 3806
+validation open_floor_batch 1200001 7128
+validation open_floor_batch 1200002 7348
+validation open_floor_batch 1200003 10126
+validation open_floor_batch 1200004 6702
+validation open_floor_batch 1200005 8422
+validation open_floor_batch 1200006 8818
+validation open_floor_batch 1200007 10926
+validation open_floor_batch 1200008 8116
+validation open_floor_batch 1200009 7204
+validation open_floor_batch 1200010 8036
+validation rush_50 1200001 14686
+validation rush_50 1200002 27412
+validation rush_50 1200003 16396
+validation rush_50 1200004 17664
+validation rush_50 1200005 15474
+validation rush_50 1200006 13646
+validation rush_50 1200007 14180
+validation rush_50 1200008 13638
+validation rush_50 1200009 13590
+validation rush_50 1200010 17390
+test overlap_batch 1300001 5250
+test overlap_batch 1300002 3346
+test overlap_batch 1300003 6012
+test overlap_batch 1300004 5808
+test overlap_batch 1300005 5530
+test overlap_batch 1300006 4086
+test overlap_batch 1300007 4380
+test overlap_batch 1300008 4124
+test overlap_batch 1300009 5362
+test overlap_batch 1300010 4210
+test open_floor_batch 1300001 9438
+test open_floor_batch 1300002 11178
+test open_floor_batch 1300003 7602
+test open_floor_batch 1300004 6648
+test open_floor_batch 1300005 8148
+test open_floor_batch 1300006 6712
+test open_floor_batch 1300007 8558
+test open_floor_batch 1300008 5748
+test open_floor_batch 1300009 7898
+test open_floor_batch 1300010 7692
+test rush_50 1300001 17682
+test rush_50 1300002 15824
+test rush_50 1300003 16894
+test rush_50 1300004 13746
+test rush_50 1300005 15394
+test rush_50 1300006 14140
+test rush_50 1300007 26700
+test rush_50 1300008 12380
+test rush_50 1300009 18712
+test rush_50 1300010 13400
+{
+ "train": {
+  "rows": 867020,
+  "runs": 90,
+  "pos_y10": 27572,
+  "pos_y15": 40558,
+  "pos_y25": 63196
+ },
+ "validation": {
+  "rows": 296332,
+  "runs": 30,
+  "pos_y10": 9214,
+  "pos_y15": 13582,
+  "pos_y25": 21324
+ },
+ "test": {
+  "rows": 292602,
+  "runs": 30,
+  "pos_y10": 8850,
+  "pos_y15": 12954,
+  "pos_y25": 20144
+ }
+}
+exit=0

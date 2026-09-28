@@ -1,0 +1,421 @@
+{
+  "chosen": {
+    "horizon_ticks": 25,
+    "model": "forest",
+    "threshold": 0.5
+  },
+  "horizons": {
+    "10": {
+      "analytic_lookahead_validation": {
+        "f0.5": 0.3982,
+        "f1": 0.5015,
+        "fn": 1078,
+        "fnr": 0.117,
+        "fp": 15098,
+        "fpr": 0.0526,
+        "precision": 0.3502,
+        "recall": 0.883,
+        "tn": 272020,
+        "tp": 8136
+      },
+      "candidates": {
+        "forest": {
+          "at_threshold": {
+            "f0.5": 0.8288,
+            "f1": 0.751,
+            "fn": 3230,
+            "fnr": 0.3506,
+            "fp": 738,
+            "fpr": 0.0026,
+            "precision": 0.8902,
+            "recall": 0.6494,
+            "tn": 286380,
+            "tp": 5984
+          },
+          "best_f0.5": 0.8288,
+          "fit_s": 40.4,
+          "pr_auc": 0.8575,
+          "roc_auc": 0.9913,
+          "threshold": 0.53
+        },
+        "gbdt": {
+          "at_threshold": {
+            "f0.5": 0.8218,
+            "f1": 0.7394,
+            "fn": 3377,
+            "fnr": 0.3665,
+            "fp": 738,
+            "fpr": 0.0026,
+            "precision": 0.8878,
+            "recall": 0.6335,
+            "tn": 286380,
+            "tp": 5837
+          },
+          "best_f0.5": 0.8218,
+          "fit_s": 213.7,
+          "pr_auc": 0.8326,
+          "roc_auc": 0.9891,
+          "threshold": 0.62
+        },
+        "logreg": {
+          "at_threshold": {
+            "f0.5": 0.7511,
+            "f1": 0.6517,
+            "fn": 4294,
+            "fnr": 0.466,
+            "fp": 964,
+            "fpr": 0.0034,
+            "precision": 0.8362,
+            "recall": 0.534,
+            "tn": 286154,
+            "tp": 4920
+          },
+          "best_f0.5": 0.7511,
+          "fit_s": 7.2,
+          "pr_auc": 0.7607,
+          "roc_auc": 0.9836,
+          "threshold": 0.59
+        },
+        "tree": {
+          "at_threshold": {
+            "f0.5": 0.793,
+            "f1": 0.7259,
+            "fn": 3352,
+            "fnr": 0.3638,
+            "fp": 1075,
+            "fpr": 0.0037,
+            "precision": 0.845,
+            "recall": 0.6362,
+            "tn": 286043,
+            "tp": 5862
+          },
+          "best_f0.5": 0.793,
+          "fit_s": 4.9,
+          "pr_auc": 0.7959,
+          "roc_auc": 0.9867,
+          "threshold": 0.6
+        }
+      },
+      "chosen_model": "forest",
+      "positives_train": 27572,
+      "positives_validation": 9214
+    },
+    "15": {
+      "analytic_lookahead_validation": {
+        "f0.5": 0.4459,
+        "f1": 0.5469,
+        "fn": 1644,
+        "fnr": 0.121,
+        "fp": 18136,
+        "fpr": 0.0641,
+        "precision": 0.397,
+        "recall": 0.879,
+        "tn": 264614,
+        "tp": 11938
+      },
+      "candidates": {
+        "forest": {
+          "at_threshold": {
+            "f0.5": 0.8133,
+            "f1": 0.7327,
+            "fn": 5041,
+            "fnr": 0.3712,
+            "fp": 1190,
+            "fpr": 0.0042,
+            "precision": 0.8777,
+            "recall": 0.6288,
+            "tn": 281560,
+            "tp": 8541
+          },
+          "best_f0.5": 0.8133,
+          "fit_s": 43.7,
+          "pr_auc": 0.8404,
+          "roc_auc": 0.9862,
+          "threshold": 0.54
+        },
+        "gbdt": {
+          "at_threshold": {
+            "f0.5": 0.8042,
+            "f1": 0.71,
+            "fn": 5513,
+            "fnr": 0.4059,
+            "fp": 1078,
+            "fpr": 0.0038,
+            "precision": 0.8821,
+            "recall": 0.5941,
+            "tn": 281672,
+            "tp": 8069
+          },
+          "best_f0.5": 0.8042,
+          "fit_s": 207.4,
+          "pr_auc": 0.8206,
+          "roc_auc": 0.9836,
+          "threshold": 0.62
+        },
+        "logreg": {
+          "at_threshold": {
+            "f0.5": 0.7429,
+            "f1": 0.6368,
+            "fn": 6596,
+            "fnr": 0.4856,
+            "fp": 1373,
+            "fpr": 0.0049,
+            "precision": 0.8357,
+            "recall": 0.5144,
+            "tn": 281377,
+            "tp": 6986
+          },
+          "best_f0.5": 0.7429,
+          "fit_s": 5.1,
+          "pr_auc": 0.7412,
+          "roc_auc": 0.9746,
+          "threshold": 0.61
+        },
+        "tree": {
+          "at_threshold": {
+            "f0.5": 0.7744,
+            "f1": 0.7289,
+            "fn": 4564,
+            "fnr": 0.336,
+            "fp": 2143,
+            "fpr": 0.0076,
+            "precision": 0.808,
+            "recall": 0.664,
+            "tn": 280607,
+            "tp": 9018
+          },
+          "best_f0.5": 0.7744,
+          "fit_s": 4.7,
+          "pr_auc": 0.7843,
+          "roc_auc": 0.9799,
+          "threshold": 0.5
+        }
+      },
+      "chosen_model": "forest",
+      "positives_train": 40558,
+      "positives_validation": 13582
+    },
+    "25": {
+      "analytic_lookahead_validation": {
+        "f0.5": 0.0884,
+        "f1": 0.1343,
+        "fn": 0,
+        "fnr": 0.0,
+        "fp": 275008,
+        "fpr": 1.0,
+        "precision": 0.072,
+        "recall": 1.0,
+        "tn": 0,
+        "tp": 21324
+      },
+      "candidates": {
+        "forest": {
+          "at_threshold": {
+            "f0.5": 0.7952,
+            "f1": 0.7038,
+            "fn": 8730,
+            "fnr": 0.4094,
+            "fp": 1871,
+            "fpr": 0.0068,
+            "precision": 0.8707,
+            "recall": 0.5906,
+            "tn": 273137,
+            "tp": 12594
+          },
+          "best_f0.5": 0.7952,
+          "fit_s": 57.6,
+          "pr_auc": 0.8205,
+          "roc_auc": 0.9746,
+          "threshold": 0.5
+        },
+        "gbdt": {
+          "at_threshold": {
+            "f0.5": 0.7811,
+            "f1": 0.6734,
+            "fn": 9648,
+            "fnr": 0.4524,
+            "fp": 1679,
+            "fpr": 0.0061,
+            "precision": 0.8743,
+            "recall": 0.5476,
+            "tn": 273329,
+            "tp": 11676
+          },
+          "best_f0.5": 0.7811,
+          "fit_s": 210.4,
+          "pr_auc": 0.8012,
+          "roc_auc": 0.9713,
+          "threshold": 0.59
+        },
+        "logreg": {
+          "at_threshold": {
+            "f0.5": 0.7125,
+            "f1": 0.6228,
+            "fn": 10348,
+            "fnr": 0.4853,
+            "fp": 2949,
+            "fpr": 0.0107,
+            "precision": 0.7882,
+            "recall": 0.5147,
+            "tn": 272059,
+            "tp": 10976
+          },
+          "best_f0.5": 0.7125,
+          "fit_s": 4.3,
+          "pr_auc": 0.7099,
+          "roc_auc": 0.9546,
+          "threshold": 0.53
+        },
+        "tree": {
+          "at_threshold": {
+            "f0.5": 0.7567,
+            "f1": 0.6412,
+            "fn": 10425,
+            "fnr": 0.4889,
+            "fp": 1773,
+            "fpr": 0.0064,
+            "precision": 0.8601,
+            "recall": 0.5111,
+            "tn": 273235,
+            "tp": 10899
+          },
+          "best_f0.5": 0.7567,
+          "fit_s": 4.9,
+          "pr_auc": 0.7668,
+          "roc_auc": 0.9669,
+          "threshold": 0.51
+        }
+      },
+      "chosen_model": "forest",
+      "positives_train": 63196,
+      "positives_validation": 21324
+    }
+  },
+  "model_version": "edge-conflict-v1",
+  "rows": {
+    "train": 867020,
+    "validation": 296332
+  },
+  "runtime": {
+    "artifact_bytes": 690193,
+    "artifact_file_sha256": "5de8afcd716b4aebd28f0ab76dd2a33e19e77df93c92a748be11920dabb12628",
+    "inference_us_per_pair_pure_python": 32.54,
+    "model_content_sha256": "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+  },
+  "selection_rules": " discipline, fixed before any result was seen:\n  1. Every candidate is FIT on the train split only (seeds 1100001-1100030).\n  2. Horizon, model family and decision threshold are chosen on the\n     VALIDATION split only (seeds 1200001-1200010):\n       - model: best validation PR-AUC; within 0.005 of the best, the\n         cheaper model wins (logreg < tree < gbdt < forest);\n       - threshold: maximises validation F0.5 (precision-weighted, because a\n         false alarm costs a needless proactive hold);\n       - horizon: the LONGEST candidate whose best validation F0.5 is within\n         0.05 of the best horizon's (more lead time when quality is\n         comparable).\n  3. The TEST split (seeds 1300001-1300010) is evaluated exactly ONCE, after\n     every choice above is frozen, and is never used to choose anything.\nThe analytic lookahead (feature la_lead_ticks <= H) is scored on the same\nsplits as the non-ML baseline the model has to beat.\n",
+  "test": {
+    "analytic_lookahead": {
+      "f0.5": 0.0846,
+      "f1": 0.1288,
+      "fn": 0,
+      "fnr": 0.0,
+      "fp": 272458,
+      "fpr": 1.0,
+      "precision": 0.0688,
+      "recall": 1.0,
+      "tn": 0,
+      "tp": 20144
+    },
+    "at_threshold": {
+      "f0.5": 0.7904,
+      "f1": 0.7096,
+      "fn": 7930,
+      "fnr": 0.3937,
+      "fp": 2067,
+      "fpr": 0.0076,
+      "precision": 0.8553,
+      "recall": 0.6063,
+      "tn": 270391,
+      "tp": 12214
+    },
+    "brier": 0.0262,
+    "by_scenario": {
+      "open_floor_batch": {
+        "analytic": {
+          "f0.5": 0.0951,
+          "f1": 0.144,
+          "fn": 0,
+          "fnr": 0.0,
+          "fp": 73446,
+          "fpr": 1.0,
+          "precision": 0.0776,
+          "recall": 1.0,
+          "tn": 0,
+          "tp": 6176
+        },
+        "model": {
+          "f0.5": 0.8049,
+          "f1": 0.7134,
+          "fn": 2472,
+          "fnr": 0.4003,
+          "fp": 504,
+          "fpr": 0.0069,
+          "precision": 0.8802,
+          "recall": 0.5997,
+          "tn": 72942,
+          "tp": 3704
+        }
+      },
+      "overlap_batch": {
+        "analytic": {
+          "f0.5": 0.0979,
+          "f1": 0.148,
+          "fn": 0,
+          "fnr": 0.0,
+          "fp": 44264,
+          "fpr": 1.0,
+          "precision": 0.0799,
+          "recall": 1.0,
+          "tn": 0,
+          "tp": 3844
+        },
+        "model": {
+          "f0.5": 0.7738,
+          "f1": 0.697,
+          "fn": 1545,
+          "fnr": 0.4019,
+          "fp": 454,
+          "fpr": 0.0103,
+          "precision": 0.8351,
+          "recall": 0.5981,
+          "tn": 43810,
+          "tp": 2299
+        }
+      },
+      "rush_50": {
+        "analytic": {
+          "f0.5": 0.0756,
+          "f1": 0.1157,
+          "fn": 0,
+          "fnr": 0.0,
+          "fp": 154748,
+          "fpr": 1.0,
+          "precision": 0.0614,
+          "recall": 1.0,
+          "tn": 0,
+          "tp": 10124
+        },
+        "model": {
+          "f0.5": 0.7881,
+          "f1": 0.7121,
+          "fn": 3913,
+          "fnr": 0.3865,
+          "fp": 1109,
+          "fpr": 0.0072,
+          "precision": 0.8485,
+          "recall": 0.6135,
+          "tn": 153639,
+          "tp": 6211
+        }
+      }
+    },
+    "ece": 0.0094,
+    "max_abs_diff_runtime_vs_sklearn": 0.016068761565467035,
+    "mean_lead_ticks_true_positives": 9.5,
+    "positives": 20144,
+    "pr_auc": 0.8201,
+    "roc_auc": 0.976,
+    "rows": 292602
+  },
+  "wall_s": 844.3
+}
