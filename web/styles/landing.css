@@ -353,9 +353,16 @@ body.landing a:hover { color: var(--lp-accent-hover); }
 .lp-stage {
   position: absolute;
   left: 0;
-  top: 0;
   bottom: 0;
   right: 400px;
+  /* hero-robot.png's own ratio (1164x1428), not the visual column's height:
+     that height varies with hero-copy length and is usually much SQUARER
+     than the portrait image, which forced "cover" to crop in tight on the
+     torso. Matching the image's own ratio here means nothing is cropped or
+     shrunk - the full render shows, edge-to-edge, exactly as the design's
+     own fit="cover" (on a box it sized to match) renders it. */
+  aspect-ratio: 1164 / 1428;
+  max-height: 100%;
   margin: 0;
   -webkit-mask-image:
     linear-gradient(90deg, transparent 0, #000 14%, #000 78%, transparent 96%),
@@ -371,7 +378,11 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  /* cover, not contain: the source design's <image-slot fit="cover">
+     fills its box and lets the mask crop the edges, so the robot reads
+     large and bled into the frame. contain would shrink it to fit inside
+     a taller box instead, leaving it looking small and centred. */
+  object-fit: cover;
   object-position: center bottom;
   filter: drop-shadow(0 26px 44px var(--lp-robot-shadow));
 }
