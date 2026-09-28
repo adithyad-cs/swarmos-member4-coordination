@@ -474,20 +474,23 @@ def check_api():
 # 7. the landing page must say exactly what sections 6-13 require
 # --------------------------------------------------------------------------
 
-# Verbatim from ROBONEX_SWARMOS_FINAL_UI_UX_MASTER_PROMPT.docx. Kept as data so
-# a copy edit to the page fails loudly instead of drifting off spec.
+# Verbatim from the approved Claude Design export "ROBONEX Landing.dc.html"
+# (the visual/content source of truth as of the final landing integration).
+# Kept as data so a copy edit to the page fails loudly instead of drifting
+# off spec. The design's hero headline has a <br> between "for" and
+# "autonomous" (kept, to match the design's own markup exactly), so that
+# line is checked as two pieces rather than one continuous string.
 LANDING_COPY = [
     ("ROBONEX", "section 6/7 wordmark and hero title"),
-    ("SMART INDIA HACKATHON", "section 6 SIH line"),
+    ("Smart India Hackathon", "section 6 SIH line"),
     ("SWARMOS", "section 6/9 product name"),
-    ("Distributed intelligence for autonomous warehouse fleets.", "section 7 lede"),
-    ("DECENTRALIZED MULTI-AMR COORDINATION", "section 9 card kicker"),
-    ("Decentralized coordination", "section 9 capability 1"),
+    ("Distributed intelligence for", "section 7 lede (line 1, before the <br>)"),
+    ("autonomous warehouse fleets.", "section 7 lede (line 2, after the <br>)"),
+    ("Decentralized multi-AMR coordination", "section 9 capability 1"),
     ("Real-time conflict resolution", "section 9 capability 2"),
-    ("Dynamic task allocation", "section 9 capability 3"),
-    ("Spatio-temporal coordination", "section 9 capability 4"),
-    ("Failure recovery", "section 9 capability 5"),
-    ("Edge intelligence", "section 9 capability 6"),
+    ("Dynamic fleet intelligence", "section 9 capability 3"),
+    ("Failure recovery", "section 9 capability 4"),
+    ("Edge-AI based congestion prediction", "section 9 capability 5"),
     ("FLEET STATUS", "section 11 status row 1"),
     ("AMR NETWORK", "section 11 status row 2"),
     ("ENTER SWARMOS", "section 12 call to action"),
