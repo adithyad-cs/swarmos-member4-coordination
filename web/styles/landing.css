@@ -397,18 +397,14 @@ body.landing a:hover { color: var(--lp-accent-hover); }
   aspect-ratio: 560 / 756;
   max-height: 100%;
   margin: 0;
-  /* The box's own layout size (used above for the panel-clearance math)
-     stays conservative on purpose - it is what keeps the right/bottom
-     edges flush against the card/quote with zero bleed. The design's box
-     is bigger than that layout size can safely be in this fluid two-column
-     layout (its left neighbour is hero body copy, not a fixed margin), so
-     a render-time scale grows the box visually from its bottom-right
-     corner: right and bottom edges stay pinned exactly where the
-     clearance math puts them (unchanged risk to the card/quote), while
-     growth extends only up and left, into the empty space the hero
-     column reserves beyond its own text's actual width. */
-  transform: scale(1.3);
-  transform-origin: 100% 100%;
+  /* A bottom-right-anchored `transform: scale()` was tried here to enlarge
+     the box beyond this layout size. Reverted: the scale amount needed to
+     stay clear of the hero copy at one viewport pushed the box's top edge
+     to a NEGATIVE y at a slightly wider-and-shorter viewport (~1575x777),
+     overlapping the header - transform ignores the max-height clamp above,
+     so nothing bounds it. This aspect-ratio + max-height sizing is the
+     largest box that is mathematically guaranteed to never exceed the
+     column's own height or the panel's clearance, at any viewport. */
   -webkit-mask-image:
     linear-gradient(90deg, transparent 0, #000 12%, #000 70%, transparent 100%),
     linear-gradient(180deg, transparent 0, #000 10%);
