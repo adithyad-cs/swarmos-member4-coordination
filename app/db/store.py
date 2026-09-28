@@ -434,5 +434,3 @@ class RunStore:
         out = dict(row)
         out["detail"] = json.loads(out.pop("detail_json"))
         return out
-
-# File contains AI-generated response based on internal company sources

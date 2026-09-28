@@ -240,5 +240,3 @@ class Warehouse:
                  "x1": z.x1, "y1": z.y1} for z in self.zones
             ],
         }
-
-# File contains AI-generated response based on internal company sources

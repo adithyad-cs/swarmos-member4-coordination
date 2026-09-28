@@ -255,6 +255,8 @@ export class Transport {
   scenarios()    { return this.get("/api/scenarios"); }
   traceHash()    { return this.get("/api/trace/hash"); }
   benchmark(b)   { return this.post("/api/benchmark/run", b); }
+  // Literal route template: tests/test_api.py matches it against the server.
+  explain(id)    { return this.get("/api/explain/{robot_id}".replace("{robot_id}", encodeURIComponent(id))); }
 
   /* ---- Co-simulation (X-12). No policy argument: the two arms ARE the
    * policies, so naming one would allow a run against itself. ---- */
@@ -267,5 +269,3 @@ export class Transport {
     return `${proto}//${location.host}${COSIM_WS_PATH}`;
   }
 }
-
-// File contains AI-generated response based on internal company sources

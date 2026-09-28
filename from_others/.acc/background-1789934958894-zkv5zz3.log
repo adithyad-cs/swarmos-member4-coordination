@@ -1,9 +1,0 @@
-[INFO]  set $FDIPGLOB: /home/fdipglob
-[INFO]    This is TR Environment, cadappl is not supported anymore
-
-scenario=rush_50 fleet=24 ticks=900 seeds=(11, 13, 17)
-baseline (STUCK_TICKS=8, its optimum): 29  coll=[0, 0, 0]
-
-       order  total   vs base       coll   replans
-    id_order     20    -31.0%      0/0/0      5466
-    priority     21    -27.6%      0/0/0      5766

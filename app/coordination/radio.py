@@ -202,6 +202,12 @@ class BoundedRadio:
         # delayed message becomes visible.
         self._inbox: dict[str, list[CoordinationMessage]] = {}
         self._pending: dict[int, list[tuple[str, CoordinationMessage]]] = {}
+        # Zone partition (fault ZONE_PARTITION): an axis-aligned box in metres.
+        # A hop is cut when exactly ONE of its two ends is inside the box, so
+        # robots inside the zone still hear each other and robots outside still
+        # hear each other, but nothing crosses the boundary. That is what a
+        # partition means; dropping all traffic in the zone would be a blackout.
+        self._partition: Optional[tuple[float, float, float, float]] = None
 
     # ------------------------------------------------------------------
     # topology
@@ -213,6 +219,31 @@ class BoundedRadio:
     def set_profile(self, profile: LinkProfile) -> None:
         """Change radio quality mid-run. This is the X-02 injection hook."""
         self.profile = profile
+
+    def set_partition(
+        self, box: Optional[tuple[float, float, float, float]]
+    ) -> None:
+        """Cut every hop that crosses the boundary of `box` (x0, y0, x1, y1).
+
+        None lifts the partition.
+        """
+        self._partition = tuple(box) if box is not None else None
+
+    @property
+    def partition(self) -> Optional[tuple[float, float, float, float]]:
+        return self._partition
+
+    def _inside_partition(self, robot_id: str) -> bool:
+        box = self._partition
+        pos = self._positions.get(robot_id)
+        if box is None or pos is None:
+            return False
+        return box[0] <= pos[0] <= box[2] and box[1] <= pos[1] <= box[3]
+
+    def _crosses_partition(self, a: str, b: str) -> bool:
+        if self._partition is None:
+            return False
+        return self._inside_partition(a) != self._inside_partition(b)
 
     def in_range(self, a: str, b: str) -> bool:
         """Whether two robots can hear each other at all.
@@ -346,6 +377,9 @@ class BoundedRadio:
         if not self.in_range(sender, target_id):
             self.stats.out_of_range += 1
             return False
+        if self._crosses_partition(sender, target_id):
+            self.stats.dropped += 1
+            return True
         self._deliver(target_id, msg, tick=tick)
         return True
 
@@ -373,6 +407,10 @@ class BoundedRadio:
         for rid in self.neighbours(sender):
             if self.profile.asymmetric and not self.in_range(rid, sender):
                 self.stats.out_of_range += 1
+                continue
+            if self._crosses_partition(sender, rid):
+                # Offered and lost to a fault, so charged as a drop.
+                self.stats.dropped += 1
                 continue
             before = self.stats.delivered
             self._deliver(rid, msg, tick=tick)
@@ -548,5 +586,3 @@ class FailureDetector:
     def clear(self) -> None:
         self._peers.clear()
         self.events.clear()
-
-# File contains AI-generated response based on internal company sources

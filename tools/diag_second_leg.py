@@ -44,5 +44,3 @@ for d in eng.drop_cells[:3]:
           f"nearest={nearest_navigable(eng.warehouse, d)}")
     p = find_path(eng.warehouse, (30, 20), d)
     print(f"  path (30,20)->{d}: {'None' if p is None else f'{len(p)} cells, tail {p[-3:]}'}")
-
-# File contains AI-generated response based on internal company sources

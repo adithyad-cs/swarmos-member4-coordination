@@ -75,6 +75,14 @@ from app.sim.policy import Verdict, VerdictKind
 # safety and the >=20% claim is worthless.
 from app.sim.policy import _project_step as project_step
 from app.sim.policy import _segment_distance as segment_distance
+from app.sim.sweep import (
+    Sweep,
+    build_sweep,
+    is_point,
+    point_sweep,
+    sweep_distance,
+    waypoints_of,
+)
 
 Segment = tuple[tuple[float, float], tuple[float, float]]
 
@@ -208,6 +216,15 @@ AGING_CAP_TICKS = 40.0
 # the same two states, so the loser stays committed to yielding for exactly as
 # long as the winner stays committed to going.
 COMMIT_TICKS = 8
+
+# F5 standoff breaker (flagged). 2 s of mutual hold is well past any contest
+# commitment (COMMIT_TICKS) or kernel retry (MONITOR_STUCK_TICKS), and far
+# below the 15 s stall release that used to be the only way out. The loser
+# alternates every STANDOFF_SWAP_TICKS; the replan avoids the peer's cell and
+# STANDOFF_AVOID_M of its announced route.
+STANDOFF_TICKS = 20
+STANDOFF_SWAP_TICKS = 200
+STANDOFF_AVOID_M = 3.0
 
 # A yield streak decays rather than resetting, so waiting history survives a
 # single lucky tick and the aging term can actually accumulate.
@@ -348,6 +365,27 @@ MONITOR_SCALES = (1.0, 0.75, 0.5, 0.25)
 
 # Fastest robot class, used to normalise the momentum term.
 V_MAX_MPS = 2.0
+
+# Perception-backed safety fallback (network-independent safety floor).
+#
+# MEASURED DEFECT this closes: the kernel judged each robot only against peers
+# in its own radio inbox. With the radio degraded, a peer that is unheard, or
+# heard only with a delayed (and therefore wrong) position, was invisible to
+# the kernel. On the unfixed code, 3 seeds x 1200 ticks produced collisions
+# under every degraded condition tried: 30% loss 6 / 10, 500 ms latency 1 / 2,
+# a 6 s fleet-wide outage 9 / 20, and even the existing single-robot
+# COMM_BLACKOUT demo fault 3 / 0 (rush_50 fleet 16 / narrow_aisle_deadlock 24).
+#
+# The fix uses the onboard perception every AMR has (LiDAR / bumper), which the
+# simulation already models as sightings within 12 m (engine.observations()).
+# A sighted robot is added to the kernel's obstacle set when the radio gives no
+# CURRENT position for it: unheard, stale, or heard with an older timestamp.
+# It enters as a point at its sensed position with the floor widened by one
+# full step, because without its broadcast we cannot know whether it is about
+# to move towards us. This only ever ADDS constraints; the kernel geometry and
+# HARD_STOP_M are untouched. With a perfect link every in-range peer is heard
+# this tick, so the fallback adds nothing and traces are bit-identical.
+SENSED_EXTRA_M = MAX_STEP_M
 
 
 @dataclass(frozen=True)
@@ -579,7 +617,94 @@ class SwarmPolicy:
         monitor: bool = True,
         integrity: bool = False,
         reservations=None,
+        perception_fallback: bool = False,
+        traffic_rules: bool = False,
+        lookahead_h: int = 0,
+        mutual_hold_break: bool = False,
+        separating_exemption: bool = False,
+        polyline_sweep: bool = False,
+        leader_rule: bool = False,
+        standoff_breaker: bool = False,
+        edge_ai: bool = False,
+        predictive_coordination: bool = False,
+        live_auction: bool = False,
     ) -> None:
+        # LIVE_DISTRIBUTED_AUCTION: robots bid for WMS-announced tasks and
+        # exchange bids over this radio (app/coordination/task_auction.py);
+        # the engine's WMS lease ledger records the result. Default OFF.
+        from app.coordination.task_auction import AuctionAgent
+
+        self.live_auction = bool(live_auction)
+        self.task_auction = AuctionAgent()
+        self._profiles: dict[str, dict] = {}
+        # EDGE_AI_PREDICTOR / PREDICTIVE_COORDINATION (docs/ADVANCED_INTELLIGENCE_V1.md).
+        # The model is INJECTED as `edge_advisor` (app/product.py); this module
+        # never imports app/ml (law 3). It only ever shapes a PROPOSAL; the
+        # kernel (_monitor) never reads it. Both default OFF.
+        from app.coordination.proactive import ProactiveCoordinator
+
+        self.edge_ai = bool(edge_ai)
+        self.predictive_coordination = bool(predictive_coordination)
+        self.edge_advisor = None
+        self.edge_status = "off"
+        self._edge_off = False
+        self._edge_preds: dict[str, dict] = {}
+        self._edge_prev: dict[tuple[str, str], bool] = {}
+        self.edge_events: list[dict] = []
+        self.edge_counters = {"calls": 0, "positives": 0, "errors": 0,
+                              "reversals": 0, "total_us": 0.0, "max_us": 0.0}
+        self.proactive = ProactiveCoordinator()
+        self._last_enc = None
+        # F5 (docs/C2_ROOT_CAUSE_ANALYSIS.md RC4): a pair held against each
+        # other for STANDOFF_TICKS is broken by a deterministic loser that
+        # replans around the peer AND the peer's next cells. It only ever turns
+        # a hold into a hold-and-replan, so it grants no motion.
+        self.standoff_breaker = bool(standoff_breaker)
+        # F6 is an ENGINE rule (stall-release cooldown); a policy that carries
+        # this attribute asks the engine running it to apply it. 0 = off.
+        self.release_cooldown_ticks = 0
+        self._still: dict[str, tuple[str, int]] = {}
+        self.standoff_breaks = 0
+        # F3 (docs/C2_ROOT_CAUSE_ANALYSIS.md RC3): in the contest band, a robot
+        # whose next step does not close on the peer never yields to a peer
+        # whose step does. Ladder only; the kernel still vets every step.
+        self.leader_rule = bool(leader_rule)
+        self.leader_grants = 0
+        # F1 (docs/C2_ROOT_CAUSE_ANALYSIS.md RC2): the kernel tests the real
+        # path a step drives, in ADDITION to the old straight chord, so it can
+        # only veto more. Off = bit-identical to the chord-only kernel.
+        self.polyline_sweep = bool(polyline_sweep)
+        # Deadlock breakers under evaluation (flagged; see _contest and the
+        # SEPARATING-MOTION note in _monitor). Both default OFF.
+        self.mutual_hold_break = bool(mutual_hold_break)
+        self.mutual_breaks = 0
+        self.separating_exemption = bool(separating_exemption)
+        self.separating_grants = 0
+        # Bounded predictive lookahead (app/coordination/lookahead.py). 0 = off.
+        # Observe-only here: predictions are computed per robot from its own
+        # fresh inbox and published for scoring and explanation; they do not
+        # change any verdict, so the trace hash is unaffected.
+        self.lookahead_h = int(lookahead_h)
+        self.predictions: list = []
+        # One-way lanes on single-file segments (app/coordination/traffic.py).
+        # The rule set is derived from the onboard static map in attach_map();
+        # each robot plans its own route under it, so nothing is negotiated or
+        # transmitted. Off by default; see app/api/runner.py for the product.
+        self.traffic_rules_enabled = bool(traffic_rules)
+        self.traffic = None
+        self._map = None
+        self._route_cache: dict = {}
+        self.auction_route_travel = True          # bids use onboard-map route length            # static floor plan, set by attach_map
+        # Network-independent safety floor. Off by default so every previously
+        # recorded trace hash stays valid; see SENSED_EXTRA_M.
+        self.perception_fallback = bool(perception_fallback)
+        self.sensed_blocks = 0
+        # Robot-ticks HELD (WAIT/REROUTE) by the kernel where the blocker was a
+        # robot known only from onboard sensing, i.e. the radio could not
+        # provide it: the measurable "communication-induced delay". Counting
+        # only; the decision is unchanged.
+        self.comm_hold_ticks = 0
+        self._sensed_ids: set = set()
         # `monitor=False` exists so the demo can turn the safety kernel OFF and
         # let the judges watch the collision counter move. A safety claim that
         # cannot be falsified on stage is not evidence.
@@ -739,11 +864,18 @@ class SwarmPolicy:
                 # the sender, which is the whole point of doing it at all.
                 self.auth.sign(msg)
             self.radio.broadcast(msg, tick=tick)
+            if self.live_auction and self.task_auction.open:
+                self._auction_broadcast(rid, state, tick, sim_time)
 
     def _drain_round(self, tick: int, sim_time: float, ids: list[str]) -> None:
         for rid in ids:
             inbox = self._views.setdefault(rid, {})
             for msg in self.radio.receive(rid):
+                if msg.type is MessageType.TASK_BID:
+                    if self.live_auction and (not self.integrity_enabled
+                                              or self.auth.verify(msg) == IntegrityVerdict.OK):
+                        self.task_auction.on_receive(rid, msg.payload)
+                    continue
                 if msg.type is not MessageType.ROBOT_STATE:
                     continue
                 if self.integrity_enabled:
@@ -877,6 +1009,35 @@ class SwarmPolicy:
             self._reclaimed.add(rid)
             self._counters.reservations_reclaimed += int(released or 0)
 
+    def _predict(self, rid: str, me: AMRState, fresh: dict) -> None:
+        """Lookahead for one robot over the peers IT has heard (X-25 holds)."""
+        from app.coordination.lookahead import predict_pair
+        from app.coordination.risk import score
+
+        corridor = self.traffic.corridor_cells if self.traffic is not None else ()
+        for pid in sorted(fresh):
+            if pid == rid:
+                continue
+            pc = predict_pair(me, fresh[pid].state, horizon=self.lookahead_h,
+                              threshold_m=CONFLICT_M)
+            if pc is None:
+                continue
+            cell = (int(pc.at[0]), int(pc.at[1]))
+            risk = score(pc, threshold_m=CONFLICT_M, in_corridor=cell in corridor)
+            self.predictions.append((pc, risk))
+
+    def attach_map(self, warehouse) -> None:
+        """Receive the STATIC floor plan every robot carries onboard.
+
+        Static geometry only (racks, stations) - never another robot's state -
+        so this is not a global view. Used to derive the one-way lane rules
+        and, by the Edge-AI features, the aisle width at a robot's own cell.
+        """
+        self._map = warehouse
+        if self.traffic_rules_enabled:
+            from app.coordination.traffic import TrafficRules
+            self.traffic = TrafficRules(warehouse)
+
     def observe(self, sightings: dict) -> None:
         """Hand the arbiter this tick's ground-truth sightings.
 
@@ -954,6 +1115,7 @@ class SwarmPolicy:
         self, rid: str, me: AMRState, inbox: dict[str, PeerView]
     ) -> Verdict:
         enc = self._worst_encounter(rid, me, inbox)
+        self._last_enc = enc
         if enc is None:
             self._yield_streak.pop(rid, None)
             return Verdict(
@@ -1008,7 +1170,262 @@ class SwarmPolicy:
         # band above the floor is not redundant safety, it is the space the
         # negotiation needs in order to work. See
         # tools/patch_revert_contest_at_floor.py.
+        if self.leader_rule and not enc.peer_failed and enc.peer_id in inbox:
+            lead = self._leader_verdict(rid, me, enc, inbox[enc.peer_id].state)
+            if lead is not None:
+                return lead
         return self._contest(rid, me, enc, inbox)
+
+    # -- live distributed task auction (robot side) ----------------------------
+
+    def attach_self_profiles(self, profiles: dict) -> None:
+        """Each robot's knowledge of ITSELF (payload capacity, top speed), as
+        its own firmware would have it. Not a view of any other robot."""
+        self._profiles = dict(profiles)
+
+    def _auction_broadcast(self, rid: str, state: AMRState, tick: int, sim_time: float) -> None:
+        profile = self._profiles.get(rid)
+        if profile is None:
+            return
+        views = self._fresh(self._views.get(rid, {}))
+        pos = [(v.state.position.x, v.state.position.y) for p, v in views.items() if p != rid]
+        risk = sum(p["probability"] for p in self._edge_preds.get(rid, {}).values()
+                   if p.get("conflict")) if self.edge_ai else 0.0
+        self.task_auction.make_bids(rid, state, profile, pos, round(risk, 3),
+                                    self._route_m if self._map is not None and self.auction_route_travel
+                                    else None)
+        payload = self.task_auction.outgoing(rid)
+        if payload is None:
+            return
+        msg = CoordinationMessage(
+            schema_version="1.0", message_id=f"{rid}-{tick}-bid", type=MessageType.TASK_BID,
+            sender_id=rid, timestamp=sim_time, sequence=self._seq.get(rid, 0), payload=payload)
+        if self.integrity_enabled:
+            self.auth.sign(msg)
+        self.radio.broadcast(msg, tick=tick)
+
+    def _route_m(self, start_xy, goal_xy):
+        """Route length in metres on the ONBOARD static map (no peer state),
+        memoised by cell pair: what a real AMR's own planner would estimate."""
+        from app.sim.pathfinding import find_path, path_length_cells
+        from app.sim.warehouse import CELL_M
+
+        wh = self._map
+        a, b = wh.m_to_cell(*start_xy), wh.m_to_cell(*goal_xy)
+        if not wh.is_navigable(*a):               # parked off-grid: straight estimate
+            return abs(goal_xy[0] - start_xy[0]) + abs(goal_xy[1] - start_xy[1])
+        key = (a, b)
+        cache = self._route_cache
+        if key not in cache:
+            cells = find_path(wh, a, b)
+            cache[key] = None if cells is None else path_length_cells(cells) * CELL_M
+            if len(cache) > 20000:
+                cache.clear()
+        return cache[key]
+
+    # -- Edge-AI advisory and proactive coordination -------------------------
+
+    def attach_edge_advisor(self, advisor, status: str = "ok") -> None:
+        """Inject the Edge-AI predictor (None = unavailable, with a reason).
+        Called by app/product.py; never by the kernel."""
+        self.edge_advisor = advisor
+        self.edge_status = status if advisor is not None else status or "unavailable"
+        self._edge_off = advisor is None
+
+    def _edge_disable(self, reason: str) -> None:
+        """Model failure at runtime: advisory off for the rest of the run,
+        deterministic coordination continues, the reason is recorded."""
+        self._edge_off = True
+        self.edge_status = reason
+        self.edge_counters["errors"] += 1
+
+    def _edge_predict(self, rid: str, me: AMRState, fresh: dict) -> None:
+        """Run the robot's OWN model on the peers in ITS OWN inbox."""
+        import time as _time
+
+        from app.coordination.edge_features import (
+            FEATURE_LOOKAHEAD_H,
+            FEATURE_NAMES,
+            TCPA_CAP_S,
+            pair_features,
+        )
+
+        lead_i = FEATURE_NAMES.index("la_lead_ticks")
+        tcpa_i = FEATURE_NAMES.index("tcpa_s")
+        pos = [(v.state.position.x, v.state.position.y)
+               for p, v in fresh.items() if p != rid]
+        preds: dict = {}
+        c = self.edge_counters
+        for pid in sorted(fresh):
+            if pid == rid or self.detector.health(pid) is PeerHealth.FAILED:
+                continue
+            f = pair_features(me, fresh[pid], now_tick=self._tick, inbox_positions=pos,
+                              my_yield_streak=self._yield_streak.get(rid, 0),
+                              warehouse=self._map, horizon=FEATURE_LOOKAHEAD_H,
+                              conflict_m=CONFLICT_M)
+            if f is None:
+                continue
+            t0 = _time.perf_counter()
+            try:
+                out = self.edge_advisor.predict(f)
+            except Exception as exc:              # model unavailable at runtime
+                self._edge_disable(f"unavailable: inference error ({type(exc).__name__})")
+                self._edge_preds[rid] = {}
+                return
+            us = (_time.perf_counter() - t0) * 1e6
+            c["calls"] += 1
+            c["total_us"] += us
+            c["max_us"] = max(c["max_us"], us)
+            if f[lead_i] <= FEATURE_LOOKAHEAD_H:
+                ttc = round(f[lead_i] * 0.1, 2)
+            elif f[tcpa_i] < TCPA_CAP_S:
+                ttc = round(f[tcpa_i], 2)
+            else:
+                ttc = None
+            pred = {**out, "tick": self._tick, "ttc_s": ttc, "dist_m": round(f[0], 3)}
+            preds[pid] = pred
+            key = (rid, pid)
+            prev = self._edge_prev.get(key)
+            if prev is not None and prev != pred["conflict"]:
+                c["reversals"] += 1
+            self._edge_prev[key] = pred["conflict"]
+            if pred["conflict"]:
+                c["positives"] += 1
+                self.edge_events.append({
+                    "robot": rid, "peer": pid, "tick": self._tick,
+                    "probability": round(pred["probability"], 4),
+                    "confidence": round(pred["confidence"], 4),
+                    "horizon_ticks": pred["horizon_ticks"], "ttc_s": ttc,
+                    "model": pred["model"]})
+        self._edge_preds[rid] = preds
+
+    def _proactive_step(self, rid: str, me: AMRState, fresh: dict,
+                        proposal: Verdict) -> Verdict:
+        """PREDICTIVE_COORDINATION: may turn a PROCEED/SLOW proposal into a
+        PRE-HOLD. Never grants motion; the result still goes to _monitor."""
+        if self.edge_advisor is None or self._edge_off:
+            self.proactive.forget(rid)            # fallback: deterministic ladder only
+            return proposal
+        imminent = (proposal.kind not in (VerdictKind.PROCEED, VerdictKind.SLOW)
+                    or (self._last_enc is not None and self._last_enc.distance < CONFLICT_M))
+        h = self.proactive.decide(rid, me, fresh, self._edge_preds.get(rid, {}),
+                                  self._tick, self.edge_advisor.threshold,
+                                  imminent=imminent)
+        if h is None:
+            return proposal
+        ttc = f"{h.ttc_s:.1f} s" if h.ttc_s is not None else f"<= {self.edge_advisor.horizon_ticks / 10:.1f} s"
+        advisory = {"probability": round(h.probability, 4), "confidence": round(h.confidence, 4),
+                    "ttc_s": h.ttc_s, "horizon_ticks": self.edge_advisor.horizon_ticks,
+                    "model": self.edge_advisor.version, "peer": h.peer,
+                    "held_since_tick": h.since}
+        return Verdict(
+            robot_id=rid, kind=VerdictKind.YIELD, speed_scale=0.0,
+            reason=(f"PRE-HOLD for {h.peer}: edge AI predicts a conflict in {ttc} "
+                    f"(p={h.probability:.2f}, confidence {h.confidence:.2f}); holding "
+                    f"before it becomes imminent"),
+            yield_to=h.peer, conflict_with=(h.peer,),
+            proactive="PRE-HOLD", edge_advisory=advisory,
+        )
+
+    def _break_standoff(
+        self, rid: str, me: AMRState, final: Verdict, inbox: dict[str, PeerView]
+    ) -> Verdict:
+        """F5. Detect a mutual hold and let exactly one robot replan away.
+
+        Traced failure (frozen C2, seed 900029): two robots 0.78 m apart at an
+        aisle merge, each step of either one would enter the floor, the
+        contest winner was vetoed by the kernel and the roles swapped every
+        COMMIT_TICKS - neither moved for 20,000 ticks, and REROUTE rebuilt the
+        same route because the blocker's own cell was the only thing avoided.
+
+        Both robots evaluate the same facts (who is held, the peer's declared
+        holding bit, the tick), so they pick the same loser without a message.
+        The loser alternates every STANDOFF_SWAP_TICKS so no single robot is
+        condemned to retreat for ever. The result is a REROUTE, i.e. zero
+        motion this tick plus a replan; every later step still passes _monitor.
+        """
+        held = (final.speed_scale or 0.0) <= 0.0
+        peer_id = (final.conflict_with[0] if final.conflict_with
+                   else final.yield_to)
+        if not held or peer_id is None or peer_id not in inbox:
+            self._still.pop(rid, None)
+            return final
+        prev = self._still.get(rid)
+        streak = prev[1] + 1 if prev is not None and prev[0] == peer_id else 1
+        self._still[rid] = (peer_id, streak)
+        view = inbox[peer_id]
+        if streak < STANDOFF_TICKS or not view.holding:
+            return final
+        epoch = self._tick // STANDOFF_SWAP_TICKS
+        loser = max(rid, peer_id) if epoch % 2 == 0 else min(rid, peer_id)
+        if rid != loser:
+            return final
+        self._still.pop(rid, None)
+        self.standoff_breaks += 1
+        peer = view.state
+        avoid = [(peer.position.x, peer.position.y)]
+        if peer.movement_intent is not None:
+            walked = 0.0
+            x, y = avoid[0]
+            for p in peer.movement_intent.path:
+                walked += math.dist((x, y), (p.x, p.y))
+                x, y = p.x, p.y
+                avoid.append((x, y))
+                if walked >= STANDOFF_AVOID_M:
+                    break
+        return Verdict(
+            robot_id=rid, kind=VerdictKind.REROUTE,
+            reason=(f"standoff with {peer_id} for {streak} ticks: this robot "
+                    f"gives way and replans around {peer_id}'s position and route"),
+            conflict_with=(peer_id,),
+            avoid_points=tuple(avoid),
+            utility_terms=final.utility_terms,
+            winning_margin=final.winning_margin,
+        )
+
+    def _leader_verdict(
+        self, rid: str, me: AMRState, enc: _Encounter, peer: AMRState
+    ) -> Optional[Verdict]:
+        """F3. Right of way by who is CLOSING, decided identically by both
+        robots from the same two broadcast states.
+
+        Traced failure it prevents (frozen C2, seed 900018 tick 2798): the
+        contest made the robot in FRONT yield to the one behind it, which then
+        drove past the stopped leader around a turn and into the floor. A robot
+        that is not closing on its peer gains nothing by stopping - it only
+        leaves the other with no room. Returns None when both or neither are
+        closing; the utility contest decides those exactly as before.
+        """
+        mine_here = (me.position.x, me.position.y)
+        peer_here = (peer.position.x, peer.position.y)
+        gap = math.dist(mine_here, peer_here)
+        i_close = math.dist(project_step(me, MAX_STEP_M), peer_here) < gap - 1e-9
+        they_close = math.dist(project_step(peer, MAX_STEP_M), mine_here) < gap - 1e-9
+        if i_close == they_close:
+            return None
+        if not i_close:
+            self._commit.pop(rid, None)
+            self.leader_grants += 1
+            self._decay_streak(rid)
+            return Verdict(
+                robot_id=rid, kind=VerdictKind.PROCEED,
+                reason=f"not closing on {enc.peer_id}, which is closing: keeping right of way",
+                conflict_with=(enc.peer_id,),
+            )
+        if self._yield_streak.get(rid, 0) + 1 >= YIELD_PATIENCE:
+            # The leader has not opened the gap in YIELD_PATIENCE ticks (it may
+            # itself be held): hand back to the contest, whose patience rule
+            # replans.
+            return None
+        self._commit.pop(rid, None)
+        streak = self._yield_streak.get(rid, 0) + 1
+        self._yield_streak[rid] = streak
+        return Verdict(
+            robot_id=rid, kind=VerdictKind.YIELD,
+            reason=f"closing on {enc.peer_id}, which is not: yielding",
+            yield_to=enc.peer_id,
+            conflict_with=(enc.peer_id,),
+        )
 
     def _contest(
         self, rid: str, me: AMRState, enc: _Encounter, inbox: dict[str, PeerView]
@@ -1047,6 +1464,25 @@ class SwarmPolicy:
                 i_win = margin > 0.0
                 reason_tail = f"utility margin {abs(margin):.3f}"
             self._commit[rid] = (enc.peer_id, i_win, self._tick)
+
+        # MUTUAL-HOLD BREAK (flagged). Each robot scores ITSELF with its
+        # current yield streak but the PEER with the streak it broadcast last
+        # tick, and the two commitment windows start on different ticks, so
+        # the contest can come out asymmetric: both robots conclude they lost
+        # and yield to each other forever (traced on open_floor_batch seed 17:
+        # R004 and R010 driving APART, each yielding to the other for 1000+
+        # ticks). When this robot is about to yield, was already holding last
+        # tick, and the peer DECLARED it was holding too, the pair is in a
+        # mutual hold; the lower id proceeds. Both robots evaluate the same
+        # two facts, so they agree without a message. This is the ladder, not
+        # the kernel: the resulting PROCEED is still vetted by _monitor.
+        if (self.mutual_hold_break and not i_win and their_view.holding
+                and self._is_holding(rid)):
+            i_win = rid < enc.peer_id
+            if i_win:
+                self.mutual_breaks += 1
+                self._commit[rid] = (enc.peer_id, True, self._tick)
+                reason_tail = "mutual hold broken by id order"
 
         terms = {f"mine.{k}": v for k, v in mine.items()}
         terms.update({f"theirs.{k}": v for k, v in theirs.items()})
@@ -1103,7 +1539,7 @@ class SwarmPolicy:
         me: AMRState,
         proposal: Verdict,
         inbox: dict[str, PeerView],
-        granted: dict[str, Segment],
+        granted: dict[str, Sweep],
     ) -> Verdict:
         """The Simplex safety kernel (claim N5).
 
@@ -1214,23 +1650,27 @@ class SwarmPolicy:
 
         here = (me.position.x, me.position.y)
         full = _step_envelope(here, project_step(me, MAX_STEP_M))
-        rest: Segment = (here, here)
-        def swept(scale: float) -> Segment:
-            """The segment this robot sweeps if allowed `scale` of its step."""
-            return (
+        rest: Sweep = point_sweep(here)
+        waypoints = waypoints_of(me) if self.polyline_sweep else None
+        def swept(scale: float) -> Sweep:
+            """What this robot sweeps if allowed `scale` of its step: the
+            chord, plus (F1) the real path legs."""
+            if waypoints is not None:
+                return build_sweep(here, full, waypoints, MAX_STEP_M, scale)
+            return ((
                 here,
                 (
                     here[0] + (full[0] - here[0]) * scale,
                     here[1] + (full[1] - here[1]) * scale,
                 ),
-            )
+            ),)
 
         # Collect the peers close enough to matter ONCE, rather than re-walking
         # the inbox for each candidate scale. Each entry carries the segment that
         # peer was granted this tick, and the distance from this robot's
         # STANDING-STILL position to that segment, which is the reference the
         # non-closing exemption is measured against.
-        peers: list[tuple[str, Segment, float]] = []
+        peers: list[tuple[str, Sweep, float, float]] = []
         for peer_id in sorted(inbox):
             if peer_id == rid:
                 continue
@@ -1242,8 +1682,28 @@ class SwarmPolicy:
             # already been decided, and otherwise the point where it stands.
             # Assuming instead that every peer was about to move at full speed
             # cost 31% of all robot-ticks to phantom motion that never happened.
-            theirs = granted.get(peer_id, (there, there))
-            peers.append((peer_id, theirs, segment_distance(rest, theirs)))
+            theirs = granted.get(peer_id, point_sweep(there))
+            peers.append((peer_id, theirs,
+                          sweep_distance(rest, theirs, segment_distance), 0.0))
+
+        self._sensed_ids = set()
+        if self.perception_fallback:
+            # Robots this one can SEE but has no current radio position for.
+            my_ts = me.timestamp
+            for other_id, pos in sorted(self._sightings.get(rid, {}).items()):
+                if other_id == rid:
+                    continue
+                view = inbox.get(other_id)
+                if view is not None and view.state.timestamp >= my_ts - 1e-9:
+                    continue          # heard this tick: the radio already covers it
+                there = (float(pos[0]), float(pos[1]))
+                if math.dist(here, there) > INTERACT_RADIUS_M + 2 * MAX_STEP_M:
+                    continue
+                point: Sweep = point_sweep(there)
+                peers.append((other_id, point,
+                              sweep_distance(rest, point, segment_distance),
+                              SENSED_EXTRA_M))
+                self._sensed_ids.add(other_id)
 
         def blocked_by(scale: float) -> Optional[tuple[str, float]]:
             """First peer that this much motion would bring inside the floor.
@@ -1254,8 +1714,7 @@ class SwarmPolicy:
             permissive than the veto it replaces.
             """
             mine = swept(scale)
-            endpoint: Segment = (mine[1], mine[1])
-            for peer_id, theirs, at_rest in peers:
+            for peer_id, theirs, at_rest, extra in peers:
                 # Segment against segment, exactly as the baseline does it, and
                 # for the reason StopAndWaitPolicy gives at length: a point-based
                 # rule cannot tell a convoy from a head-on approach, because a
@@ -1271,9 +1730,21 @@ class SwarmPolicy:
                 # tools/patch_revert_monitor_cbf.py - because concluding "we pass
                 # at different moments" assumes the peer will VACATE the space on
                 # schedule, and `granted` is an intent rather than a contract.
-                gap = segment_distance(mine, theirs)
-                if gap >= floor:
+                gap = sweep_distance(mine, theirs, segment_distance)
+                if gap >= floor + extra:
                     continue
+                # SEPARATING-MOTION EXEMPTION (flagged, under evaluation; see
+                # the REJECTED note below for its first measurement). Waives
+                # this one peer's floor test only when its reference is a POINT
+                # (held or undecided), it is heard over the radio (extra == 0),
+                # and the whole swept segment never gets closer to it than the
+                # standing gap. Every other peer is still checked in full.
+                if (self.separating_exemption and extra == 0.0
+                        and is_point(theirs) and gap >= at_rest - 1e-9):
+                    self.separating_grants += 1
+                    continue
+                if extra > 0.0:
+                    self.sensed_blocks += 1
 
                 # NOTE there is deliberately NO "the gap is opening" exemption here.
                 # Three versions of one were written and all three were wrong:
@@ -1300,6 +1771,16 @@ class SwarmPolicy:
                 # full stop. Fixing it requires a tighter test that remains
                 # time-agnostic; the obvious time-parameterised one costs
                 # collisions. See tools/patch_revert_monitor_cbf.py.
+                #
+                # A FOURTH exemption was measured and REJECTED on 2026-09-26:
+                # waive the floor against a peer whose reference is a POINT
+                # (held or undecided) when the whole swept segment never gets
+                # closer to it than the standing gap. It looked sound on paper
+                # and produced collisions in 5 of 6 batch configurations (up to
+                # 14, min separation 0.684 m): robots follow their PATH around
+                # corners, not the straight swept segment this rule reasons
+                # about. The limitation stays; the wedge it causes is handled
+                # by stall release, and is reported in the benchmark.
 
                 return (peer_id, gap)
             return None
@@ -1372,6 +1853,8 @@ class SwarmPolicy:
         # is identical to the binary kernel this replaced.
         peer_id, gap = blocker
         self._counters.monitor_vetoes += 1
+        if peer_id in self._sensed_ids:
+            self.comm_hold_ticks += 1
         if proposal.kind is not VerdictKind.PROCEED:
             self._counters.monitor_overrides += 1
 
@@ -1437,15 +1920,15 @@ class SwarmPolicy:
         # gives every pair exactly one check, made by whichever of the two is
         # decided later, at a moment when the other's motion is known exactly.
         # See _monitor for why this is what finally beat the baseline.
-        granted: dict[str, Segment] = {
-            rid: (
-                (states[rid].position.x, states[rid].position.y),
-                (states[rid].position.x, states[rid].position.y),
-            )
+        granted: dict[str, Sweep] = {
+            rid: point_sweep((states[rid].position.x, states[rid].position.y))
             for rid in ids
         }
 
         verdicts: dict[str, Verdict] = {}
+        self.predictions = []
+        self.edge_events = []
+        self.proactive.begin_tick()
         for rid in ids:
             me = states[rid]
             inbox = self._views.setdefault(rid, {})
@@ -1460,8 +1943,16 @@ class SwarmPolicy:
             # Both the negotiation and the monitor see only FRESH entries, so a
             # peer that has gone quiet cannot block an aisle it has left.
             fresh = self._fresh(inbox)
+            if self.lookahead_h > 0:
+                self._predict(rid, me, fresh)
+            if self.edge_ai and self.edge_advisor is not None and not self._edge_off:
+                self._edge_predict(rid, me, fresh)
             proposal = self._decide(rid, me, fresh)
+            if self.predictive_coordination:
+                proposal = self._proactive_step(rid, me, fresh, proposal)
             final = self._monitor(rid, me, proposal, fresh, granted)
+            if self.standoff_breaker:
+                final = self._break_standoff(rid, me, final, fresh)
             verdicts[rid] = final
 
             # Publish what this robot was granted, so later robots in the order
@@ -1471,18 +1962,34 @@ class SwarmPolicy:
             if scale > 0.0:
                 here = (me.position.x, me.position.y)
                 full = project_step(me, MAX_STEP_M)
-                granted[rid] = (
-                    here,
-                    (
-                        here[0] + (full[0] - here[0]) * scale,
-                        here[1] + (full[1] - here[1]) * scale,
-                    ),
-                )
+                if self.polyline_sweep:
+                    granted[rid] = build_sweep(here, full, waypoints_of(me),
+                                               MAX_STEP_M, scale)
+                else:
+                    granted[rid] = ((
+                        here,
+                        (
+                            here[0] + (full[0] - here[0]) * scale,
+                            here[1] + (full[1] - here[1]) * scale,
+                        ),
+                    ),)
 
             key = final.kind.value
             self._counters.verdicts[key] = self._counters.verdicts.get(key, 0) + 1
 
         self._last_decisions = verdicts
+        if self.live_auction:
+            # A robot whose radio is out can neither send its bid nor claim.
+            live = [r for r in ids if states[r].status is not RobotStatus.FAILED
+                    and not self.radio.is_silenced(r)]
+            busy_view = {}
+            for r in live:
+                seen_busy = {p for p, v in self._fresh(self._views.get(r, {})).items()
+                             if v.state.current_task_id is not None}
+                if states[r].current_task_id is not None:
+                    seen_busy.add(r)
+                busy_view[r] = seen_busy
+            self.task_auction.end_tick(tick, live, busy_view)
         return verdicts
 
     def _update_sovereign(
@@ -1547,6 +2054,10 @@ class SwarmPolicy:
             "policy": self.name,
             "ticks": c.ticks,
             "verdicts": dict(sorted(c.verdicts.items())),
+            # Different units, stated because the audit tripped on it:
+            # "contests" counts FRESH contest resolutions; "contests_won"
+            # counts every TICK a robot proceeded on right of way, including
+            # ticks inside a COMMIT_TICKS window. So won > contests is normal.
             "contests": c.contests,
             "contests_won": c.contests_won,
             "yields": c.verdicts.get(VerdictKind.YIELD.value, 0),
@@ -1567,6 +2078,31 @@ class SwarmPolicy:
                 "margin_m": SOVEREIGN_MARGIN_M,
                 "speed_cap": SOVEREIGN_SPEED_CAP,
             },
+            "perception_fallback": {
+                "enabled": self.perception_fallback,
+                "sensed_blocks": self.sensed_blocks,
+                "comm_hold_ticks": self.comm_hold_ticks,
+            },
+            "mutual_hold_break": {"enabled": self.mutual_hold_break,
+                                  "breaks": self.mutual_breaks},
+            "edge_ai": {
+                "enabled": self.edge_ai, "status": self.edge_status,
+                "model": (self.edge_advisor.describe()
+                          if self.edge_advisor is not None and hasattr(self.edge_advisor, "describe")
+                          else None),
+                "calls": self.edge_counters["calls"],
+                "positives": self.edge_counters["positives"],
+                "errors": self.edge_counters["errors"],
+                "prediction_reversals": self.edge_counters["reversals"],
+                "mean_inference_us": (round(self.edge_counters["total_us"] / self.edge_counters["calls"], 2)
+                                      if self.edge_counters["calls"] else None),
+                "max_inference_us": round(self.edge_counters["max_us"], 2),
+            },
+            "proactive": {"enabled": self.predictive_coordination,
+                          **self.proactive.summary()},
+            "separating_exemption": {"enabled": self.separating_exemption,
+                                     "grants": self.separating_grants},
+
             "radio": radio,
             "msgs_per_robot_tick": radio.get("msgs_per_robot_tick", 0.0),
             "integrity": {
@@ -1598,5 +2134,3 @@ class SwarmPolicy:
                 pid: self.detector.health(pid).value for pid in sorted(inbox)
             },
         }
-
-# File contains AI-generated response based on internal company sources

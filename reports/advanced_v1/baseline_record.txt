@@ -1,0 +1,145 @@
+recorded_utc 2026-09-27T14:35:08Z
+HEAD a6e18041c8151077485fcdb63c6fc1769594cefa
+branch claude/sleepy-ride-lsj94c
+v3_code_identity f3dabbf0d732bfc218a1ab31f906299ca1baee5c4b1de148534b16c0d023094f
+--- git status --short
+ M README.md
+ M SWARMOS_JUDGE_DEMO_SIH26123.pptx
+ M SWARMOS_JUDGE_MASTER_DOCUMENT.docx
+ M SWARMOS_Master_Specification_SIH26123.pptx
+ M app/api/runner.py
+ M app/api/server.py
+ M app/coordination/__init__.py
+ M app/coordination/messages.py
+ M app/coordination/radio.py
+ M app/coordination/swarm_policy.py
+ M app/db/__init__.py
+ M app/db/benchmark.py
+ M app/db/recorder.py
+ M app/db/schema.py
+ M app/db/stats.py
+ M app/db/store.py
+ M app/sim/__init__.py
+ M app/sim/clock.py
+ M app/sim/cosim.py
+ M app/sim/engine.py
+ M app/sim/pathfinding.py
+ M app/sim/policy.py
+ M app/sim/robot.py
+ M app/sim/scenarios.py
+ M app/sim/sensing.py
+ M app/sim/tasks.py
+ M app/sim/warehouse.py
+ M docs/DEMO_RUN_ORDER.md
+ M docs/JUDGE_QA_SHEET.md
+ M docs/ROBONEX_SWARMOS_UI_TRANSFORMATION_CHECKPOINT.md
+ M docs/SUCCESS_CRITERIA_VERIFICATION.md
+ M docs/gen_implementation_list_docx.py
+ M docs/gen_judge_demo_pptx.py
+ M docs/gen_judge_master_docx.py
+ M docs/gen_master_spec_pptx.py
+ M docs/gen_project_blueprint_docx.py
+ M docs/gen_team_plan_pptx.py
+ M docs/gen_ui_guide_pptx.py
+ D from_others/.acc/background-1789926275507-si49j7w.log
+ D from_others/.acc/background-1789928696069-zvqx1dc.log
+ D from_others/.acc/background-1789930549207-3a8pixq.log
+ D from_others/.acc/background-1789930573905-2a0ji52.log
+ D from_others/.acc/background-1789930623516-ahchrfr.log
+ D from_others/.acc/background-1789930653365-juexwkd.log
+ D from_others/.acc/background-1789931255418-k49hsdb.log
+ D from_others/.acc/background-1789932002694-7tplaio.log
+ D from_others/.acc/background-1789933236212-qy52xn7.log
+ D from_others/.acc/background-1789934249540-ve9hbov.log
+ D from_others/.acc/background-1789934958894-zkv5zz3.log
+ D from_others/.acc/background-1789944128493-tht6oo2.log
+ D from_others/.acc/background-1789964280960-vr8kf44.log
+ D from_others/.acc/background-1789991939571-54t0coq.log
+ D from_others/.acc/background-1789992849457-men50yq.log
+ M pyproject.toml
+ M run.sh
+ M run_tests.sh
+ M tests/test_api.py
+ M tests/test_db.py
+ M tests/test_radio.py
+ M tests/test_sim_engine.py
+ M tools/diag_collisions.py
+ M tools/diag_frozen_robot.py
+ M tools/diag_gridlock_sweep.py
+ M tools/diag_isolate.py
+ M tools/diag_landing_click.py
+ M tools/diag_palette_cursor.py
+ M tools/diag_paralysis.py
+ M tools/diag_runlength_probe.py
+ M tools/diag_second_leg.py
+ M tools/diag_wedge_census.py
+ M tools/diag_wedge_reason.py
+ M tools/diag_wedge_reason2.py
+ M tools/patch_collision_events.py
+ M tools/patch_contest_at_floor.py
+ M tools/patch_convoy_holding.py
+ M tools/patch_drop_exemption.py
+ M tools/patch_exemption_fix.py
+ M tools/patch_graded_monitor.py
+ M tools/patch_monitor_cbf.py
+ M tools/patch_monitor_recovery.py
+ M tools/patch_monitor_rewrite.py
+ M tools/patch_no_yield_to_stationary.py
+ M tools/patch_repair_decide.py
+ M tools/patch_revert_contest_at_floor.py
+ M tools/patch_revert_monitor_cbf.py
+ M tools/patch_revert_no_yield.py
+ M tools/smoke_swarm.py
+ M tools/verify_ui_contract.py
+ D trans.log
+ M web/js/landing.js
+ M web/js/main.js
+ M web/js/panels/analytics.js
+ M web/js/panels/cosim.js
+ M web/js/panels/inspector.js
+ M web/js/store.js
+ M web/js/transport.js
+?? SESSION_SUMMARY_20260926_research_benchmark_and_safety.md
+?? app/coordination/lookahead.py
+?? app/coordination/risk.py
+?? app/coordination/traffic.py
+?? app/sim/deadlock_audit.py
+?? app/sim/decisions.py
+?? app/sim/prediction.py
+?? app/sim/sweep.py
+?? docs/C2_FROZEN_PROTOCOL.md
+?? docs/C2_FROZEN_PROTOCOL_V2.md
+?? docs/C2_FROZEN_PROTOCOL_V3.md
+?? docs/C2_ROOT_CAUSE_ANALYSIS.md
+?? docs/C2_V2_RESULT.md
+?? docs/C2_V3_PRODUCT_RESULT.md
+?? docs/IMPROVEMENT_CYCLE_20260927.md
+?? docs/JUDGE_NARRATIVE_C2_V3.md
+?? docs/RESEARCH_POSITIONING.md
+?? docs/SYSTEM_AUDIT_20260927.md
+?? reports/advanced_v1/
+?? reports/audit_20260927/
+?? reports/c2v2/
+?? reports/c2v3/
+?? reports/comm_safety_fallback.log
+?? reports/diagnosis_20260927/
+?? reports/docs_update_20260927/
+?? reports/experiments/
+?? reports/experiments_dev_20260927/
+?? tests/test_batch_and_audits.py
+?? tests/test_benchmark_instrumentation.py
+?? tests/test_c2_protocol.py
+?? tests/test_deadlock_breakers.py
+?? tests/test_install_contract.py
+?? tests/test_leader_rule.py
+?? tests/test_link_faults.py
+?? tests/test_lookahead_risk.py
+?? tests/test_perception_fallback.py
+?? tests/test_polyline_sweep.py
+?? tests/test_release_cooldown.py
+?? tests/test_safety_invariants.py
+?? tests/test_standoff_breaker.py
+?? tools/audit_browser.mjs
+?? tools/audit_system.py
+?? tools/replay_check.py
+?? tools/run_experiment.py

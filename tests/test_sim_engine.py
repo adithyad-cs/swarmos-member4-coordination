@@ -415,6 +415,3 @@ def test_no_robot_stalls_forever_at_high_density():
     # The fix must never create a collision: releasing a task only changes
     # bookkeeping (current_task_id, path, phase), never a robot's position.
     assert eng.kpis()["collisions"] == 0
-
-# File contains AI-generated response based on internal company sources
-

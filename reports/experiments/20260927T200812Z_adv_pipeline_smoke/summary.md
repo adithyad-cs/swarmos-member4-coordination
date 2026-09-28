@@ -1,0 +1,144 @@
+# Experiment `adv_pipeline_smoke`
+
+- git: `a6e18041c8151077485fcdb63c6fc1769594cefa+uncommitted-changes`
+- code identity (sha256): `ae7c9aee82176521325c59ab9f90358d69d6648c39aca51810bcc72d96a86ac5`
+- created: 20260927T200812Z
+- seeds: [101, 102]
+- reference arm: `swarmos`
+- command: `PYTHONPATH=. python3 tools/run_experiment.py --name adv_pipeline_smoke --scenarios overlap_batch open_floor_batch --arms stop_and_wait+F1+F6 swarmos swarmos+EAI swarmos+EAI+PC swarmos+AU swarmos+EAI+PC+AU --reference swarmos --seeds 101 102 --workers 4`
+
+Makespan for runs that did not finish is CENSORED at the scenario cap. That understates the failing arm's true time, so it flatters the arm that finishes less; a censored target is marked MET only when the treatment never failed a seed the reference finished.
+
+## open_floor_batch/normal
+
+| arm | DNF | tasks done (mean) | makespan censored (mean s) | collisions | margin breaches | safety FAIL runs | wait-cycles (mean) | persistent deadlocks >=1 s (mean) | stall releases (mean) | livelock episodes (mean) | replans (mean) | path eff. | min sep (m) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 2/2 | 33.0 | 3000.0 | 0 | 0 | 0 | 966.5 | 964.5 | 11.5 | 3.5 | 4174.0 | 0.9914 | 0.7632 |
+| swarmos | 1/2 | 34.5 | 1847.15 | 0 | 0 | 0 | 1002.0 | 209.0 | 112.0 | 1.0 | 23731.5 | 0.9923 | 0.754 |
+| swarmos+AU | 0/2 | 36.0 | 604.55 | 0 | 0 | 0 | 112.0 | 33.5 | 4.0 | 0.0 | 1728.0 | 0.9916 | 0.753 |
+| swarmos+EAI | 1/2 | 34.5 | 1847.15 | 0 | 0 | 0 | 1002.0 | 209.0 | 112.0 | 1.0 | 23731.5 | 0.9923 | 0.754 |
+| swarmos+EAI+PC | 2/2 | 33.0 | 3000.0 | 0 | 0 | 0 | 3116.5 | 91.5 | 179.0 | 4.5 | 31191.0 | 0.988 | 0.7507 |
+| swarmos+EAI+PC+AU | 0/2 | 36.0 | 624.65 | 0 | 0 | 0 | 102.5 | 36.5 | 19.0 | 0.0 | 2683.0 | 1.003 | 0.7505 |
+
+| arm | finish rate | makespan finished (mean / median s) | t90 censored (mean s) | throughput (tasks/min) | WAIT | YIELD | REROUTE | stop events | backtracks | conflicts / resolved | predicted | comm holds | invariant failures |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0.0 | None / None | 1737.95 | 0.66 | 59562.5 | 0.0 | 2031.0 | 2078.0 | 574.0 | 1113.0 / 1112.0 | 0.0 | None | 0 |
+| swarmos | 0.5 | 694.3 / 694.3 | 613.05 | 1.885 | 25528.0 | 39237.0 | 11729.0 | 4505.0 | 281.5 | 675.5 / 673.0 | 1590.5 | 0.0 | 0 |
+| swarmos+AU | 1.0 | 604.55 / 604.55 | 501.0 | 3.61 | 1095.5 | 6011.0 | 800.0 | 593.5 | 237.5 | 91.0 / 87.5 | 217.5 | 0.0 | 0 |
+| swarmos+EAI | 0.5 | 694.3 / 694.3 | 613.05 | 1.885 | 25528.0 | 39237.0 | 11729.0 | 4505.0 | 281.5 | 675.5 / 673.0 | 1590.5 | 0.0 | 0 |
+| swarmos+EAI+PC | 0.0 | None / None | 1789.45 | 0.66 | 26238.5 | 93390.0 | 15382.0 | 13600.5 | 1477.5 | 959.0 / 954.0 | 2770.5 | 0.0 | 0 |
+| swarmos+EAI+PC+AU | 1.0 | 624.65 / 624.65 | 560.25 | 3.455 | 2336.0 | 7294.5 | 1263.5 | 625.0 | 162.5 | 71.5 / 69.0 | 179.5 | 0.0 | 0 |
+
+| arm | floor entries (total) | floor pair-ticks (mean) | frozen pairs (total) | runs with a frozen pair | recovery actions (mean: stall releases + REROUTE) |
+|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0 | 0.0 | 0 | 0 | 2042.5 |
+| swarmos | 0 | 0.0 | 0 | 0 | 11841.0 |
+| swarmos+AU | 0 | 0.0 | 0 | 0 | 804.0 |
+| swarmos+EAI | 0 | 0.0 | 0 | 0 | 11841.0 |
+| swarmos+EAI+PC | 0 | 0.0 | 0 | 0 | 15561.0 |
+| swarmos+EAI+PC+AU | 0 | 0.0 | 0 | 0 | 1282.5 |
+
+Lookahead (observe-only scoring):
+
+- `swarmos`: precision 0.4217, recall 0.9904, mean lead 15.5 ticks (TP 1338, FP 1835, FN 13)
+- `swarmos+AU`: precision 0.3972, recall 0.9231, mean lead 16.325 ticks (TP 168, FP 255, FN 14)
+- `swarmos+EAI`: precision 0.4217, recall 0.9904, mean lead 15.5 ticks (TP 1338, FP 1835, FN 13)
+- `swarmos+EAI+PC`: precision 0.3108, recall 0.879, mean lead 20.64 ticks (TP 1686, FP 3739, FN 232)
+- `swarmos+EAI+PC+AU`: precision 0.3855, recall 0.965, mean lead 21.64 ticks (TP 138, FP 220, FN 5)
+
+| comparison | metric | n | mean improvement % | 95% CI % | wins | >= target? |
+|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 vs swarmos | makespan_censored_s | 2 | -166.04 | [-2275.81, 1943.72] | 0/2 | not met |
+| stop_and_wait+F1+F6 vs swarmos | t90_censored_s | 2 | -237.06 | [-3695.62, 3221.5] | 1/2 | not met |
+| stop_and_wait+F1+F6 vs swarmos | tasks_complete | 2 | -4.04 | [-93.88, 85.8] | 1/2 | not met |
+| swarmos+AU vs swarmos | makespan_censored_s | 2 | 43.02 | [-450.7, 536.74] | 2/2 | not met |
+| swarmos+AU vs swarmos | t90_censored_s | 2 | 13.12 | [-319.56, 345.81] | 1/2 | not met |
+| swarmos+AU vs swarmos | tasks_complete | 2 | 4.55 | [-53.21, 62.3] | 1/2 | not met |
+| swarmos+EAI vs swarmos | makespan_censored_s | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI vs swarmos | t90_censored_s | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI vs swarmos | tasks_complete | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_censored_s | 2 | -166.04 | [-2275.81, 1943.72] | 0/2 | not met |
+| swarmos+EAI+PC vs swarmos | t90_censored_s | 2 | -163.23 | [-2013.98, 1687.53] | 0/2 | not met |
+| swarmos+EAI+PC vs swarmos | tasks_complete | 2 | -4.29 | [-20.34, 11.75] | 0/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_censored_s | 2 | 44.15 | [-404.32, 492.63] | 2/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | t90_censored_s | 2 | 4.68 | [-249.33, 258.69] | 1/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | tasks_complete | 2 | 4.55 | [-53.21, 62.3] | 1/2 | not met |
+
+- `stop_and_wait+F1+F6 vs swarmos`: treatment-only DNF seeds [102]; reference-only DNF seeds none
+
+- `swarmos+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds [101]
+
+- `swarmos+EAI vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI+PC vs swarmos`: treatment-only DNF seeds [102]; reference-only DNF seeds none
+
+- `swarmos+EAI+PC+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds [101]
+
+## overlap_batch/normal
+
+| arm | DNF | tasks done (mean) | makespan censored (mean s) | collisions | margin breaches | safety FAIL runs | wait-cycles (mean) | persistent deadlocks >=1 s (mean) | stall releases (mean) | livelock episodes (mean) | replans (mean) | path eff. | min sep (m) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 1/2 | 23.0 | 1764.2 | 0 | 0 | 0 | 102.0 | 84.0 | 1.0 | 5.0 | 426.5 | 0.6323 | 0.7864 |
+| swarmos | 0/2 | 24.0 | 499.95 | 0 | 0 | 0 | 51.0 | 28.5 | 0.0 | 0.5 | 734.5 | 0.8599 | 0.756 |
+| swarmos+AU | 0/2 | 24.0 | 530.1 | 0 | 0 | 0 | 25.5 | 3.0 | 2.0 | 0.5 | 739.0 | 0.8427 | 0.754 |
+| swarmos+EAI | 0/2 | 24.0 | 499.95 | 0 | 0 | 0 | 51.0 | 28.5 | 0.0 | 0.5 | 734.5 | 0.8599 | 0.756 |
+| swarmos+EAI+PC | 0/2 | 24.0 | 534.75 | 0 | 0 | 0 | 38.5 | 3.5 | 3.0 | 0.0 | 960.5 | 0.8476 | 0.756 |
+| swarmos+EAI+PC+AU | 0/2 | 24.0 | 497.15 | 0 | 0 | 0 | 23.0 | 1.0 | 0.5 | 1.0 | 602.5 | 0.8089 | 0.754 |
+
+| arm | finish rate | makespan finished (mean / median s) | t90 censored (mean s) | throughput (tasks/min) | WAIT | YIELD | REROUTE | stop events | backtracks | conflicts / resolved | predicted | comm holds | invariant failures |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0.5 | 528.4 / 528.4 | 617.15 | 1.58 | 5926.5 | 0.0 | 179.0 | 360.5 | 103.0 | 284.5 / 284.5 | 0.0 | None | 0 |
+| swarmos | 1.0 | 499.95 / 499.95 | 425.75 | 2.91 | 443.5 | 2402.0 | 334.0 | 197.5 | 131.0 | 43.0 / 41.5 | 88.5 | 0.0 | 0 |
+| swarmos+AU | 1.0 | 530.1 / 530.1 | 445.65 | 2.715 | 328.0 | 2684.0 | 328.0 | 189.0 | 37.0 | 41.5 / 41.0 | 83.5 | 0.0 | 0 |
+| swarmos+EAI | 1.0 | 499.95 / 499.95 | 425.75 | 2.91 | 443.5 | 2402.0 | 334.0 | 197.5 | 131.0 | 43.0 / 41.5 | 88.5 | 0.0 | 0 |
+| swarmos+EAI+PC | 1.0 | 534.75 / 534.75 | 437.95 | 2.72 | 396.0 | 3885.5 | 445.0 | 204.0 | 52.5 | 38.5 / 37.0 | 85.0 | 0.0 | 0 |
+| swarmos+EAI+PC+AU | 1.0 | 497.15 / 497.15 | 425.35 | 2.895 | 161.0 | 2714.0 | 261.5 | 186.5 | 31.5 | 34.5 / 33.0 | 70.5 | 0.0 | 0 |
+
+| arm | floor entries (total) | floor pair-ticks (mean) | frozen pairs (total) | runs with a frozen pair | recovery actions (mean: stall releases + REROUTE) |
+|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 | 0 | 0.0 | 0 | 0 | 180.0 |
+| swarmos | 0 | 0.0 | 0 | 0 | 334.0 |
+| swarmos+AU | 0 | 0.0 | 0 | 0 | 330.0 |
+| swarmos+EAI | 0 | 0.0 | 0 | 0 | 334.0 |
+| swarmos+EAI+PC | 0 | 0.0 | 0 | 0 | 448.0 |
+| swarmos+EAI+PC+AU | 0 | 0.0 | 0 | 0 | 262.0 |
+
+Lookahead (observe-only scoring):
+
+- `swarmos`: precision 0.4746, recall 0.9767, mean lead 13.87 ticks (TP 84, FP 93, FN 2)
+- `swarmos+AU`: precision 0.485, recall 0.9759, mean lead 14.995 ticks (TP 81, FP 86, FN 2)
+- `swarmos+EAI`: precision 0.4746, recall 0.9767, mean lead 13.87 ticks (TP 84, FP 93, FN 2)
+- `swarmos+EAI+PC`: precision 0.4471, recall 0.987, mean lead 18.45 ticks (TP 76, FP 94, FN 1)
+- `swarmos+EAI+PC+AU`: precision 0.4752, recall 0.971, mean lead 18.365 ticks (TP 67, FP 74, FN 2)
+
+| comparison | metric | n | mean improvement % | 95% CI % | wins | >= target? |
+|---|---|---|---|---|---|---|
+| stop_and_wait+F1+F6 vs swarmos | makespan_censored_s | 2 | -281.77 | [-3912.96, 3349.42] | 1/2 | not met |
+| stop_and_wait+F1+F6 vs swarmos | t90_censored_s | 2 | -45.57 | [-487.98, 396.83] | 0/2 | not met |
+| stop_and_wait+F1+F6 vs swarmos | tasks_complete | 2 | -4.17 | [-57.11, 48.78] | 0/2 | not met |
+| swarmos+AU vs swarmos | makespan_censored_s | 2 | -6.95 | [-123.01, 109.1] | 1/2 | not met |
+| swarmos+AU vs swarmos | makespan_s (both finished) | 2 | -6.95 | [-123.01, 109.1] | 1/2 | not met |
+| swarmos+AU vs swarmos | t90_censored_s | 2 | -4.85 | [-130.39, 120.69] | 1/2 | not met |
+| swarmos+AU vs swarmos | tasks_complete | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI vs swarmos | makespan_censored_s | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI vs swarmos | makespan_s (both finished) | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI vs swarmos | t90_censored_s | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI vs swarmos | tasks_complete | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_censored_s | 2 | -9.15 | [-284.2, 265.9] | 1/2 | not met |
+| swarmos+EAI+PC vs swarmos | makespan_s (both finished) | 2 | -9.15 | [-284.2, 265.9] | 1/2 | not met |
+| swarmos+EAI+PC vs swarmos | t90_censored_s | 2 | -3.06 | [-144.91, 138.79] | 1/2 | not met |
+| swarmos+EAI+PC vs swarmos | tasks_complete | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_censored_s | 2 | -0.41 | [-122.94, 122.11] | 1/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | makespan_s (both finished) | 2 | -0.41 | [-122.94, 122.11] | 1/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | t90_censored_s | 2 | -0.01 | [-73.73, 73.71] | 1/2 | not met |
+| swarmos+EAI+PC+AU vs swarmos | tasks_complete | 2 | 0.0 | [0.0, 0.0] | 0/2 | not met |
+
+- `stop_and_wait+F1+F6 vs swarmos`: treatment-only DNF seeds [102]; reference-only DNF seeds none
+
+- `swarmos+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI+PC vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none
+
+- `swarmos+EAI+PC+AU vs swarmos`: treatment-only DNF seeds none; reference-only DNF seeds none

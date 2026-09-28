@@ -1,0 +1,218 @@
+{
+  "arm_configs": {
+    "baseline+F1+F6": {
+      "MAX_STEP_M": 0.22,
+      "POLYLINE_SWEEP": true,
+      "SAFE_SEPARATION_M": 0.75,
+      "STUCK_TICKS": 8,
+      "base": "baseline",
+      "constants": {
+        "COMMIT_TICKS": 8,
+        "CONFLICT_M": 0.97,
+        "HARD_STOP_M": 0.75,
+        "MARGIN_BREACH_M": 0.75,
+        "MONITOR_STUCK_TICKS": 4,
+        "STALL_RELEASE_TICKS": 150,
+        "STANDOFF_AVOID_M": 3.0,
+        "STANDOFF_SWAP_TICKS": 200,
+        "STANDOFF_TICKS": 20,
+        "WIP_FRACTION": 0.6,
+        "YIELD_PATIENCE": 10
+      },
+      "engine_release_cooldown_ticks": 300,
+      "fixes": [
+        "F1",
+        "F6"
+      ],
+      "name": "stop_and_wait",
+      "policy_class": "TunedStopAndWait"
+    },
+    "stop_and_wait+F1+F6": {
+      "MAX_STEP_M": 0.22,
+      "POLYLINE_SWEEP": true,
+      "SAFE_SEPARATION_M": 0.75,
+      "STUCK_TICKS": 30,
+      "base": "stop_and_wait",
+      "constants": {
+        "COMMIT_TICKS": 8,
+        "CONFLICT_M": 0.97,
+        "HARD_STOP_M": 0.75,
+        "MARGIN_BREACH_M": 0.75,
+        "MONITOR_STUCK_TICKS": 4,
+        "STALL_RELEASE_TICKS": 150,
+        "STANDOFF_AVOID_M": 3.0,
+        "STANDOFF_SWAP_TICKS": 200,
+        "STANDOFF_TICKS": 20,
+        "WIP_FRACTION": 0.6,
+        "YIELD_PATIENCE": 10
+      },
+      "engine_release_cooldown_ticks": 300,
+      "fixes": [
+        "F1",
+        "F6"
+      ],
+      "name": "stop_and_wait",
+      "policy_class": "TextbookStopAndWaitPolicy"
+    },
+    "swarmos+F1+F3+F5+F6": {
+      "base": "swarmos",
+      "constants": {
+        "COMMIT_TICKS": 8,
+        "CONFLICT_M": 0.97,
+        "HARD_STOP_M": 0.75,
+        "MARGIN_BREACH_M": 0.75,
+        "MONITOR_STUCK_TICKS": 4,
+        "STALL_RELEASE_TICKS": 150,
+        "STANDOFF_AVOID_M": 3.0,
+        "STANDOFF_SWAP_TICKS": 200,
+        "STANDOFF_TICKS": 20,
+        "WIP_FRACTION": 0.6,
+        "YIELD_PATIENCE": 10
+      },
+      "engine_release_cooldown_ticks": 300,
+      "fixes": [
+        "F1",
+        "F3",
+        "F5",
+        "F6"
+      ],
+      "integrity_enabled": false,
+      "leader_rule": true,
+      "lookahead_h": 15,
+      "monitor_enabled": true,
+      "mutual_hold_break": false,
+      "name": "swarmos",
+      "perception_fallback": true,
+      "policy_class": "SwarmPolicy",
+      "polyline_sweep": true,
+      "separating_exemption": false,
+      "standoff_breaker": true,
+      "traffic_rules_enabled": false
+    }
+  },
+  "arms": {
+    "baseline+F1+F6": "Stop-and-wait TUNED (STUCK_TICKS=8): the stronger honesty check | F1: polyline sweep in the safety check (both arms) | F6: stall release does not hand the task back to the same robot for 30 s (engine, all arms)",
+    "stop_and_wait+F1+F6": "Traditional stop-and-wait (TextbookStopAndWaitPolicy, STUCK_TICKS=30): the SIH C2 comparison arm | F1: polyline sweep in the safety check (both arms) | F6: stall release does not hand the task back to the same robot for 30 s (engine, all arms)",
+    "swarmos+F1+F3+F5+F6": "SWARMOS product policy (graded ladder + Simplex kernel + perception fallback) | F1: polyline sweep in the safety check (both arms) | F3: leader keeps right of way in the contest band (SWARMOS ladder) | F5: standoff breaker: deterministic loser replans around the peer (SWARMOS) | F6: stall release does not hand the task back to the same robot for 30 s (engine, all arms)"
+  },
+  "code_identity": {
+    "files": 167,
+    "paths": [
+      "app",
+      "tools",
+      "pyproject.toml"
+    ],
+    "sha256": "d7d8aacd477552a19dcb56a7731cc9611f8ea65c961af1e82a7559c76e841a90"
+  },
+  "command": "PYTHONPATH=. python3 tools/run_experiment.py --name c2v2_frozen --scenarios overlap_batch open_floor_batch --arms stop_and_wait+F1+F6 baseline+F1+F6 swarmos+F1+F3+F5+F6 --reference stop_and_wait+F1+F6 --seeds 800001 800002 800003 800004 800005 800006 800007 800008 800009 800010 800011 800012 800013 800014 800015 800016 800017 800018 800019 800020 800021 800022 800023 800024 800025 800026 800027 800028 800029 800030 800031 800032 800033 800034 800035 800036 800037 800038 800039 800040 --workers 4 --target-pct 20 --expect-identity d7d8aacd477552a19dcb56a7731cc9611f8ea65c961af1e82a7559c76e841a90",
+  "conditions": {
+    "normal": []
+  },
+  "created_utc": "20260927T103242Z",
+  "git": "a6e18041c8151077485fcdb63c6fc1769594cefa+uncommitted-changes",
+  "name": "c2v2_frozen",
+  "overrides": {},
+  "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+  "python": "3.11.15",
+  "python_implementation": "CPython",
+  "reference": "stop_and_wait+F1+F6",
+  "scenarios": {
+    "open_floor_batch": {
+      "aisle_period": 4,
+      "aisle_width": 2,
+      "batch": true,
+      "cross_period": 10,
+      "cross_width": 2,
+      "description": "The rush_50 floor (two-way aisles, cross aisles) with 12 robots and a fixed batch of 36 tasks. Reported alongside overlap_batch so any gain is not shown only on single-file corridors.",
+      "duration_s": 3000.0,
+      "fleet_size": 12,
+      "height": 40,
+      "idle_parking": true,
+      "initial_burst": 36,
+      "injections": [],
+      "name": "open_floor_batch",
+      "proves": "Makespan on an ordinary two-way-aisle floor, zero collisions.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 0.0,
+      "title": "Open floor, fixed batch",
+      "width": 60
+    },
+    "overlap_batch": {
+      "aisle_period": 3,
+      "aisle_width": 1,
+      "batch": true,
+      "cross_period": 999,
+      "cross_width": 1,
+      "description": "The SIH C2 benchmark. Single-file aisles (the narrow_aisle_deadlock floor), pick stations on the south wall and drop stations on the north, so loaded robots travel north while empty robots return south through the same aisles: overlapping, head-on paths by construction. A fixed batch of 24 tasks for 8 robots; the run ends when all 24 are complete (cap 3000 s, reported as did-not-finish if hit).",
+      "duration_s": 3000.0,
+      "fleet_size": 8,
+      "height": 28,
+      "idle_parking": true,
+      "initial_burst": 24,
+      "injections": [],
+      "name": "overlap_batch",
+      "proves": "Total task-completion time (makespan) versus traditional stop-and-wait on overlapping paths, with zero collisions.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 0.0,
+      "title": "Overlapping paths, fixed batch",
+      "width": 40
+    }
+  },
+  "seeds": [
+    800001,
+    800002,
+    800003,
+    800004,
+    800005,
+    800006,
+    800007,
+    800008,
+    800009,
+    800010,
+    800011,
+    800012,
+    800013,
+    800014,
+    800015,
+    800016,
+    800017,
+    800018,
+    800019,
+    800020,
+    800021,
+    800022,
+    800023,
+    800024,
+    800025,
+    800026,
+    800027,
+    800028,
+    800029,
+    800030,
+    800031,
+    800032,
+    800033,
+    800034,
+    800035,
+    800036,
+    800037,
+    800038,
+    800039,
+    800040
+  ],
+  "target_pct": 20.0,
+  "tick_limit": null,
+  "workers": 4
+}

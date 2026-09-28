@@ -237,5 +237,3 @@ document.addEventListener("keydown", function (ev) {
 
 pollStatus();
 window.setInterval(pollStatus, STATUS_POLL_MS);
-
-// File contains AI-generated response based on internal company sources

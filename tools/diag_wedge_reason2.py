@@ -82,5 +82,3 @@ if goal is not None:
 else:
     print("*** _goal_for() returned None while robot still holds a task -- THIS is the bug:"
           " _plan() has nothing to do for this robot even though it needs a path.")
-
-# File contains AI-generated response based on internal company sources

@@ -72,5 +72,3 @@ if end_pos:
     dist = math.hypot(end_pos[0] - start_pos[0], end_pos[1] - start_pos[1])
     print("net displacement over %d ticks (%d s): %.2f m" % (WATCH, WATCH // 10, dist))
 print("replans consumed by fleet over this window: %d" % (eng.replans - last_replans))
-
-# File contains AI-generated response based on internal company sources

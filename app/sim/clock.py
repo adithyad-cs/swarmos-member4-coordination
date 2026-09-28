@@ -91,5 +91,3 @@ class SimClock:
     def reset(self) -> None:
         self.tick = 0
         self._compute_ms.clear()
-
-# File contains AI-generated response based on internal company sources

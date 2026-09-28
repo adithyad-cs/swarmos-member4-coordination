@@ -156,6 +156,7 @@ class CoSimManager:
             "collision_distance_m": static.get("collision_distance_m"),
             "horizon_ticks": self.config.ticks if self.config else None,
             "config": self.config.as_dict() if self.config else None,
+            "policy_config": self.cosim.policy_config,
         }
 
     def last_frame(self) -> Optional[dict]:
@@ -173,6 +174,7 @@ class CoSimManager:
             "tick": self.cosim.tick if self.cosim else None,
             "horizon_ticks": self.config.ticks if self.config else None,
             "in_lockstep": self.cosim.in_lockstep if self.cosim else None,
+            "policy_config": self.cosim.policy_config if self.cosim else None,
             "clients": len(self._subscribers),
             "overruns": self._overruns,
             "max_tick_ms": round(self._max_tick_ms, 3),

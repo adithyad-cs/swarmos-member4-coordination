@@ -40,12 +40,8 @@ from app.sim.clock import TICK_BUDGET_MS, TICK_SECONDS
 from app.sim.policy import StopAndWaitPolicy
 from app.sim.scenarios import DEFAULT_SCENARIO, ScenarioSpec, get_scenario
 
-# The stop-and-wait baseline is given a deliberately GENEROUS deadlock
-# timeout. A strawman that is easy to beat proves nothing, so the baseline
-# breaks its own deadlocks after 8 stalled ticks rather than never. This
-# mirrors app/api/runner.BASELINE_STUCK_TICKS; the value is duplicated
-# rather than imported because app/sim must not depend on app/api.
-BASELINE_STUCK_TICKS = 8
+# Both arms are built by app/product.py (the same factory as the Lab run), so
+# there is no second copy of any controller setting in this module.
 
 # Arm labels. Fixed strings, because the UI, the tests and the recorded
 # traces all key off them.
@@ -85,18 +81,20 @@ DIVERGENCE_KPI = "tasks_complete"
 
 
 def make_baseline_policy() -> StopAndWaitPolicy:
-    """The ghost fleet's controller: stop-and-wait, tuned to be fair."""
-    tuned = type(
-        "TunedStopAndWait",
-        (StopAndWaitPolicy,),
-        {"STUCK_TICKS": BASELINE_STUCK_TICKS},
-    )
-    return tuned()
+    """The ghost fleet's controller: the EXPLICIT C2 reference arm,
+    textbook stop-and-wait + F1 + F6 (app/product.COMPARE_REFERENCE)."""
+    from app.product import COMPARE_REFERENCE, make_reference_policy
+
+    return make_reference_policy(COMPARE_REFERENCE)
 
 
 def make_treatment_policy(*, integrity: bool = False) -> SwarmPolicy:
-    """The SWARMOS controller under test."""
-    return SwarmPolicy(integrity=integrity)
+    """The SWARMOS controller under test: the PRODUCT policy, built by the
+    same factory as every other runtime path (app/product.py). There is no
+    second SWARMOS construction here any more."""
+    from app.product import make_swarmos_policy
+
+    return make_swarmos_policy(integrity=integrity)
 
 
 def _resolve_scenario(
@@ -266,6 +264,17 @@ class CoSimulation:
             label=ARM_BASELINE,
         )
 
+        # What each arm ACTUALLY runs with, read back from the built policy
+        # objects, so the Compare tab can show it instead of asserting it.
+        from app.product import COMPARE_REFERENCE, describe_policy
+
+        self.policy_config = {
+            ARM_TREATMENT: describe_policy(self.treatment.policy),
+            ARM_BASELINE: describe_policy(
+                self.baseline.policy,
+                reference_kind=COMPARE_REFERENCE if baseline_factory is None else None),
+        }
+
         # Divergence bookkeeping. None means "the two worlds are still
         # identical", which is itself a useful thing to be able to show.
         self.divergence_tick: Optional[int] = None
@@ -363,6 +372,7 @@ class CoSimulation:
             },
             "delta": [d.as_dict() for d in compare_kpis(arm_t.kpis, arm_b.kpis)],
             "divergence_tick": self.divergence_tick,
+            "policy_config": self.policy_config,
             # Both arms' compute, and their sum against the budget for ONE
             # controller. Reported rather than hidden: co-simulation is a
             # demonstration harness, not a deployment configuration.
@@ -395,6 +405,7 @@ class CoSimulation:
             "ticks": self._ticks,
             "fleet_size": self.scenario.fleet_size,
             "divergence_tick": self.divergence_tick,
+            "policy_config": self.policy_config,
             "arms": {
                 ARM_TREATMENT: {
                     "policy": self.treatment.policy.name,

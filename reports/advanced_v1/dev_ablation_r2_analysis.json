@@ -1,0 +1,1145 @@
+{
+  "activity": {
+    "open_floor_batch|V1": {
+      "edge": {
+        "calls_total": 3587322,
+        "errors_total": 0,
+        "model_sha256": [
+          "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+        ],
+        "positives_total": 52500,
+        "reversal_rate": 0.0036,
+        "runs_status_ok": 20,
+        "runs_with_calls": 20
+      }
+    },
+    "open_floor_batch|V2": {
+      "edge": {
+        "calls_total": 2746514,
+        "errors_total": 0,
+        "model_sha256": [
+          "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+        ],
+        "positives_total": 41847,
+        "reversal_rate": 0.0059,
+        "runs_status_ok": 20,
+        "runs_with_calls": 20
+      },
+      "proactive": {
+        "hold_ticks": 7517,
+        "mean_hold_ticks": 6.44,
+        "not_holder": 1445,
+        "pre_holds": 1168,
+        "rejected_cooldown": 11349,
+        "rejected_low_confidence": 0,
+        "rejected_peer_holding": 5107,
+        "rejected_stale": 0,
+        "released_cleared": 837,
+        "released_imminent": 325,
+        "released_timeout": 6,
+        "repeat_holds_same_peer": 216,
+        "resumes": 1168
+      }
+    },
+    "open_floor_batch|V3A": {
+      "auction": {
+        "auctions_opened": 1459,
+        "closed_by_arbitration": 252,
+        "closed_by_consensus": 1094,
+        "conflicting_claims": 1003,
+        "consensus_close_rate": 0.8128,
+        "fallback_allocations": 0,
+        "leases_completed": 714,
+        "leases_expired": 0,
+        "leases_granted": 1346,
+        "leases_released": 626,
+        "mean_latency_ticks": 6.0,
+        "ownership_violations": 0,
+        "re_auctions": 113,
+        "runs_with_leases": 20,
+        "winner_agreement_rate": 0.4866
+      }
+    },
+    "open_floor_batch|V4": {
+      "auction": {
+        "auctions_opened": 883,
+        "closed_by_arbitration": 221,
+        "closed_by_consensus": 565,
+        "conflicting_claims": 302,
+        "consensus_close_rate": 0.7188,
+        "fallback_allocations": 0,
+        "leases_completed": 720,
+        "leases_expired": 0,
+        "leases_granted": 786,
+        "leases_released": 66,
+        "mean_latency_ticks": 6.0,
+        "ownership_violations": 0,
+        "re_auctions": 97,
+        "runs_with_leases": 20,
+        "winner_agreement_rate": 0.4557
+      },
+      "edge": {
+        "calls_total": 1558106,
+        "errors_total": 0,
+        "model_sha256": [
+          "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+        ],
+        "positives_total": 33420,
+        "reversal_rate": 0.0072,
+        "runs_status_ok": 20,
+        "runs_with_calls": 20
+      },
+      "proactive": {
+        "hold_ticks": 7174,
+        "mean_hold_ticks": 6.36,
+        "not_holder": 1341,
+        "pre_holds": 1128,
+        "rejected_cooldown": 10821,
+        "rejected_low_confidence": 0,
+        "rejected_peer_holding": 4583,
+        "rejected_stale": 0,
+        "released_cleared": 825,
+        "released_imminent": 301,
+        "released_timeout": 2,
+        "repeat_holds_same_peer": 216,
+        "resumes": 1128
+      }
+    },
+    "overlap_batch|V1": {
+      "edge": {
+        "calls_total": 682590,
+        "errors_total": 0,
+        "model_sha256": [
+          "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+        ],
+        "positives_total": 24271,
+        "reversal_rate": 0.0069,
+        "runs_status_ok": 20,
+        "runs_with_calls": 20
+      }
+    },
+    "overlap_batch|V2": {
+      "edge": {
+        "calls_total": 560304,
+        "errors_total": 0,
+        "model_sha256": [
+          "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+        ],
+        "positives_total": 21084,
+        "reversal_rate": 0.0117,
+        "runs_status_ok": 20,
+        "runs_with_calls": 20
+      },
+      "proactive": {
+        "hold_ticks": 4241,
+        "mean_hold_ticks": 6.16,
+        "not_holder": 1045,
+        "pre_holds": 688,
+        "rejected_cooldown": 7119,
+        "rejected_low_confidence": 0,
+        "rejected_peer_holding": 2602,
+        "rejected_stale": 0,
+        "released_cleared": 533,
+        "released_imminent": 154,
+        "released_timeout": 1,
+        "repeat_holds_same_peer": 160,
+        "resumes": 688
+      }
+    },
+    "overlap_batch|V3A": {
+      "auction": {
+        "auctions_opened": 558,
+        "closed_by_arbitration": 116,
+        "closed_by_consensus": 375,
+        "conflicting_claims": 150,
+        "consensus_close_rate": 0.7637,
+        "fallback_allocations": 0,
+        "leases_completed": 480,
+        "leases_expired": 0,
+        "leases_granted": 491,
+        "leases_released": 11,
+        "mean_latency_ticks": 6.0,
+        "ownership_violations": 0,
+        "re_auctions": 67,
+        "runs_with_leases": 20,
+        "winner_agreement_rate": 0.5534
+      }
+    },
+    "overlap_batch|V4": {
+      "auction": {
+        "auctions_opened": 561,
+        "closed_by_arbitration": 114,
+        "closed_by_consensus": 380,
+        "conflicting_claims": 149,
+        "consensus_close_rate": 0.7692,
+        "fallback_allocations": 0,
+        "leases_completed": 480,
+        "leases_expired": 0,
+        "leases_granted": 494,
+        "leases_released": 14,
+        "mean_latency_ticks": 6.0,
+        "ownership_violations": 0,
+        "re_auctions": 67,
+        "runs_with_leases": 20,
+        "winner_agreement_rate": 0.5623
+      },
+      "edge": {
+        "calls_total": 756980,
+        "errors_total": 0,
+        "model_sha256": [
+          "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+        ],
+        "positives_total": 22361,
+        "reversal_rate": 0.0095,
+        "runs_status_ok": 20,
+        "runs_with_calls": 20
+      },
+      "proactive": {
+        "hold_ticks": 4397,
+        "mean_hold_ticks": 6.1,
+        "not_holder": 1159,
+        "pre_holds": 721,
+        "rejected_cooldown": 7306,
+        "rejected_low_confidence": 0,
+        "rejected_peer_holding": 2653,
+        "rejected_stale": 0,
+        "released_cleared": 569,
+        "released_imminent": 149,
+        "released_timeout": 3,
+        "repeat_holds_same_peer": 126,
+        "resumes": 721
+      }
+    }
+  },
+  "experiment": "reports/experiments/20260927T190833Z_adv_dev_ablation_r2",
+  "inertness": {
+    "open_floor_batch": {
+      "seeds": 20,
+      "v1_trace_equals_v0": 20
+    },
+    "overlap_batch": {
+      "seeds": 20,
+      "v1_trace_equals_v0": 20
+    }
+  },
+  "per_arm": {
+    "open_floor_batch|A": {
+      "all_seed_censored_makespan_mean_s": 1788.835,
+      "arm": "stop_and_wait+F1+F6",
+      "collisions": 0,
+      "compute_p95_ms_mean": 1.762,
+      "decision_oscillations_mean": 256.0,
+      "edge_mean_inference_us": null,
+      "finished": 10,
+      "finished_only_makespan_mean_s": 577.67,
+      "held_work_ticks_mean": 61641.1,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7522,
+      "msgs_per_robot_tick_mean": null,
+      "replans_mean": 4261.15,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 59.9,
+      "stop_events_mean": 1266.25,
+      "tasks_complete_mean": 34.3
+    },
+    "open_floor_batch|V0": {
+      "all_seed_censored_makespan_mean_s": 814.975,
+      "arm": "swarmos",
+      "collisions": 0,
+      "compute_p95_ms_mean": 3.303,
+      "decision_oscillations_mean": 765.95,
+      "edge_mean_inference_us": null,
+      "finished": 18,
+      "finished_only_makespan_mean_s": 572.194,
+      "held_work_ticks_mean": 18220.0,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7508,
+      "msgs_per_robot_tick_mean": 2.855,
+      "replans_mean": 4613.3,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 5.75,
+      "stop_events_mean": 929.25,
+      "tasks_complete_mean": 35.9
+    },
+    "open_floor_batch|V1": {
+      "all_seed_censored_makespan_mean_s": 814.975,
+      "arm": "swarmos+EAI",
+      "collisions": 0,
+      "compute_p95_ms_mean": 6.9,
+      "decision_oscillations_mean": 765.95,
+      "edge_mean_inference_us": 42.942,
+      "finished": 18,
+      "finished_only_makespan_mean_s": 572.194,
+      "held_work_ticks_mean": 18220.0,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7508,
+      "msgs_per_robot_tick_mean": 2.855,
+      "replans_mean": 4613.3,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 5.75,
+      "stop_events_mean": 929.25,
+      "tasks_complete_mean": 35.9
+    },
+    "open_floor_batch|V2": {
+      "all_seed_censored_makespan_mean_s": 729.555,
+      "arm": "swarmos+EAI+PC",
+      "collisions": 0,
+      "compute_p95_ms_mean": 7.067,
+      "decision_oscillations_mean": 315.55,
+      "edge_mean_inference_us": 41.676,
+      "finished": 19,
+      "finished_only_makespan_mean_s": 610.058,
+      "held_work_ticks_mean": 18733.6,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7521,
+      "msgs_per_robot_tick_mean": 2.862,
+      "replans_mean": 5707.4,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 34.25,
+      "stop_events_mean": 476.0,
+      "tasks_complete_mean": 35.8
+    },
+    "open_floor_batch|V3A": {
+      "all_seed_censored_makespan_mean_s": 838.67,
+      "arm": "swarmos+AU",
+      "collisions": 0,
+      "compute_p95_ms_mean": 4.047,
+      "decision_oscillations_mean": 798.7,
+      "edge_mean_inference_us": null,
+      "finished": 18,
+      "finished_only_makespan_mean_s": 598.522,
+      "held_work_ticks_mean": 26245.5,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.75,
+      "msgs_per_robot_tick_mean": 2.934,
+      "replans_mean": 7728.45,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 31.3,
+      "stop_events_mean": 944.15,
+      "tasks_complete_mean": 35.7
+    },
+    "open_floor_batch|V4": {
+      "all_seed_censored_makespan_mean_s": 582.15,
+      "arm": "swarmos+EAI+PC+AU",
+      "collisions": 0,
+      "compute_p95_ms_mean": 6.87,
+      "decision_oscillations_mean": 232.5,
+      "edge_mean_inference_us": 43.925,
+      "finished": 20,
+      "finished_only_makespan_mean_s": 582.15,
+      "held_work_ticks_mean": 7333.75,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7501,
+      "msgs_per_robot_tick_mean": 2.715,
+      "replans_mean": 1671.85,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 3.3,
+      "stop_events_mean": 377.4,
+      "tasks_complete_mean": 36.0
+    },
+    "overlap_batch|A": {
+      "all_seed_censored_makespan_mean_s": 2277.705,
+      "arm": "stop_and_wait+F1+F6",
+      "collisions": 0,
+      "compute_p95_ms_mean": 0.979,
+      "decision_oscillations_mean": 18.0,
+      "edge_mean_inference_us": null,
+      "finished": 6,
+      "finished_only_makespan_mean_s": 592.35,
+      "held_work_ticks_mean": 7101.5,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.752,
+      "msgs_per_robot_tick_mean": null,
+      "replans_mean": 518.05,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 0.4,
+      "stop_events_mean": 303.1,
+      "tasks_complete_mean": 21.2
+    },
+    "overlap_batch|V0": {
+      "all_seed_censored_makespan_mean_s": 491.605,
+      "arm": "swarmos",
+      "collisions": 0,
+      "compute_p95_ms_mean": 1.996,
+      "decision_oscillations_mean": 100.7,
+      "edge_mean_inference_us": null,
+      "finished": 20,
+      "finished_only_makespan_mean_s": 491.605,
+      "held_work_ticks_mean": 2953.65,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7517,
+      "msgs_per_robot_tick_mean": 2.391,
+      "replans_mean": 625.35,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 1.15,
+      "stop_events_mean": 168.7,
+      "tasks_complete_mean": 24.0
+    },
+    "overlap_batch|V1": {
+      "all_seed_censored_makespan_mean_s": 491.605,
+      "arm": "swarmos+EAI",
+      "collisions": 0,
+      "compute_p95_ms_mean": 3.254,
+      "decision_oscillations_mean": 100.7,
+      "edge_mean_inference_us": 45.138,
+      "finished": 20,
+      "finished_only_makespan_mean_s": 491.605,
+      "held_work_ticks_mean": 2953.65,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7517,
+      "msgs_per_robot_tick_mean": 2.391,
+      "replans_mean": 625.35,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 1.15,
+      "stop_events_mean": 168.7,
+      "tasks_complete_mean": 24.0
+    },
+    "overlap_batch|V2": {
+      "all_seed_censored_makespan_mean_s": 471.805,
+      "arm": "swarmos+EAI+PC",
+      "collisions": 0,
+      "compute_p95_ms_mean": 3.347,
+      "decision_oscillations_mean": 89.2,
+      "edge_mean_inference_us": 48.267,
+      "finished": 20,
+      "finished_only_makespan_mean_s": 471.805,
+      "held_work_ticks_mean": 3354.65,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7539,
+      "msgs_per_robot_tick_mean": 2.283,
+      "replans_mean": 729.15,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 0.9,
+      "stop_events_mean": 174.6,
+      "tasks_complete_mean": 24.0
+    },
+    "overlap_batch|V3A": {
+      "all_seed_censored_makespan_mean_s": 497.14,
+      "arm": "swarmos+AU",
+      "collisions": 0,
+      "compute_p95_ms_mean": 2.153,
+      "decision_oscillations_mean": 124.55,
+      "edge_mean_inference_us": null,
+      "finished": 20,
+      "finished_only_makespan_mean_s": 497.14,
+      "held_work_ticks_mean": 3247.25,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.752,
+      "msgs_per_robot_tick_mean": 2.349,
+      "replans_mean": 727.65,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 0.55,
+      "stop_events_mean": 194.55,
+      "tasks_complete_mean": 24.0
+    },
+    "overlap_batch|V4": {
+      "all_seed_censored_makespan_mean_s": 526.515,
+      "arm": "swarmos+EAI+PC+AU",
+      "collisions": 0,
+      "compute_p95_ms_mean": 3.417,
+      "decision_oscillations_mean": 114.0,
+      "edge_mean_inference_us": 46.138,
+      "finished": 20,
+      "finished_only_makespan_mean_s": 526.515,
+      "held_work_ticks_mean": 3826.1,
+      "invariant_failures": 0,
+      "margin_breaches_mean": 0.0,
+      "min_separation_min_m": 0.7503,
+      "msgs_per_robot_tick_mean": 2.347,
+      "replans_mean": 856.8,
+      "runs": 20,
+      "safety_pass": 20,
+      "stall_releases_mean": 0.7,
+      "stop_events_mean": 211.1,
+      "tasks_complete_mean": 24.0
+    }
+  },
+  "runs": 240,
+  "vs_A": {
+    "open_floor_batch|V0": {
+      "all_seed_censored_makespan": {
+        "hi": 69.57,
+        "lo": -71.15,
+        "mean": -0.79,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 13.6,
+        "lo": -5.22,
+        "mean": 4.19,
+        "n": 8
+      },
+      "losses": 5,
+      "reference_only_dnf": [
+        1000003,
+        1000008,
+        1000009,
+        1000010,
+        1000011,
+        1000013,
+        1000014,
+        1000015,
+        1000016,
+        1000019
+      ],
+      "t90_censored": {
+        "hi": 44.71,
+        "lo": 10.64,
+        "mean": 27.68,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000006,
+        1000012
+      ],
+      "wins": 15
+    },
+    "open_floor_batch|V1": {
+      "all_seed_censored_makespan": {
+        "hi": 69.57,
+        "lo": -71.15,
+        "mean": -0.79,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 13.6,
+        "lo": -5.22,
+        "mean": 4.19,
+        "n": 8
+      },
+      "losses": 5,
+      "reference_only_dnf": [
+        1000003,
+        1000008,
+        1000009,
+        1000010,
+        1000011,
+        1000013,
+        1000014,
+        1000015,
+        1000016,
+        1000019
+      ],
+      "t90_censored": {
+        "hi": 44.71,
+        "lo": 10.64,
+        "mean": 27.68,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000006,
+        1000012
+      ],
+      "wins": 15
+    },
+    "open_floor_batch|V2": {
+      "all_seed_censored_makespan": {
+        "hi": 54.42,
+        "lo": 11.7,
+        "mean": 33.06,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 10.97,
+        "lo": -21.35,
+        "mean": -5.19,
+        "n": 10
+      },
+      "losses": 6,
+      "reference_only_dnf": [
+        1000003,
+        1000008,
+        1000009,
+        1000010,
+        1000011,
+        1000014,
+        1000015,
+        1000016,
+        1000019
+      ],
+      "t90_censored": {
+        "hi": 40.21,
+        "lo": 8.64,
+        "mean": 24.43,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 13
+    },
+    "open_floor_batch|V3A": {
+      "all_seed_censored_makespan": {
+        "hi": 61.01,
+        "lo": -56.77,
+        "mean": 2.12,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 5.46,
+        "lo": -24.34,
+        "mean": -9.44,
+        "n": 8
+      },
+      "losses": 8,
+      "reference_only_dnf": [
+        1000003,
+        1000008,
+        1000009,
+        1000010,
+        1000011,
+        1000013,
+        1000014,
+        1000015,
+        1000016,
+        1000019
+      ],
+      "t90_censored": {
+        "hi": 41.38,
+        "lo": -3.57,
+        "mean": 18.91,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000005,
+        1000007
+      ],
+      "wins": 12
+    },
+    "open_floor_batch|V4": {
+      "all_seed_censored_makespan": {
+        "hi": 60.17,
+        "lo": 19.92,
+        "mean": 40.04,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 11.98,
+        "lo": -12.44,
+        "mean": -0.23,
+        "n": 10
+      },
+      "losses": 3,
+      "reference_only_dnf": [
+        1000003,
+        1000008,
+        1000009,
+        1000010,
+        1000011,
+        1000013,
+        1000014,
+        1000015,
+        1000016,
+        1000019
+      ],
+      "t90_censored": {
+        "hi": 43.58,
+        "lo": 8.72,
+        "mean": 26.15,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 17
+    },
+    "overlap_batch|V0": {
+      "all_seed_censored_makespan": {
+        "hi": 78.8,
+        "lo": 42.49,
+        "mean": 60.64,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 32.31,
+        "lo": -19.89,
+        "mean": 6.21,
+        "n": 6
+      },
+      "losses": 3,
+      "reference_only_dnf": [
+        1000001,
+        1000003,
+        1000004,
+        1000005,
+        1000006,
+        1000007,
+        1000010,
+        1000011,
+        1000012,
+        1000014,
+        1000016,
+        1000018,
+        1000019,
+        1000020
+      ],
+      "t90_censored": {
+        "hi": 40.41,
+        "lo": 6.26,
+        "mean": 23.33,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 17
+    },
+    "overlap_batch|V1": {
+      "all_seed_censored_makespan": {
+        "hi": 78.8,
+        "lo": 42.49,
+        "mean": 60.64,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 32.31,
+        "lo": -19.89,
+        "mean": 6.21,
+        "n": 6
+      },
+      "losses": 3,
+      "reference_only_dnf": [
+        1000001,
+        1000003,
+        1000004,
+        1000005,
+        1000006,
+        1000007,
+        1000010,
+        1000011,
+        1000012,
+        1000014,
+        1000016,
+        1000018,
+        1000019,
+        1000020
+      ],
+      "t90_censored": {
+        "hi": 40.41,
+        "lo": 6.26,
+        "mean": 23.33,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 17
+    },
+    "overlap_batch|V2": {
+      "all_seed_censored_makespan": {
+        "hi": 79.72,
+        "lo": 46.93,
+        "mean": 63.32,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 40.89,
+        "lo": -11.16,
+        "mean": 14.86,
+        "n": 6
+      },
+      "losses": 2,
+      "reference_only_dnf": [
+        1000001,
+        1000003,
+        1000004,
+        1000005,
+        1000006,
+        1000007,
+        1000010,
+        1000011,
+        1000012,
+        1000014,
+        1000016,
+        1000018,
+        1000019,
+        1000020
+      ],
+      "t90_censored": {
+        "hi": 42.64,
+        "lo": 9.69,
+        "mean": 26.16,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 18
+    },
+    "overlap_batch|V3A": {
+      "all_seed_censored_makespan": {
+        "hi": 78.24,
+        "lo": 44.29,
+        "mean": 61.27,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 29.46,
+        "lo": -10.65,
+        "mean": 9.41,
+        "n": 6
+      },
+      "losses": 1,
+      "reference_only_dnf": [
+        1000001,
+        1000003,
+        1000004,
+        1000005,
+        1000006,
+        1000007,
+        1000010,
+        1000011,
+        1000012,
+        1000014,
+        1000016,
+        1000018,
+        1000019,
+        1000020
+      ],
+      "t90_censored": {
+        "hi": 39.87,
+        "lo": 6.34,
+        "mean": 23.1,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 19
+    },
+    "overlap_batch|V4": {
+      "all_seed_censored_makespan": {
+        "hi": 77.02,
+        "lo": 40.83,
+        "mean": 58.93,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 26.04,
+        "lo": -18.36,
+        "mean": 3.84,
+        "n": 6
+      },
+      "losses": 3,
+      "reference_only_dnf": [
+        1000001,
+        1000003,
+        1000004,
+        1000005,
+        1000006,
+        1000007,
+        1000010,
+        1000011,
+        1000012,
+        1000014,
+        1000016,
+        1000018,
+        1000019,
+        1000020
+      ],
+      "t90_censored": {
+        "hi": 35.84,
+        "lo": -0.72,
+        "mean": 17.56,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 17
+    }
+  },
+  "vs_V0": {
+    "open_floor_batch|A": {
+      "all_seed_censored_makespan": {
+        "hi": -96.49,
+        "lo": -305.0,
+        "mean": -200.75,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 4.52,
+        "lo": -15.75,
+        "mean": -5.61,
+        "n": 8
+      },
+      "losses": 15,
+      "reference_only_dnf": [
+        1000006,
+        1000012
+      ],
+      "t90_censored": {
+        "hi": -33.77,
+        "lo": -248.98,
+        "mean": -141.38,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000003,
+        1000008,
+        1000009,
+        1000010,
+        1000011,
+        1000013,
+        1000014,
+        1000015,
+        1000016,
+        1000019
+      ],
+      "wins": 5
+    },
+    "open_floor_batch|V1": {
+      "all_seed_censored_makespan": {
+        "hi": 0.0,
+        "lo": 0.0,
+        "mean": 0.0,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 0.0,
+        "lo": 0.0,
+        "mean": 0.0,
+        "n": 18
+      },
+      "losses": 0,
+      "reference_only_dnf": [],
+      "t90_censored": {
+        "hi": 0.0,
+        "lo": 0.0,
+        "mean": 0.0,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 0
+    },
+    "open_floor_batch|V2": {
+      "all_seed_censored_makespan": {
+        "hi": 26.84,
+        "lo": -68.36,
+        "mean": -20.76,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 0.16,
+        "lo": -17.58,
+        "mean": -8.71,
+        "n": 17
+      },
+      "losses": 12,
+      "reference_only_dnf": [
+        1000006,
+        1000012
+      ],
+      "t90_censored": {
+        "hi": 30.11,
+        "lo": -82.61,
+        "mean": -26.25,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000013
+      ],
+      "wins": 8
+    },
+    "open_floor_batch|V3A": {
+      "all_seed_censored_makespan": {
+        "hi": 23.96,
+        "lo": -102.35,
+        "mean": -39.19,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 3.67,
+        "lo": -16.56,
+        "mean": -6.45,
+        "n": 16
+      },
+      "losses": 10,
+      "reference_only_dnf": [
+        1000006,
+        1000012
+      ],
+      "t90_censored": {
+        "hi": 6.66,
+        "lo": -27.06,
+        "mean": -10.2,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000005,
+        1000007
+      ],
+      "wins": 10
+    },
+    "open_floor_batch|V4": {
+      "all_seed_censored_makespan": {
+        "hi": 19.75,
+        "lo": -9.19,
+        "mean": 5.28,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 5.34,
+        "lo": -11.83,
+        "mean": -3.25,
+        "n": 18
+      },
+      "losses": 7,
+      "reference_only_dnf": [
+        1000006,
+        1000012
+      ],
+      "t90_censored": {
+        "hi": 2.77,
+        "lo": -6.06,
+        "mean": -1.64,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 13
+    },
+    "overlap_batch|A": {
+      "all_seed_censored_makespan": {
+        "hi": -259.88,
+        "lo": -506.29,
+        "mean": -383.08,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 23.55,
+        "lo": -52.73,
+        "mean": -14.59,
+        "n": 6
+      },
+      "losses": 17,
+      "reference_only_dnf": [],
+      "t90_censored": {
+        "hi": -12.23,
+        "lo": -234.19,
+        "mean": -123.21,
+        "n": 20
+      },
+      "treatment_only_dnf": [
+        1000001,
+        1000003,
+        1000004,
+        1000005,
+        1000006,
+        1000007,
+        1000010,
+        1000011,
+        1000012,
+        1000014,
+        1000016,
+        1000018,
+        1000019,
+        1000020
+      ],
+      "wins": 3
+    },
+    "overlap_batch|V1": {
+      "all_seed_censored_makespan": {
+        "hi": 0.0,
+        "lo": 0.0,
+        "mean": 0.0,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 0.0,
+        "lo": 0.0,
+        "mean": 0.0,
+        "n": 20
+      },
+      "losses": 0,
+      "reference_only_dnf": [],
+      "t90_censored": {
+        "hi": 0.0,
+        "lo": 0.0,
+        "mean": 0.0,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 0
+    },
+    "overlap_batch|V2": {
+      "all_seed_censored_makespan": {
+        "hi": 11.19,
+        "lo": -7.49,
+        "mean": 1.85,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 11.19,
+        "lo": -7.49,
+        "mean": 1.85,
+        "n": 20
+      },
+      "losses": 8,
+      "reference_only_dnf": [],
+      "t90_censored": {
+        "hi": 8.94,
+        "lo": -5.76,
+        "mean": 1.59,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 12
+    },
+    "overlap_batch|V3A": {
+      "all_seed_censored_makespan": {
+        "hi": 7.77,
+        "lo": -14.93,
+        "mean": -3.58,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": 7.77,
+        "lo": -14.93,
+        "mean": -3.58,
+        "n": 20
+      },
+      "losses": 7,
+      "reference_only_dnf": [],
+      "t90_censored": {
+        "hi": 7.91,
+        "lo": -11.35,
+        "mean": -1.72,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 13
+    },
+    "overlap_batch|V4": {
+      "all_seed_censored_makespan": {
+        "hi": -0.58,
+        "lo": -16.8,
+        "mean": -8.69,
+        "n": 20
+      },
+      "common_finish_makespan": {
+        "hi": -0.58,
+        "lo": -16.8,
+        "mean": -8.69,
+        "n": 20
+      },
+      "losses": 16,
+      "reference_only_dnf": [],
+      "t90_censored": {
+        "hi": 2.44,
+        "lo": -16.39,
+        "mean": -6.98,
+        "n": 20
+      },
+      "treatment_only_dnf": [],
+      "wins": 4
+    }
+  }
+}

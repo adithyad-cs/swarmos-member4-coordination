@@ -43,11 +43,14 @@ const KPI_DIGITS = {
   sla_miss_pct: 1,
 };
 
+// Every id here must be a real FaultKind value: the verifier enforces it.
+// DEMAND_SPIKE used to sit here and was rejected by the server on every click.
 const FAULTS = [
   ["ROGUE_ROBOT", "Rogue robot"],
   ["ROBOT_FAILURE", "Robot failure"],
-  ["LINK_IMPAIR", "Comm blackout"],
-  ["DEMAND_SPIKE", "Demand spike"],
+  ["COMM_BLACKOUT", "Comm blackout"],
+  ["LINK_IMPAIR", "Link impairment"],
+  ["TASK_BURST", "Demand spike"],
 ];
 
 function label(key) {
@@ -81,7 +84,8 @@ export class CosimPanel {
 
   _start() {
     // Match the live run when there is one, so the ghosts are honestly
-    // comparable. Otherwise fall back to the measured parity configuration.
+    // comparable. Otherwise fall back to the default demo configuration
+    // (rush_50, seed 11, fleet 8).
     const ticks = Number(this.el.querySelector("#cosim-ticks")?.value || 1800);
     this.cosim.start({
       scenario: store.scenario || "rush_50",
@@ -111,6 +115,16 @@ export class CosimPanel {
         Two identical warehouses, same seed, same tasks. One arbitrated by
         SwarmOS, one by stop-and-wait. Both are replayable from their hash.
       </p>
+      <p class="field__hint">
+        Live illustration, one seed. Both arms are built by the same product
+        factory as the Lab run; the configuration each arm actually runs is
+        read back from the server and shown below. C2 benchmark (simulation,
+        frozen protocol v3, product default vs textbook stop-and-wait + F1 +
+        F6, overlap_batch, 40 seeds): +48.9% capped time reduction, 95% CI
+        [+35.3%, +62.5%]; finished 40/40 vs 21/40; where both finished
+        +17.5% [+1.4%, +33.6%]. On the open floor SwarmOS is slower when both
+        finish. Source: docs/C2_V3_PRODUCT_RESULT.md.
+      </p>
 
       <div class="field">
         <label class="field__label" for="cosim-ticks">Horizon (ticks)</label>
@@ -128,6 +142,7 @@ export class CosimPanel {
       </div>
 
       <div class="cosim-status" id="cosim-status"></div>
+      <div id="cosim-config"></div>
       <div id="cosim-delta"></div>
 
       <h3 class="panel__title" style="margin-top: var(--space-5)">Inject into both arms</h3>
@@ -144,11 +159,37 @@ export class CosimPanel {
     const status = this.el.querySelector("#cosim-status");
     const deltaEl = this.el.querySelector("#cosim-delta");
     const hashEl = this.el.querySelector("#cosim-hashes");
+    const cfgEl = this.el.querySelector("#cosim-config");
     if (!status || !deltaEl || !hashEl) return;
 
     status.innerHTML = this._statusHtml(c);
+    if (cfgEl) cfgEl.innerHTML = this._configHtml(c);
     deltaEl.innerHTML = this._deltaHtml(c);
     hashEl.innerHTML = this._hashHtml(c);
+  }
+
+  /* The configuration each arm really runs, as the server read it back from
+   * the built policy objects. Nothing here is assumed client side: before the
+   * server reports it, the rows render as DASH. */
+  _configHtml(c) {
+    const cfg = c.policyConfig;
+    const row = (label, arm) => {
+      const a = cfg ? cfg[arm] : null;
+      if (!a) {
+        return `<div class="kv"><span class="kv__k">${label}</span>
+          <span class="kv__v">${DASH}</span></div>`;
+      }
+      const fixes = (a.fixes && a.fixes.length) ? a.fixes.join(" + ") : "none";
+      const adv = Array.isArray(a.advanced) && a.advanced.length
+        ? ` | advanced: ${a.advanced.join(", ")}` : "";
+      const what = a.reference ? `reference ${a.reference}` : `${a.name || a.class}`;
+      return `<div class="kv"><span class="kv__k">${label}</span>
+        <span class="kv__v" data-cosim-config="${arm}">${what} | fixes: ${fixes}${adv}</span></div>`;
+    };
+    return `
+      <h3 class="panel__title" style="margin-top: var(--space-4)">Active configuration</h3>
+      ${row("SwarmOS arm", ARM_TREATMENT)}
+      ${row("Reference arm", ARM_BASELINE)}`;
   }
 
   _statusHtml(c) {

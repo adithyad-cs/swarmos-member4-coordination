@@ -1,0 +1,102 @@
+{
+  "arms": {
+    "swarmos+F1+F3": "SWARMOS product policy (graded ladder + Simplex kernel + perception fallback) | F1: polyline sweep in the safety check (both arms) | F3: leader keeps right of way in the contest band (SWARMOS ladder)"
+  },
+  "code_identity": {
+    "files": 167,
+    "paths": [
+      "app",
+      "tools",
+      "pyproject.toml"
+    ],
+    "sha256": "3d7ee3b77ecdf6263c48c4df0422cdae2edc77f1c007d40aab3b56967715be02"
+  },
+  "command": "PYTHONPATH=. python3 tools/run_experiment.py --name dev2_F1F3 --scenarios overlap_batch open_floor_batch --arms swarmos+F1+F3 --seeds 700001 700002 700003 700004 700005 700006 700007 700008 700009 700010 700011 700012 700013 700014 700015 700016 700017 700018 700019 700020 --workers 3 --out /tmp/claude-0/-home-user-swarmos-member4-coordination/a091c13b-17d3-58fe-ae28-470e6e7f7619/scratchpad/work/reports/experiments",
+  "conditions": {
+    "normal": []
+  },
+  "created_utc": "20260927T090609Z",
+  "git": "unknown",
+  "name": "dev2_F1F3",
+  "overrides": {},
+  "python": "3.11.15",
+  "reference": "swarmos+F1+F3",
+  "scenarios": {
+    "open_floor_batch": {
+      "aisle_period": 4,
+      "aisle_width": 2,
+      "batch": true,
+      "cross_period": 10,
+      "cross_width": 2,
+      "description": "The rush_50 floor (two-way aisles, cross aisles) with 12 robots and a fixed batch of 36 tasks. Reported alongside overlap_batch so any gain is not shown only on single-file corridors.",
+      "duration_s": 3000.0,
+      "fleet_size": 12,
+      "height": 40,
+      "idle_parking": true,
+      "initial_burst": 36,
+      "injections": [],
+      "name": "open_floor_batch",
+      "proves": "Makespan on an ordinary two-way-aisle floor, zero collisions.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 0.0,
+      "title": "Open floor, fixed batch",
+      "width": 60
+    },
+    "overlap_batch": {
+      "aisle_period": 3,
+      "aisle_width": 1,
+      "batch": true,
+      "cross_period": 999,
+      "cross_width": 1,
+      "description": "The SIH C2 benchmark. Single-file aisles (the narrow_aisle_deadlock floor), pick stations on the south wall and drop stations on the north, so loaded robots travel north while empty robots return south through the same aisles: overlapping, head-on paths by construction. A fixed batch of 24 tasks for 8 robots; the run ends when all 24 are complete (cap 3000 s, reported as did-not-finish if hit).",
+      "duration_s": 3000.0,
+      "fleet_size": 8,
+      "height": 28,
+      "idle_parking": true,
+      "initial_burst": 24,
+      "injections": [],
+      "name": "overlap_batch",
+      "proves": "Total task-completion time (makespan) versus traditional stop-and-wait on overlapping paths, with zero collisions.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 0.0,
+      "title": "Overlapping paths, fixed batch",
+      "width": 40
+    }
+  },
+  "seeds": [
+    700001,
+    700002,
+    700003,
+    700004,
+    700005,
+    700006,
+    700007,
+    700008,
+    700009,
+    700010,
+    700011,
+    700012,
+    700013,
+    700014,
+    700015,
+    700016,
+    700017,
+    700018,
+    700019,
+    700020
+  ],
+  "target_pct": 20.0,
+  "tick_limit": null
+}

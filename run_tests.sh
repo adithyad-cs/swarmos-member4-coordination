@@ -51,5 +51,3 @@ fi
 echo "SWARMOS tests | python $PY_VER | $PYTHON_BIN"
 echo "-------------------------------------------------------------"
 PYTHONPATH="$REPO_ROOT" exec "$PYTHON_BIN" -m pytest "$@"
-
-# File contains AI-generated response based on internal company sources

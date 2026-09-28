@@ -28,28 +28,36 @@ from typing import Any, Optional
 from app.coordination.swarm_policy import SwarmPolicy
 from app.sim.clock import TICK_HZ, TICK_SECONDS
 from app.sim.engine import SimEngine
-from app.sim.policy import StopAndWaitPolicy
+from app.sim.policy import StopAndWaitPolicy, TextbookStopAndWaitPolicy
 from app.sim.scenarios import DEFAULT_SCENARIO, FaultKind, get_scenario
 
-# Baseline STUCK_TICKS=8 is the TUNED value measured in the fairness sweep. The
-# baseline must be offered at its best setting, not at a handicapped default --
-# a comparison against a crippled reference proves nothing.
-BASELINE_STUCK_TICKS = 8
+# The product and reference controllers are built in ONE place,
+# app/product.py, shared with the Compare co-simulation so both show the same
+# configuration. Re-exported here for existing callers.
+from app.product import (  # noqa: E402
+    ADVANCED_FLAGS,
+    BASELINE_STUCK_TICKS,
+    PRODUCT_RELEASE_COOLDOWN_TICKS,
+    make_reference_policy,
+    make_swarmos_policy,
+)
 
-POLICIES = ("swarmos", "baseline")
+# "baseline" is stop-and-wait TUNED (STUCK_TICKS=8, the stronger comparison);
+# "stop_and_wait" is the same rule at its documented default, the SIH C2 arm.
+POLICIES = ("swarmos", "baseline", "stop_and_wait")
 
 
-def _make_policy(name: str, seed: int, integrity: bool = False):
-    if name == "baseline":
-        tuned = type(
-            "TunedStopAndWait",
-            (StopAndWaitPolicy,),
-            {"STUCK_TICKS": BASELINE_STUCK_TICKS},
-        )
+def _make_policy(name: str, seed: int, integrity: bool = False,
+                 advanced: bool = False):
+    if name in ("stop_and_wait", "baseline"):
         # The baseline has no integrity layer by design: being defenceless
         # against a lying robot is part of what the comparison measures.
-        return tuned()
-    return SwarmPolicy(integrity=integrity)
+        return make_reference_policy(name)
+    # The SWARMOS product (F1 + F3 + F5 + F6; see app/product.py). `advanced`
+    # switches on all three advanced-intelligence features for a demo run;
+    # off (the default) is the shipped product configuration.
+    flags = {k: True for k in ADVANCED_FLAGS} if advanced else None
+    return make_swarmos_policy(integrity=integrity, advanced=flags)
 
 
 @dataclass
@@ -62,6 +70,7 @@ class RunConfig:
     policy: str = "swarmos"
     speed: float = 1.0
     integrity: bool = False
+    advanced: bool = False
 
     def normalised(self) -> "RunConfig":
         spec = get_scenario(self.scenario)  # raises on an unknown name
@@ -76,6 +85,7 @@ class RunConfig:
             policy=policy,
             speed=max(0.1, min(10.0, float(self.speed))),
             integrity=bool(self.integrity),
+            advanced=bool(self.advanced),
         )
 
     def as_dict(self) -> dict:
@@ -86,6 +96,7 @@ class RunConfig:
             "policy": self.policy,
             "speed": self.speed,
             "integrity": self.integrity,
+            "advanced": self.advanced,
         }
 
 
@@ -217,7 +228,8 @@ class RunManager:
                 scenario,
                 seed=cfg.seed,
                 policy=_make_policy(cfg.policy, cfg.seed,
-                                    integrity=cfg.integrity),
+                                    integrity=cfg.integrity,
+                                    advanced=cfg.advanced),
                 label=cfg.policy,
             )
             self.config = cfg
@@ -295,11 +307,25 @@ class RunManager:
             return {"ok": False,
                     "error": f"Unknown fault '{fault}'. Known: {[k.value for k in FaultKind]}"}
         clean = {k: v for k, v in params.items() if v is not None}
+        # The Lab sends the currently selected robot with EVERY fault. Only
+        # robot-targeted faults accept one; for the rest (block aisle, link
+        # impairment, partition, task burst, kill ML, clear blockage) the robot
+        # is dropped here and the response says so, instead of the fault
+        # failing with a TypeError whenever a robot happens to be selected.
+        ignored = []
+        if "robot_id" in clean and not self.engine.fault_accepts(kind, "robot_id"):
+            ignored.append("robot_id")
+            clean.pop("robot_id")
         try:
             detail = self.engine.inject(kind, **clean)
         except TypeError as exc:
             return {"ok": False, "error": f"Fault {kind.value} rejected the parameters: {exc}"}
-        return {"ok": True, "fault": kind.value, "detail": detail}
+        out = {"ok": True, "fault": kind.value, "detail": detail}
+        if ignored:
+            out["ignored_params"] = ignored
+            out["note"] = (f"{kind.value} is not aimed at one robot; the selected "
+                           "robot was ignored.")
+        return out
 
     # ------------------------------------------------------------ the loop
 

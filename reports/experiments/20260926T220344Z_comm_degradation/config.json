@@ -1,0 +1,135 @@
+{
+  "arms": {
+    "swarmos": "SWARMOS product policy (graded ladder + Simplex kernel + perception fallback)",
+    "swarmos_mhb_sep": "SWARMOS + mutual-hold break + separating-motion exemption (kernel change, under evaluation)",
+    "swarmos_nofb": "SWARMOS WITHOUT the perception fallback (comm-safety control)"
+  },
+  "command": "PYTHONPATH=. python3 tools/run_experiment.py --name comm_degradation --comm-sweep --scenarios rush_50 --fleet 16 --ticks 1200 --arms swarmos swarmos_nofb swarmos_mhb_sep --seeds 11 13 17 19 23 --workers 4",
+  "conditions": {
+    "blackout_one": [
+      [
+        300,
+        "COMM_BLACKOUT",
+        {}
+      ]
+    ],
+    "latency100ms": [
+      [
+        100,
+        "LINK_IMPAIR",
+        {
+          "drop_pct": 0.0,
+          "latency_ms": 100.0
+        }
+      ]
+    ],
+    "latency500ms": [
+      [
+        100,
+        "LINK_IMPAIR",
+        {
+          "drop_pct": 0.0,
+          "latency_ms": 500.0
+        }
+      ]
+    ],
+    "loss10": [
+      [
+        100,
+        "LINK_IMPAIR",
+        {
+          "drop_pct": 10.0,
+          "latency_ms": 0.0
+        }
+      ]
+    ],
+    "loss30": [
+      [
+        100,
+        "LINK_IMPAIR",
+        {
+          "drop_pct": 30.0,
+          "latency_ms": 0.0
+        }
+      ]
+    ],
+    "normal": [],
+    "outage3s": [
+      [
+        300,
+        "LINK_IMPAIR",
+        {
+          "drop_pct": 100.0,
+          "latency_ms": 0.0,
+          "ticks": 30
+        }
+      ]
+    ],
+    "outage6s": [
+      [
+        300,
+        "LINK_IMPAIR",
+        {
+          "drop_pct": 100.0,
+          "latency_ms": 0.0,
+          "ticks": 60
+        }
+      ]
+    ],
+    "partition_east": [
+      [
+        100,
+        "ZONE_PARTITION",
+        {
+          "ticks": 300,
+          "zone": "EAST"
+        }
+      ]
+    ]
+  },
+  "created_utc": "20260926T220344Z",
+  "git": "a6e18041c8151077485fcdb63c6fc1769594cefa+uncommitted-changes",
+  "name": "comm_degradation",
+  "overrides": {
+    "fleet_size": 16
+  },
+  "python": "3.11.15",
+  "reference": "swarmos",
+  "scenarios": {
+    "rush_50": {
+      "aisle_period": 4,
+      "aisle_width": 2,
+      "batch": false,
+      "cross_period": 10,
+      "cross_width": 2,
+      "description": "Fifty heterogeneous robots on the full floor with a 30-task opening burst and a sustained 1.5 tasks/s arrival rate. This is the default state the demo opens in.",
+      "duration_s": null,
+      "fleet_size": 16,
+      "height": 40,
+      "idle_parking": false,
+      "initial_burst": 30,
+      "injections": [],
+      "name": "rush_50",
+      "proves": "Sustained 10 Hz coordination at fleet scale, zero collisions, and the throughput lead over the stop-and-wait baseline.",
+      "sensing": {
+        "actuation_delay_ticks": 0,
+        "enabled": false,
+        "intent_jitter_ticks": 0,
+        "localisation_sigma_m": 0.0,
+        "odometry_drift_m_per_m": 0.0
+      },
+      "task_rate_per_s": 1.5,
+      "title": "Rush hour, 50 robots",
+      "width": 60
+    }
+  },
+  "seeds": [
+    11,
+    13,
+    17,
+    19,
+    23
+  ],
+  "target_pct": 20.0,
+  "tick_limit": 1200
+}

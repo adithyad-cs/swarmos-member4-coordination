@@ -72,6 +72,10 @@ class MessageType(str, enum.Enum):
     ROBOT_STATE = "ROBOT_STATE"
     PATH_INTENT = "PATH_INTENT"
     HEARTBEAT = "HEARTBEAT"
+    # Live distributed task auction (app/coordination/task_auction.py): one
+    # bundled message per robot per tick carrying the best bid it knows for
+    # every open auction (min-consensus gossip over the peer radio).
+    TASK_BID = "TASK_BID"
 
 
 
@@ -193,5 +197,3 @@ def create_path_intent_message(
         target_id=target_id,
         payload=intent.model_dump(mode="json"),
     )
-
-# File contains AI-generated response based on internal company sources

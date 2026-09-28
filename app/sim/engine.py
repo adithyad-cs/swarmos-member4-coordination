@@ -33,6 +33,9 @@ from typing import Any, Optional
 from app.coordination.models import AMRState, RobotStatus
 from app.ml.forecast import Forecaster
 from app.sim.clock import TICK_HZ, TICK_SECONDS, SimClock
+from app.sim.deadlock_audit import DeadlockAudit
+from app.sim.decisions import DecisionLog
+from app.sim.prediction import PREDICT_THRESHOLD_M, PredictionScorer
 from app.sim.pathfinding import (
     find_path,
     nearest_navigable,
@@ -65,6 +68,26 @@ COLLISION_DISTANCE_M = 0.70
 # ever clears by a millimetre is not actually safe, it is lucky.
 NEAR_MISS_DISTANCE_M = 1.00
 
+# Runtime safety invariant monitor - three proximity layers on TRUE positions.
+#
+#   L1 CONTACT        d < COLLISION_DISTANCE_M (0.70): invariant INV-1; the run
+#                     FAILS. This is the same count as "collisions".
+#   L2 MARGIN BREACH  d < MARGIN_BREACH_M (0.75, the kernel's hard-stop floor):
+#                     a near-miss EVENT, counted once per pair episode.
+#   L3 PROXIMITY      d < NEAR_MISS_DISTANCE_M (1.00): informational pair-ticks.
+#                     1.00 m equals the aisle pitch, so ordinary single-file
+#                     following sits here all the time. This is the legacy
+#                     "near_misses" counter, kept under its old key for
+#                     compatibility, and it must NOT be read as a hazard count.
+MARGIN_BREACH_M = 0.75
+# A pair still inside MARGIN_BREACH_M at the end of a run after at least this
+# long without leaving is reported as PERMANENTLY FROZEN (metric only).
+FROZEN_PAIR_TICKS = 600
+# Histogram of pair-tick separations below NEAR_MISS_DISTANCE_M, 5 cm bins.
+SEPARATION_BINS_M = (0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00)
+# Numerical slack for the step-authority invariant (same as the C1 test).
+STEP_SLACK_M = 1e-9
+
 # Pick and drop dwell, in ticks. Real AMRs need time under a rack.
 DWELL_TICKS = 5
 
@@ -91,6 +114,28 @@ DWELL_TICKS = 5
 # allowed to keep trying.
 STALL_EPS_M = 0.02
 STALL_RELEASE_TICKS = 150       # 15 s of measured zero net progress
+
+# Livelock release: the moving twin of the stall release above. A robot that
+# keeps MOVING but never gets closer to its goal defeats a displacement test.
+# Found by the system audit: under textbook stop-and-wait, a loaded robot and
+# an idle robot heading to parking met head-on in the same single-file aisles,
+# both timed out and rerouted in lockstep, and met again - every 440 ticks for
+# 7000+ ticks - until the loaded robot's battery reached 0 %, 2800 m driven,
+# zero stall releases, zero wait-for cycles (the robots were moving).
+# Progress is the grid (Manhattan) distance to the current goal cell; a robot
+# that sets no new minimum for LIVELOCK_WINDOW_TICKS opens a livelock episode.
+# OBSERVE-ONLY: an earlier version released the task, but the task was then
+# re-dispatched to the same pair and the livelock re-formed (it turned a slow
+# finish into a did-not-finish on another seed), so the engine now only
+# COUNTS episodes. It never moves a robot, touches a task or the trace hash.
+# 900 ticks (90 s) is above the longest legitimate detour on these floors (a
+# full-map crossing is ~85 s).
+LIVELOCK_WINDOW_TICKS = 900
+
+# Decision oscillation (metric only): a working robot stopped again within this
+# many ticks of resuming counts as one hold -> move -> hold oscillation.
+OSC_WINDOW_TICKS = 10
+AUCTION_ADMISSION = "greedy"   # the auction releases work exactly as _dispatch does
 
 
 # How close a robot must be to a pick, drop or charger cell to service it.
@@ -150,6 +195,7 @@ class SimSnapshot:
     sim_time: float
     timestamp: float
     robots: list[dict]
+    decisions: list[dict]
     verdicts: list[dict]
     tasks_pending: int
     tasks_active: int
@@ -172,6 +218,7 @@ class SimSnapshot:
             },
             "kpis": self.kpis,
             "events": self.events,
+            "decisions": self.decisions,
             "trace_hash": self.trace_hash,
         }
 
@@ -220,6 +267,20 @@ class SimEngine:
         # state rather than radio state, because the radio's job is to model
         # reachability, not to schedule the operator's faults.
         self._blackout_until: dict[str, int] = {}
+        # LINK_IMPAIR / ZONE_PARTITION with a `ticks` duration: the tick at
+        # which the radio returns to a perfect link / the partition lifts.
+        self._link_restore_tick: Optional[int] = None
+        self._partition_restore_tick: Optional[int] = None
+
+        # Hand the policy the static floor plan (the "onboard map"). Guarded so
+        # the baseline, which has no such hook, is untouched.
+        if hasattr(self.policy, "attach_map"):
+            self.policy.attach_map(self.warehouse)
+        self.traffic_fallbacks = 0
+        # Scores the policy's predicted conflicts against true encounters.
+        self.prediction = PredictionScorer()
+        self.deadlock_audit = DeadlockAudit()
+        self.decisions = DecisionLog()
 
         self.robots: dict[str, SimRobot] = {
             r.robot_id: r
@@ -241,6 +302,18 @@ class SimEngine:
         self.tasks: dict[str, Task] = {}
         self.pending: list[str] = []          # task ids, FIFO within priority
         self.completed: list[str] = []
+        # Batch-mode bookkeeping (observation only; never feeds back into
+        # motion, the RNG or the trace hash).
+        self.batch_done_s: Optional[float] = None
+        # task_id -> (odometer at assignment, robot cell at assignment), used
+        # for path efficiency = shortest possible route / distance actually
+        # driven for that task.
+        self._task_odo: dict[str, tuple[float, tuple[int, int]]] = {}
+        self._path_ideal_m = 0.0
+        self._path_actual_m = 0.0
+        # Idle parking (ScenarioSpec.idle_parking): robot_id -> parking cell.
+        self._park_goal: dict[str, tuple[int, int]] = {}
+        self._parking_cells: list[tuple[int, int]] = []
 
         # Per-robot transient bookkeeping.
         self._dwell: dict[str, int] = {}
@@ -266,11 +339,50 @@ class SimEngine:
         # was the previous time this was checked.
         self._stall: dict[str, tuple[int, float, float]] = {}
         self.stall_releases = 0
+        # F6 (docs/C2_ROOT_CAUSE_ANALYSIS.md RC5): after a stall release the
+        # SAME robot may not take the SAME task back for this many ticks, so
+        # the release actually changes something. 0 = off (the frozen rule,
+        # which re-dispatched to the stuck robot on the very next tick: 88
+        # times in a row on one traced run). Applies to every policy alike.
+        # The policy may carry the rule (the SWARMOS product policy does; see
+        # app/api/runner._make_policy). Experiments can also set it directly.
+        self.release_cooldown_ticks = int(
+            getattr(self.policy, "release_cooldown_ticks", 0) or 0)
+        self._release_cooldown: dict[tuple[str, str], int] = {}
+        self.cooldown_skips = 0
+        # LIVE_DISTRIBUTED_AUCTION: the WMS lease register (app/sim/lease_ledger.py).
+        # Used only when the policy runs the live auction; otherwise the greedy
+        # dispatcher below allocates exactly as before.
+        from app.sim.lease_ledger import LeaseLedger
+
+        self.lease_ledger = LeaseLedger()
+        self.allocation_events: list[dict] = []
+        # Decision-oscillation metric (all policies): a working robot that is
+        # stopped again within OSC_WINDOW_TICKS of resuming.
+        self._resumed_at: dict[str, int] = {}
+        self.decision_oscillations = 0
+        # robot_id -> (goal cell, best Manhattan distance, tick it was set,
+        # whether the current window was already counted as an episode)
+        self._progress: dict[str, tuple[tuple[int, int], int, int, bool]] = {}
+        self.livelock_episodes = 0
+        self.livelock_ticks = 0
 
         # Safety and metrics.
         self.violations: list[Violation] = []
 
         self.near_misses = 0
+        # Invariant monitor state (observation only; never feeds back into
+        # motion, the RNG or the trace hash).
+        self.min_separation_m: Optional[float] = None
+        self.margin_breaches = 0
+        # Floor-episode bookkeeping (metrics only): pair -> tick it entered.
+        self._breach_since: dict[tuple[str, str], int] = {}
+        self.floor_pair_ticks = 0
+        self.longest_floor_episode_ticks = 0
+        self._breaching: set[tuple[str, str]] = set()
+        self.separation_hist = [0] * (len(SEPARATION_BINS_M) - 1)
+        self.invariant_counts = {"INV-1": 0, "INV-2": 0, "INV-3": 0, "INV-4": 0}
+        self.invariant_first: dict[str, dict] = {}
         # Pairs currently inside COLLISION_DISTANCE_M. A Violation is recorded
         # only when a pair ENTERS this set, so one frozen overlap is one
         # collision rather than one per tick for the rest of the run. See
@@ -281,6 +393,19 @@ class SimEngine:
         # a dwell metric and must never be reported as a collision count.
         self.overlap_ticks = 0
         self.verdict_counts: dict[str, int] = {k.value: 0 for k in VerdictKind}
+        # Benchmark instrumentation (observation only; never feeds back into
+        # motion, the RNG or the trace hash).
+        #   stop_events       a robot WITH WORK (a task or a path) that moved
+        #                     last tick and is granted zero motion this tick -
+        #                     one "stop-and-wait" event per transition
+        #   held_work_ticks   robot-ticks a robot with work spent at zero motion
+        #   backtracks_dropped  leading waypoints removed by _drop_backtrack
+        #   t90_s             batch: time the 90th-percentile task completed
+        self.stop_events = 0
+        self.held_work_ticks = 0
+        self.backtracks_dropped = 0
+        self.t90_s: Optional[float] = None
+        self._prev_scale: dict[str, float] = {}
         self.replans = 0
         self.veto_battery = 0
         self.veto_capability = 0
@@ -329,6 +454,14 @@ class SimEngine:
 
         if self.scenario.initial_burst:
             self._admit(self.task_gen.burst(0.0, self.scenario.initial_burst))
+        self._attach_profiles()
+
+    def _attach_profiles(self) -> None:
+        """Give an auction-capable policy each robot's knowledge of ITSELF."""
+        if hasattr(self.policy, "attach_self_profiles"):
+            self.policy.attach_self_profiles({
+                rid: {"capacity_kg": r.spec.capacity_kg, "max_speed_mps": r.spec.max_speed_mps}
+                for rid, r in self.robots.items()})
 
     # ==================================================================
     # public surface
@@ -343,8 +476,24 @@ class SimEngine:
 
     @property
     def finished(self) -> bool:
+        if self.batch_done_s is not None:
+            return True
         limit = self.scenario.duration_ticks
         return limit is not None and self.clock.tick >= limit
+
+    def _score_path(self, tid: str, robot: SimRobot) -> None:
+        """Accumulate path efficiency for one completed task (metrics only)."""
+        start = self._task_odo.pop(tid, None)
+        if start is None:
+            return
+        odo0, cell0 = start
+        task = self.tasks[tid]
+        leg1 = find_path(self.warehouse, cell0, task.pick)
+        leg2 = find_path(self.warehouse, task.pick, task.drop)
+        if leg1 is None or leg2 is None:
+            return
+        self._path_ideal_m += (len(leg1) - 1 + len(leg2) - 1) * 1.0
+        self._path_actual_m += max(0.0, robot.distance_travelled_m - odo0)
 
     @property
     def trace_hash(self) -> str:
@@ -353,6 +502,11 @@ class SimEngine:
     def set_policy(self, policy: CoordinationPolicy) -> None:
         """Swap the arbiter. Used to hand control from the stub to M4."""
         self.policy = policy
+        self.release_cooldown_ticks = int(
+            getattr(self.policy, "release_cooldown_ticks", 0) or 0)
+        if hasattr(self.policy, "attach_map"):
+            self.policy.attach_map(self.warehouse)
+        self._attach_profiles()
 
     def step(self) -> SimSnapshot:
         """Advance the simulation by exactly one tick and return the snapshot."""
@@ -373,6 +527,16 @@ class SimEngine:
             self.policy.observe(self.observations())
         self._advise(states)
         verdicts = self.policy.arbitrate(self.clock.tick, self.sim_time, states)
+        self.deadlock_audit.observe(self.clock.tick, verdicts)
+        preds = getattr(self.policy, "predictions", None)
+        if preds:
+            self.prediction.observe_predictions(self.clock.tick, preds)
+        self.decisions.observe(self.clock.tick, preds or (), verdicts)
+        pro = getattr(self.policy, "proactive", None)
+        self.decisions.observe_ai(
+            self.clock.tick, getattr(self.policy, "edge_events", None),
+            pro.events if pro is not None else None, self.allocation_events, verdicts)
+        self.allocation_events = []
         self._apply_verdicts(verdicts)
         self._score_firewall(verdicts)
         # Enforce whatever the coordination layer has contained. Read back from
@@ -385,16 +549,26 @@ class SimEngine:
         # reason: coordination judges, the simulation records.
         self._sync_sovereign()
         self._expire_blackouts()
+        self._expire_link_faults()
 
         self._apply_onboard_brake()
 
+        before = {rid: (r.x, r.y, r.failed, r.quarantined)
+                  for rid, r in self.robots.items()}
         for rid in sorted(self.robots):
             self.robots[rid].step(TICK_SECONDS, self.rng, self.sensing)
+        self._check_motion_invariants(before)
 
         self._service()
         self._check_stalls()
         self._account_safety()
         self._update_hash()
+        if (self.scenario.batch and self.t90_s is None and self.tasks
+                and len(self.completed) >= math.ceil(0.9 * len(self.tasks))):
+            self.t90_s = self.sim_time
+        if (self.scenario.batch and self.batch_done_s is None and self.tasks
+                and len(self.completed) == len(self.tasks)):
+            self.batch_done_s = self.sim_time
 
         compute_ms = self.clock.end()
 
@@ -527,7 +701,23 @@ class SimEngine:
     def inject(self, kind: FaultKind | str, **params: Any) -> dict:
         """Apply a fault now. Callable live from the API for the demo."""
         kind = FaultKind(kind) if isinstance(kind, str) else kind
-        handler = {
+        detail = self._fault_handler(kind)(**params)
+        # fault_kind, not kind: "kind" is already the event-type field on every
+        # emitted event, and shadowing it would collide.
+        return self._emit("fault", fault_kind=kind.value, **detail)
+
+    def fault_accepts(self, kind: FaultKind | str, param: str) -> bool:
+        """Whether the handler for `kind` takes keyword `param`.
+
+        Used at the API boundary: the Lab sends the currently selected robot
+        with every fault, and only robot-targeted faults accept one.
+        """
+        import inspect
+        kind = FaultKind(kind) if isinstance(kind, str) else kind
+        return param in inspect.signature(self._fault_handler(kind)).parameters
+
+    def _fault_handler(self, kind: FaultKind):
+        return {
             FaultKind.ROBOT_FAILURE: self._fault_robot_failure,
             FaultKind.BATTERY_DRAIN: self._fault_battery_drain,
             FaultKind.BLOCK_AISLE: self._fault_block_aisle,
@@ -539,10 +729,6 @@ class SimEngine:
             FaultKind.KILL_ML: self._fault_kill_ml,
             FaultKind.COMM_BLACKOUT: self._fault_comm_blackout,
         }[kind]
-        detail = handler(**params)
-        # fault_kind, not kind: "kind" is already the event-type field on every
-        # emitted event, and shadowing it would collide.
-        return self._emit("fault", fault_kind=kind.value, **detail)
 
 
     def _pick_robot(self, robot_id: Optional[str], *, healthy: bool = True) -> Optional[SimRobot]:
@@ -635,22 +821,87 @@ class SimEngine:
                 "spoof_m": round(spoof_m, 2)}
 
     def _fault_link_impair(
-        self, drop_pct: float = 10.0, latency_ms: float = 40.0, jitter_ms: float = 20.0
+        self, drop_pct: float = 10.0, latency_ms: float = 40.0,
+        jitter_ms: float = 20.0, ticks: Optional[int] = None,
     ) -> dict:
-        # The simulation only records the requested impairment; the transport
-        # layer in M4 is what actually drops and delays messages. Keeping the
-        # knob here means one operator control drives both.
-        self.impairment = {
+        """Degrade the fleet radio (X-02): loss and whole-tick latency.
+
+        The knob lives here so one operator control drives the transport in M4.
+        Latency is quantised to whole ticks because the radio delivers once per
+        tick; jitter is recorded but NOT modelled, and the result says so
+        rather than pretending. `ticks` makes the impairment temporary; a drop
+        of 100 percent with a duration is a fleet-wide communication outage.
+
+        getattr because the baseline policy has no radio at all. For it the
+        impairment is recorded but has nothing to act on, and the result says
+        applied=False instead of claiming an effect that did not happen.
+        """
+        from app.coordination.radio import LinkProfile
+
+        latency_ticks = max(0, int(round(float(latency_ms) / (TICK_SECONDS * 1000.0))))
+        self.impairment = dict(self.impairment)
+        self.impairment.update({
             "drop_pct": float(drop_pct),
             "latency_ms": float(latency_ms),
+            "latency_ticks": latency_ticks,
             "jitter_ms": float(jitter_ms),
-        }
-        return {"applied": True, **self.impairment}
+            "jitter_modelled": False,
+        })
+        radio = getattr(self.policy, "radio", None)
+        if radio is None:
+            return {"applied": False, "reason": "policy has no radio",
+                    **self.impairment}
+        radio.set_profile(LinkProfile(
+            loss_pct=max(0.0, min(100.0, float(drop_pct))),
+            latency_ticks=latency_ticks,
+        ))
+        self._link_restore_tick = (
+            self.clock.tick + max(1, int(ticks)) if ticks is not None else None
+        )
+        return {"applied": True, **self.impairment,
+                "ticks": int(ticks) if ticks is not None else None}
 
-    def _fault_zone_partition(self, zone: str = "EAST") -> dict:
+    def _fault_zone_partition(self, zone: str = "EAST",
+                              ticks: Optional[int] = None) -> dict:
+        """Cut every radio hop that crosses the boundary of a named zone."""
+        match = [z for z in self.warehouse.zones if z.name == str(zone).upper()]
         self.impairment = dict(self.impairment)
-        self.impairment["partition_zone"] = zone
-        return {"applied": True, "zone": zone}
+        self.impairment["partition_zone"] = str(zone).upper()
+        radio = getattr(self.policy, "radio", None)
+        if not match:
+            return {"applied": False, "reason": f"unknown zone {zone!r}",
+                    "zones": [z.name for z in self.warehouse.zones]}
+        if radio is None:
+            return {"applied": False, "reason": "policy has no radio",
+                    "zone": match[0].name}
+        z = match[0]
+        radio.set_partition((z.x0, z.y0, z.x1 + 1.0, z.y1 + 1.0))
+        self._partition_restore_tick = (
+            self.clock.tick + max(1, int(ticks)) if ticks is not None else None
+        )
+        return {"applied": True, "zone": z.name,
+                "ticks": int(ticks) if ticks is not None else None}
+
+    def _expire_link_faults(self) -> None:
+        """Lift a timed link impairment or partition when its duration ends."""
+        radio = getattr(self.policy, "radio", None)
+        tick = self.clock.tick
+        if self._link_restore_tick is not None and tick >= self._link_restore_tick:
+            self._link_restore_tick = None
+            if radio is not None:
+                from app.coordination.radio import LINK_PERFECT
+                radio.set_profile(LINK_PERFECT)
+            for key in ("drop_pct", "latency_ms", "latency_ticks", "jitter_ms",
+                        "jitter_modelled"):
+                self.impairment.pop(key, None)
+            self._emit("link_restored")
+        if (self._partition_restore_tick is not None
+                and tick >= self._partition_restore_tick):
+            self._partition_restore_tick = None
+            if radio is not None:
+                radio.set_partition(None)
+            self.impairment.pop("partition_zone", None)
+            self._emit("partition_lifted")
 
     def _fault_task_burst(self, count: int = 20) -> dict:
         created = self.task_gen.burst(self.sim_time, int(count))
@@ -757,6 +1008,9 @@ class SimEngine:
         rules, which are physical facts about the robot and must be enforced
         here regardless of what any bidding scheme decides.
         """
+        if getattr(self.policy, "live_auction", False):
+            self._auction_dispatch()
+            return
         if not self.pending:
             return
 
@@ -789,6 +1043,10 @@ class SimEngine:
             best_cost = float("inf")
 
             for robot in free:
+                until = self._release_cooldown.get((robot.robot_id, tid))
+                if until is not None and self.clock.tick < until:
+                    self.cooldown_skips += 1
+                    continue
                 # X-17 capability gate: a light robot physically cannot take a
                 # heavy pallet, and no amount of eagerness in its bid changes
                 # that.
@@ -815,16 +1073,133 @@ class SimEngine:
             if best is None:
                 continue
 
-            task.status = TaskStatus.ASSIGNED
-            task.assigned_robot = best.robot_id
-            task.assigned_s = self.sim_time
-            best.current_task_id = tid
-            self._phase[best.robot_id] = "TO_PICK"
-            self._goal_cell[best.robot_id] = task.pick
-            self.pending.remove(tid)
+            self._assign(tid, best, eta_s=best_cost)
             free.remove(best)
-            self._emit("task_assigned", task_id=tid, robot_id=best.robot_id,
-                       priority=task.priority.value, eta_s=round(best_cost, 2))
+
+    def _assign(self, tid: str, robot: SimRobot, *, eta_s: float,
+                via: str = "greedy") -> None:
+        """Hand a task to a robot. Shared by the greedy dispatcher and the
+        live auction, so execution is identical whichever allocated it."""
+        task = self.tasks[tid]
+        if self._park_goal.pop(robot.robot_id, None) is not None:
+            # Leaving (or heading to) a parking cell for real work.
+            robot.clear_path()
+        task.status = TaskStatus.ASSIGNED
+        task.assigned_robot = robot.robot_id
+        task.assigned_s = self.sim_time
+        self._task_odo[tid] = (
+            robot.distance_travelled_m,
+            self.warehouse.m_to_cell(robot.x, robot.y),
+        )
+        robot.current_task_id = tid
+        self._phase[robot.robot_id] = "TO_PICK"
+        self._goal_cell[robot.robot_id] = task.pick
+        if tid in self.pending:
+            self.pending.remove(tid)
+        self._emit("task_assigned", task_id=tid, robot_id=robot.robot_id,
+                   priority=task.priority.value, eta_s=round(eta_s, 2), via=via)
+
+    def _claim_eligible(self, rid: str, tid: str) -> bool:
+        """Physical eligibility the WMS re-checks on every claim, whoever won."""
+        robot = self.robots.get(rid)
+        task = self.tasks.get(tid)
+        if robot is None or task is None or tid not in self.pending:
+            return False
+        if not robot.is_available_for_work or robot.current_task_id is not None:
+            return False
+        radio = getattr(self.policy, "radio", None)
+        if radio is not None and radio.is_silenced(rid):
+            return False                      # the WMS cannot hear it: no lease
+        if not robot.spec.can_carry(task.payload_kg) or not self._battery_feasible(robot, task):
+            return False
+        until = self._release_cooldown.get((rid, tid))
+        return not (until is not None and self.clock.tick < until)
+
+    def _auction_dispatch(self) -> None:
+        """LIVE_DISTRIBUTED_AUCTION allocation for one tick (WMS side).
+
+        1. renew leases on live heartbeats; expire the rest and re-queue the task;
+        2. close due auctions from the robots' claims (made at the end of the
+           previous tick's arbitration) and execute the leases;
+        3. deterministic fallback for tasks that failed MAX_ROUNDS auctions;
+        4. announce new auctions, bounded by the same WIP limit as the greedy
+           dispatcher.
+        """
+        ledger = self.lease_ledger
+        now = self.clock.tick
+        agent = self.policy.task_auction
+        ledger.events = []
+        silenced = set(getattr(getattr(self.policy, "radio", None), "_silenced", ()) or ())
+        for tid in sorted(ledger.leases):
+            lease = ledger.leases[tid]
+            owner = self.robots.get(lease.owner)
+            holds = owner is not None and owner.current_task_id == tid
+            if not holds:
+                task = self.tasks.get(tid)
+                if task is not None and task.status is TaskStatus.COMPLETE:
+                    ledger.complete(tid, now)
+                else:
+                    ledger.release(tid, "owner no longer holds the task", now)
+                continue
+            alive = not owner.failed and not owner.quarantined and owner.robot_id not in silenced
+            if ledger.heartbeat(tid, alive, now):
+                self._release_task(owner, reason="lease expired (no heartbeat)")
+                if not owner.failed:
+                    owner.status = RobotStatus.AVAILABLE
+        live = [rid for rid, r in sorted(self.robots.items()) if not r.failed]
+        grants, fallbacks, closed = ledger.resolve(
+            now, agent.claims, self._claim_eligible,
+            lambda aid, winner: agent.agreement(aid, winner, live), agent.standing)
+        agent.claims = []
+        agent.standing = []
+        for ev in ledger.events:
+            if ev["type"] in ("AUCTION_CLOSED", "AUCTION_NO_WINNER"):
+                seen = agent.seen.get(ev["aid"], {})
+                ev["bids"] = [{"robot": b["robot"], "cost": b["cost"], "factors": b["factors"]}
+                              for b in sorted(seen.values(), key=lambda b: (b["cost"], b["robot"]))]
+        for rec, claim, lease in grants:
+            self._assign(rec["task"], self.robots[claim["robot"]], eta_s=claim["cost"], via="auction")
+        for rec in fallbacks:
+            tid = rec["task"]
+            free = [self.robots[r] for r in sorted(self.robots)
+                    if self._claim_eligible(r, tid)]
+            if free:
+                task = self.tasks[tid]
+                pick = self.warehouse.cell_to_m(*task.pick)
+                best = min(free, key=lambda r: (r.distance_to(*pick) / max(r.spec.max_speed_mps, 1e-6), r.robot_id))
+                ledger.grant_fallback(tid, best.robot_id, now)
+                self._assign(tid, best, eta_s=0.0, via="fallback")
+        for aid in closed:
+            agent.retire(aid)
+        committed = sum(1 for r in self.robots.values() if r.current_task_id is not None)
+        wip_limit = max(1, int(len(self.robots) * WIP_FRACTION))
+        room = wip_limit - committed - len(ledger.auctions)
+        if AUCTION_ADMISSION == "greedy":
+            # the greedy dispatcher's rule: under the WIP limit, release work
+            # for every free robot
+            free = sum(1 for r in self.robots.values()
+                       if r.is_available_for_work and r.current_task_id is None)
+            room = (free - len(ledger.auctions)) if committed < wip_limit else 0
+        busy = ledger.open_task_ids() | set(ledger.leases)
+        new = []
+        for tid in self._queue_order():
+            if room <= 0:
+                break
+            if tid in busy:
+                continue
+            task = self.tasks[tid]
+            excluded = [rid for (rid, t), until in sorted(self._release_cooldown.items())
+                        if t == tid and now < until]
+            rec = ledger.open_auction({
+                "task": tid, "pick": list(task.pick), "drop": list(task.drop),
+                "pick_m": list(self.warehouse.cell_to_m(*task.pick)),
+                "drop_m": list(self.warehouse.cell_to_m(*task.drop)),
+                "payload_kg": task.payload_kg, "priority": task.priority.value}, now, excluded)
+            new.append(rec)
+            room -= 1
+        if new:
+            agent.announce(new)
+        self.allocation_events = list(ledger.events)
 
     def _battery_feasible(self, robot: SimRobot, task: Task) -> bool:
         """Would this robot still hold its reserve after finishing the task?
@@ -850,6 +1225,8 @@ class SimEngine:
     def _release_task(self, robot: SimRobot, *, reason: str) -> None:
         """Return a robot's task to the queue and clear its assignment."""
         tid = robot.current_task_id
+        if tid is not None and tid in self.lease_ledger.leases:
+            self.lease_ledger.release(tid, reason, self.clock.tick)
         robot.current_task_id = None
         robot.carrying_kg = 0.0
         robot.clear_path()
@@ -904,7 +1281,24 @@ class SimEngine:
             hint = self._avoid_hint.pop(rid, set())
             detour = (avoid | hint) - {start, target}
 
-            cells = find_path(self.warehouse, start, target, avoid=detour)
+            rules = getattr(self.policy, "traffic", None)
+            edge = rules.edge_allowed if rules is not None else None
+            cells = find_path(self.warehouse, start, target, avoid=detour,
+                              edge_allowed=edge)
+            if cells is None and edge is not None and hint:
+                # Under one-way rules a reroute hint ("avoid the blocker's
+                # cell") usually has no legal answer in a single-file lane.
+                # Drop the HINT before dropping the RULES: going against the
+                # flow is exactly the head-on wedge the rules exist to prevent.
+                cells = find_path(self.warehouse, start, target,
+                                  avoid=avoid - {start, target},
+                                  edge_allowed=edge)
+            if cells is None and edge is not None:
+                # The one-way rules strand this robot (possible only when a
+                # dynamic blockage cuts the directed graph). Fall back to the
+                # undirected route rather than parking it forever, and count it.
+                self.traffic_fallbacks += 1
+                cells = find_path(self.warehouse, start, target, avoid=detour)
             if cells is None and hint:
                 # The detour is infeasible - the hinted cell is the only way
                 # through. Fall back to the plain route and let the arbiter keep
@@ -918,6 +1312,10 @@ class SimEngine:
                 continue
 
             waypoints = simplify_collinear(path_to_metres(self.warehouse, cells))
+            trimmed = _drop_backtrack((robot.x, robot.y), waypoints)
+            if len(trimmed) < len(waypoints):
+                self.backtracks_dropped += 1
+            waypoints = trimmed
             self._intent_counter += 1
             robot.assign_path(
                 waypoints,
@@ -949,7 +1347,46 @@ class SimEngine:
         if phase == "TO_CHARGER":
             return self._nearest_charger(robot)
 
+        if phase == "TO_PARK":
+            return self._park_goal.get(rid)
+
+        if (self.scenario.idle_parking and tid is None and phase is None
+                and not robot.needs_charge):
+            cell = self._choose_parking(robot)
+            if cell is not None:
+                self._phase[rid] = "TO_PARK"
+                self._park_goal[rid] = cell
+                return cell
+
         return None
+
+    def _choose_parking(self, robot: SimRobot) -> Optional[tuple[int, int]]:
+        """Nearest unclaimed parking cell on the 2-wide perimeter ring.
+
+        Only the OUTER lane of the ring is used (x = 0 and x = width - 1), so
+        the inner lane stays a through route; chargers and their row are
+        skipped. Deterministic: nearest by grid distance, ties by cell.
+        """
+        if not self._parking_cells:
+            wh = self.warehouse
+            chargers = set(wh.cells_of_type(Cell.CHARGER))
+            charger_rows = {cy for _, cy in chargers}
+            self._parking_cells = sorted(
+                (cx, cy)
+                for cx in (0, wh.width - 1)
+                for cy in range(2, wh.height - 2)
+                if wh.cell_at(cx, cy) is Cell.FREE
+                and cy not in charger_rows
+                and (cx, cy) not in chargers
+            )
+        here = self.warehouse.m_to_cell(robot.x, robot.y)
+        if here in self._parking_cells:
+            return here
+        claimed = {c for r, c in self._park_goal.items() if r != robot.robot_id}
+        free = [c for c in self._parking_cells if c not in claimed]
+        if not free:
+            return None
+        return min(free, key=lambda c: (abs(c[0] - here[0]) + abs(c[1] - here[1]), c))
 
     def _nearest_charger(self, robot: SimRobot) -> Optional[tuple[int, int]]:
         if not self.charger_cells:
@@ -1108,6 +1545,28 @@ class SimEngine:
 
     # step 5 - verdicts
     # ==================================================================
+    def _blocker_cell(self, robot: SimRobot, peer: SimRobot) -> tuple[int, int]:
+        """The cell a reroute must avoid to get past `peer`.
+
+        Normally the peer's own cell. When the peer stands in the SAME cell as
+        the robot, that cell is also the robot's start cell, which _plan() must
+        strip from the avoid set - so the hint used to vanish and the replan
+        returned the identical path through the blocker, forever. Found by the
+        system audit: a battery-drained robot sat behind an idle peer in the
+        2-wide top aisle for 5400+ ticks and never reached a charger (it holds
+        no task, so stall release cannot help it). In that case the hint is the
+        adjacent cell in the peer's direction: the cell the robot would have to
+        enter to pass it.
+        """
+        mine = self.warehouse.m_to_cell(robot.x, robot.y)
+        theirs = self.warehouse.m_to_cell(peer.x, peer.y)
+        if theirs != mine:
+            return theirs
+        dx, dy = peer.x - robot.x, peer.y - robot.y
+        if abs(dx) >= abs(dy):
+            return (mine[0] + (1 if dx > 0 else -1), mine[1])
+        return (mine[0], mine[1] + (1 if dy > 0 else -1))
+
     def _apply_verdicts(self, verdicts: dict[str, Verdict]) -> None:
         self._last_verdicts = verdicts
         for rid, verdict in verdicts.items():
@@ -1116,6 +1575,17 @@ class SimEngine:
                 continue
             self.verdict_counts[verdict.kind.value] += 1
             robot.apply_verdict_scale(verdict.speed_scale or 0.0)
+            has_work = robot.current_task_id is not None or bool(robot.path)
+            if has_work and robot.speed_scale <= 0.0:
+                self.held_work_ticks += 1
+                if self._prev_scale.get(rid, 0.0) > 0.0:
+                    self.stop_events += 1
+                    resumed = self._resumed_at.get(rid)
+                    if resumed is not None and self.clock.tick - resumed <= OSC_WINDOW_TICKS:
+                        self.decision_oscillations += 1
+            elif robot.speed_scale > 0.0 and self._prev_scale.get(rid, 1.0) <= 0.0:
+                self._resumed_at[rid] = self.clock.tick
+            self._prev_scale[rid] = robot.speed_scale
             if verdict.needs_replan and robot.path:
                 # The arbiter has declared the current path invalid. Dropping
                 # it here means the next _plan() rebuilds it; the robot holds
@@ -1125,10 +1595,12 @@ class SimEngine:
                 # Carry the reason for the reroute into the replan, so the new
                 # path actually differs from the one that just failed.
                 hint = {
-                    self.warehouse.m_to_cell(peer.x, peer.y)
+                    self._blocker_cell(robot, peer)
                     for peer in (self.robots.get(p) for p in verdict.conflict_with)
                     if peer is not None
                 }
+                hint |= {self.warehouse.m_to_cell(px, py)
+                         for px, py in verdict.avoid_points}
                 if hint:
                     self._avoid_hint[rid] = hint
 
@@ -1189,6 +1661,9 @@ class SimEngine:
                 self._dwell[rid] = DWELL_TICKS
                 robot.clear_path()
                 self.completed.append(tid)
+                if tid in self.lease_ledger.leases:
+                    self.lease_ledger.complete(tid, self.clock.tick)
+                self._score_path(tid, robot)
                 self._emit(
                     "task_complete", task_id=tid, robot_id=rid,
                     completion_s=round(task.completion_time_s or 0.0, 2),
@@ -1198,6 +1673,31 @@ class SimEngine:
     def _at_cell(self, robot: SimRobot, cell: tuple[int, int]) -> bool:
         cx, cy = self.warehouse.cell_to_m(*cell)
         return robot.distance_to(cx, cy) <= SERVICE_RADIUS_M
+
+    def _audit_livelock(self, rid: str, robot: SimRobot) -> bool:
+        """Observe-only livelock audit (see LIVELOCK_WINDOW_TICKS). Returns
+        True while the robot is inside a livelock episode. Changes no state
+        other than its own counters."""
+        goal = self._goal_cell.get(rid)
+        if goal is None:
+            self._progress.pop(rid, None)
+            return False
+        here = self.warehouse.m_to_cell(robot.x, robot.y)
+        dist = abs(here[0] - goal[0]) + abs(here[1] - goal[1])
+        prev = self._progress.get(rid)
+        if prev is None or prev[0] != goal or dist < prev[1]:
+            self._progress[rid] = (goal, dist, self.clock.tick, False)
+            return False
+        if self.clock.tick - prev[2] < LIVELOCK_WINDOW_TICKS:
+            return False
+        self.livelock_ticks += 1
+        if not prev[3]:
+            self.livelock_episodes += 1
+            self._progress[rid] = (prev[0], prev[1], prev[2], True)
+            self._emit("livelock_suspected", robot_id=rid, task_id=robot.current_task_id,
+                       ticks_without_progress=self.clock.tick - prev[2],
+                       best_distance_cells=prev[1])
+        return True
 
     def _check_stalls(self) -> None:
         """Release a task whose robot has made no measurable progress.
@@ -1216,6 +1716,7 @@ class SimEngine:
             robot = self.robots[rid]
             if robot.current_task_id is None or robot.failed or robot.quarantined:
                 self._stall.pop(rid, None)
+                self._progress.pop(rid, None)
                 continue
             if self._dwell.get(rid, 0) > 0:
                 # Dwelling at a pick/drop station is real, intended rest, not
@@ -1223,6 +1724,9 @@ class SimEngine:
                 # dwell ends.
                 self._stall[rid] = (self.clock.tick, robot.x, robot.y)
                 continue
+            # Audited BEFORE the displacement test: a livelocked robot moves,
+            # so it would never reach the stall branch below. Observe-only.
+            self._audit_livelock(rid, robot)
 
             prev = self._stall.get(rid)
             if prev is None:
@@ -1241,6 +1745,9 @@ class SimEngine:
                     "task_stalled", robot_id=rid, task_id=robot.current_task_id,
                     ticks_without_progress=self.clock.tick - since_tick,
                 )
+                if self.release_cooldown_ticks > 0 and robot.current_task_id is not None:
+                    self._release_cooldown[(rid, robot.current_task_id)] = (
+                        self.clock.tick + self.release_cooldown_ticks)
                 self._release_task(robot, reason="no progress for %d ticks" % STALL_RELEASE_TICKS)
                 robot.status = RobotStatus.AVAILABLE
                 self._stall.pop(rid, None)
@@ -1248,6 +1755,80 @@ class SimEngine:
     # ==================================================================
     # step 8 - safety accounting and hashing
     # ==================================================================
+
+    def _invariant(self, key: str, **detail: Any) -> None:
+        self.invariant_counts[key] += 1
+        if key not in self.invariant_first:
+            self.invariant_first[key] = {"tick": self.clock.tick, **detail}
+            self._emit("invariant_violation", invariant=key, **detail)
+
+    def _check_motion_invariants(self, before: dict) -> None:
+        """INV-2 step authority, INV-3 no motion while held/failed/contained,
+        INV-4 legal status (a failed robot stays FAILED). Checked every tick.
+
+        speed_scale is read after the step: _apply_verdicts (and the onboard
+        brake) set it before motion and nothing clears it afterwards, so the
+        post-step value is the grant that governed this tick - the same
+        reading tests/test_c1_step_authority.py relies on.
+        """
+        for rid in sorted(before):
+            x0, y0, failed, contained = before[rid]
+            r = self.robots[rid]
+            moved = math.hypot(r.x - x0, r.y - y0)
+            allowed = r.spec.max_speed_mps * r.speed_scale * TICK_SECONDS
+            if moved > allowed + STEP_SLACK_M:
+                self._invariant("INV-2", robot_id=rid, moved_m=round(moved, 6),
+                                granted_m=round(allowed, 6))
+            if (failed or contained or r.speed_scale <= 0.0) and moved > STEP_SLACK_M:
+                self._invariant("INV-3", robot_id=rid, moved_m=round(moved, 6))
+            if failed and not r.failed:
+                self._invariant("INV-4", robot_id=rid, transition="FAILED->alive")
+            if r.failed and r.status is not RobotStatus.FAILED:
+                self._invariant("INV-4", robot_id=rid,
+                                transition="failed robot reported " + r.status.value)
+
+    def safety_summary(self) -> dict:
+        """The runtime safety verdict: explicit invariants, not 'nothing crashed'."""
+        counts = dict(self.invariant_counts)
+        counts["INV-1"] = len(self.violations)
+        failed = [k for k, v in counts.items() if v]
+        first = dict(self.invariant_first)
+        if self.violations and "INV-1" not in first:
+            v = self.violations[0]
+            first["INV-1"] = {"tick": v.tick, "robot_a": v.robot_a,
+                              "robot_b": v.robot_b,
+                              "distance_m": round(v.distance_m, 4)}
+        return {
+            "verdict": "FAIL" if failed else "PASS",
+            "invariants": {
+                "INV-1": "no footprint overlap: true pair distance >= "
+                         "%.2f m" % COLLISION_DISTANCE_M,
+                "INV-2": "step authority: displacement <= granted speed x dt",
+                "INV-3": "no motion while held, failed or contained",
+                "INV-4": "legal status transitions (FAILED is terminal)",
+            },
+            "counts": counts,
+            "failed": failed,
+            "first_violation": first,
+            "min_separation_m": (round(self.min_separation_m, 4)
+                                 if self.min_separation_m is not None else None),
+            "margin_breaches": self.margin_breaches,
+            "margin_floor_m": MARGIN_BREACH_M,
+            "floor_pair_ticks": self.floor_pair_ticks,
+            "longest_floor_episode_ticks": self.longest_floor_episode_ticks,
+            "frozen_pairs": self.frozen_pairs(),
+            "proximity_pair_ticks": self.near_misses,
+            "separation_hist": {
+                "bins_m": list(SEPARATION_BINS_M),
+                "pair_ticks": list(self.separation_hist),
+            },
+        }
+
+    def frozen_pairs(self) -> int:
+        """Pairs inside the kernel floor now, continuously for at least
+        FROZEN_PAIR_TICKS. Metric only."""
+        return sum(1 for since in self._breach_since.values()
+                   if self.clock.tick - since >= FROZEN_PAIR_TICKS)
 
     def _account_safety(self) -> None:
         """Count space-time overlaps on TRUE positions. This is X-09.
@@ -1269,6 +1850,8 @@ class SimEngine:
         # Anything in self._overlapping but absent from these has moved
         # fully apart and is re-armed at the bottom of this method.
         still_close: set[tuple[str, str]] = set()
+        breach: set[tuple[str, str]] = set()
+        conflict_pairs: set[tuple[str, str]] = set()
         for (bx, by), members in buckets.items():
             candidates: list[SimRobot] = []
             for dx in (-1, 0, 1):
@@ -1283,6 +1866,20 @@ class SimEngine:
                         continue
                     seen.add(pair)
                     d = a.distance_to(b.x, b.y)
+                    if d < PREDICT_THRESHOLD_M:
+                        conflict_pairs.add(pair)
+                    if d < NEAR_MISS_DISTANCE_M:
+                        if self.min_separation_m is None or d < self.min_separation_m:
+                            self.min_separation_m = d
+                        # Contacts (d < 0.70) are INV-1 and are not binned.
+                        for i in range(len(SEPARATION_BINS_M) - 1):
+                            if SEPARATION_BINS_M[i] <= d < SEPARATION_BINS_M[i + 1]:
+                                self.separation_hist[i] += 1
+                                break
+                        if d < MARGIN_BREACH_M:
+                            breach.add(pair)
+                            if pair not in self._breaching:
+                                self.margin_breaches += 1
                     if d < COLLISION_DISTANCE_M:
                         self.overlap_ticks += 1
                         # Edge-triggered. Only the tick on which the pair first
@@ -1313,6 +1910,19 @@ class SimEngine:
         # forgotten, so a genuinely new approach later in the run is
         # counted as a new collision rather than being suppressed.
         self._overlapping &= still_close
+        self._breaching = breach
+        for pair in breach:
+            since = self._breach_since.setdefault(pair, self.clock.tick)
+            self.floor_pair_ticks += 1
+            self.longest_floor_episode_ticks = max(
+                self.longest_floor_episode_ticks, self.clock.tick - since + 1)
+        for pair in list(self._breach_since):
+            if pair not in breach:
+                del self._breach_since[pair]
+        new_conflicts = conflict_pairs - self.prediction._inside
+        self.decisions.observe_actual(self.clock.tick, conflict_pairs, new_conflicts)
+        self.decisions.observe_ai_actual(self.clock.tick, conflict_pairs)
+        self.prediction.observe_actual(self.clock.tick, conflict_pairs)
 
     def _update_hash(self) -> None:
         """Fold this tick into the rolling trace hash (X-22).
@@ -1391,6 +2001,24 @@ class SimEngine:
             "tasks_complete": len(done),
             "tasks_pending": len(self.pending),
             "tasks_active": active,
+            # SIH C2 on a fixed workload (batch scenarios only; see
+            # ScenarioSpec.batch). makespan_s is the time the LAST task of the
+            # batch completed; None while unfinished, never a guess.
+            "batch": self.scenario.batch,
+            "tasks_total": len(self.tasks),
+            "makespan_s": (round(self.batch_done_s, 2)
+                           if self.batch_done_s is not None else None),
+            "did_not_finish": bool(self.scenario.batch and self.batch_done_s is None
+                                   and self.finished),
+            "total_completion_s": round(sum(times), 2) if times else None,
+            # Time at which 90% of the batch was complete (None until then).
+            # Unlike makespan it is not hostage to the single last task.
+            "t90_s": round(self.t90_s, 2) if self.t90_s is not None else None,
+            "stop_events": self.stop_events,
+            "held_work_ticks": self.held_work_ticks,
+            "backtracks_dropped": self.backtracks_dropped,
+            "path_efficiency": (round(self._path_ideal_m / self._path_actual_m, 4)
+                                if self._path_actual_m > 0 else None),
             # the >=20% criterion
             "avg_completion_s": round(sum(times) / len(times), 2) if times else None,
             "p95_completion_s": _pct(times, 0.95),
@@ -1402,13 +2030,28 @@ class SimEngine:
             # distinguishable from many brief ones.
             "overlap_ticks": self.overlap_ticks,
             "near_misses": self.near_misses,
+            "margin_breaches": self.margin_breaches,
+            "min_separation_m": (round(self.min_separation_m, 4)
+                                 if self.min_separation_m is not None else None),
+            "safety": self.safety_summary(),
             # SLA
             "sla_misses": late,
             "sla_miss_pct": round(100.0 * late / len(done), 1) if done else 0.0,
             # coordination behaviour
             "verdicts": dict(self.verdict_counts),
             "replans": self.replans,
+            "traffic_fallbacks": self.traffic_fallbacks,
+            "lookahead": self.prediction.summary(),
+            "deadlock": self.deadlock_audit.summary(),
+            "decisions": self.decisions.summary(),
             "stall_releases": self.stall_releases,
+            "cooldown_skips": self.cooldown_skips,
+            "decision_oscillations": self.decision_oscillations,
+            "allocation": (self.lease_ledger.summary()
+                           if getattr(self.policy, "live_auction", False) else None),
+            "advanced": self._advanced_stats(),
+            "livelock_episodes": self.livelock_episodes,
+            "livelock_ticks": self.livelock_ticks,
             "veto_battery": self.veto_battery,
             "veto_capability": self.veto_capability,
 
@@ -1437,12 +2080,38 @@ class SimEngine:
             "impairment": dict(self.impairment),
         }
 
+    def _advanced_stats(self) -> Optional[dict]:
+        """Live evidence for the advanced-intelligence features, read from the
+        running policy. None for a controller that has none of them; a feature
+        that is off reports enabled=False, never invented numbers."""
+        p = self.policy
+        if not hasattr(p, "edge_ai"):
+            return None
+        c = p.edge_counters
+        advisor = p.edge_advisor
+        return {
+            "flags": {"EDGE_AI_PREDICTOR": bool(p.edge_ai),
+                      "PREDICTIVE_COORDINATION": bool(p.predictive_coordination),
+                      "LIVE_DISTRIBUTED_AUCTION": bool(p.live_auction)},
+            "edge_ai": {
+                "enabled": bool(p.edge_ai), "status": p.edge_status,
+                "model": advisor.describe() if advisor is not None and hasattr(advisor, "describe") else None,
+                "calls": c["calls"], "positives": c["positives"], "errors": c["errors"],
+                "prediction_reversals": c["reversals"],
+                "mean_inference_us": round(c["total_us"] / c["calls"], 2) if c["calls"] else None,
+            },
+            "proactive": {"enabled": bool(p.predictive_coordination), **p.proactive.summary()},
+            "auction": ({**p.task_auction.counters, **self.lease_ledger.summary()}
+                        if p.live_auction else {"enabled": False}),
+        }
+
     def _snapshot(self, compute_ms: float) -> SimSnapshot:
         return SimSnapshot(
             tick=self.clock.tick,
             sim_time=self.sim_time,
             timestamp=self.clock.timestamp,
             robots=[self.robots[rid].as_render_dict() for rid in sorted(self.robots)],
+            decisions=self.decisions.fresh(),
             verdicts=self._verdict_payload(),
             tasks_pending=len(self.pending),
             tasks_active=sum(
@@ -1519,6 +2188,46 @@ class SimEngine:
         }
 
 
+# Lateral tolerance for treating the robot as ON the line of its first path
+# segment. Cell-centre paths and in-aisle robots are collinear to float noise.
+BACKTRACK_LATERAL_M = 0.05
+
+
+def _drop_backtrack(here: tuple[float, float],
+                    waypoints: list[tuple[float, float]]
+                    ) -> list[tuple[float, float]]:
+    """Remove a leading waypoint that lies BEHIND the robot on its own path line.
+
+    A fresh path starts at the centre of the robot's current cell. A robot that
+    has already rolled a few centimetres past that centre used to drive BACK to
+    it before turning the other way. That jog is outside the straight swept
+    segment the safety kernel clears (here -> projected step along the path), so
+    it was unverified motion: traced on overlap_batch, robots jogged 2-4 cm back
+    towards a stopped peer and pushed the pair inside the 0.75 m kernel floor,
+    where the kernel then vetoes every move of both robots - the wedge behind
+    most stall releases. Same class of defect as the two C1 step-authority fixes
+    (tests/test_c1_step_authority.py).
+
+    Dropped only when the robot is on the line through the first two waypoints
+    and the first waypoint is behind it relative to the path direction, so the
+    geometry of every other path is untouched.
+    """
+    if len(waypoints) < 2:
+        return waypoints
+    (x0, y0), (x1, y1) = waypoints[0], waypoints[1]
+    dx, dy = x1 - x0, y1 - y0
+    seg = math.hypot(dx, dy)
+    if seg < 1e-9:
+        return waypoints
+    ux, uy = dx / seg, dy / seg
+    rx, ry = here[0] - x0, here[1] - y0
+    along = rx * ux + ry * uy               # > 0: robot is ahead of waypoint 0
+    lateral = abs(rx * uy - ry * ux)
+    if along > 1e-9 and lateral <= BACKTRACK_LATERAL_M and along < seg:
+        return waypoints[1:]
+    return waypoints
+
+
 def _pct(values: list[float], p: float) -> Optional[float]:
     """Nearest-rank percentile. Returns None for an empty sample."""
     if not values:
@@ -1526,5 +2235,3 @@ def _pct(values: list[float], p: float) -> Optional[float]:
     ordered = sorted(values)
     idx = min(len(ordered) - 1, max(0, int(round(p * (len(ordered) - 1)))))
     return round(ordered[idx], 2)
-
-# File contains AI-generated response based on internal company sources

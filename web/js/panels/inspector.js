@@ -11,11 +11,116 @@
  * would show it, which is exactly why it is built this way.
  */
 import { store } from "../store.js";
-import { metres, secs, pct, int, DASH } from "../format.js";
+import { metres, secs, pct, int, num, DASH } from "../format.js";
+
+/* Advanced-intelligence records. Every value shown comes from the record the
+ * simulation published; an absent value renders as DASH, never as a guess. */
+function edgeHtml(d, self) {
+  const p = d.prediction || {};
+  const out = d.outcome
+    ? (d.outcome.result === "conflict_occurred"
+      ? `Conflict band reached ${int(d.outcome.after_ticks)} ticks later.`
+      : "Prediction cleared without a conflict.")
+    : "Episode open.";
+  return `
+    <div class="panel__section" data-record="edge_ai">
+      <div class="kv"><span class="kv__k">${d.id} &middot; tick ${int(d.tick)} &middot; Edge AI</span>
+        <span class="kv__v"><span class="chip">p ${num(p.probability, 2)}</span></span></div>
+      <div class="chain__note">${d.detected_by} predicts a conflict with ${d.peer}:
+        probability ${num(p.probability, 2)}, confidence ${num(p.confidence, 2)},
+        time to conflict ${p.ttc_s == null ? DASH : num(p.ttc_s, 1) + " s"},
+        horizon ${int(p.horizon_ticks)} ticks. Model ${p.model || DASH}.</div>
+      <div class="chain__note">Coordination this tick: ${d.decision ? `${d.decision.kind} - ${d.decision.reason}` : DASH}</div>
+      <div class="chain__note">${out}</div>
+    </div>`;
+}
+
+function proactiveHtml(d, self) {
+  const p = d.prediction || {};
+  const s = d.safety || {};
+  const o = d.outcome;
+  const out = o
+    ? `${o.result} after ${int(o.held_ticks)} ticks (${o.reason}); conflict during hold: ${o.conflict_during_hold ? "yes" : "no"}.`
+    : "Holding.";
+  return `
+    <div class="panel__section" data-record="proactive">
+      <div class="kv"><span class="kv__k">${d.id} &middot; tick ${int(d.tick)} &middot; Proactive</span>
+        <span class="kv__v"><span class="chip">${d.action}</span></span></div>
+      <div class="chain__note">Prediction: ${d.held} &harr; ${d.peer}, p ${num(p.probability, 2)},
+        confidence ${num(p.confidence, 2)}, time to conflict ${p.ttc_s == null ? DASH : num(p.ttc_s, 1) + " s"}.</div>
+      <div class="chain__note">Action: ${d.action} ${d.held}; ${d.peer}: ${d.peer_decision ? `${d.peer_decision.kind} - ${d.peer_decision.reason}` : DASH}.</div>
+      <div class="chain__note">Safety kernel: ${s.verdict || DASH} (final ${s.kernel_final || DASH}).</div>
+      <div class="chain__note">Result: ${out}</div>
+    </div>`;
+}
+
+function allocationHtml(d, self) {
+  const bids = (d.bids || []).map((b) => `${b.robot} ${num(b.cost, 2)}`).join(", ") || DASH;
+  const f = d.factors || {};
+  const lease = d.lease
+    ? `${d.lease.status} (owner ${d.lease.owner}, v${int(d.lease.version)}, expires tick ${int(d.lease.expires_tick)})`
+    : DASH;
+  const out = d.outcome ? `${d.outcome.result}${d.outcome.reason ? " - " + d.outcome.reason : ""}` : "Open.";
+  return `
+    <div class="panel__section" data-record="allocation">
+      <div class="kv"><span class="kv__k">${d.id} &middot; tick ${int(d.tick)} &middot; Allocation</span>
+        <span class="kv__v"><span class="chip">${d.status || DASH}</span></span></div>
+      <div class="chain__note">Task ${d.task}${d.auction ? ` (auction ${d.auction}, round ${int(d.round)})` : ""}.
+        Bids: ${bids}.</div>
+      <div class="chain__note">Winner: ${d.winner || DASH}${d.cost != null ? `, cost ${num(d.cost, 2)} s` : ""}${
+        d.factors ? ` (travel ${num(f.travel_s, 1)}, congestion ${num(f.congestion_s, 1)}, conflict risk ${num(f.risk_s, 1)}, battery ${num(f.battery_s, 1)})` : ""}.
+        ${d.bidders != null ? `Bidders agreeing on the winner: ${int(d.agreeing_bidders)}/${int(d.bidders)}.` : ""}
+        ${d.decided_by === "consensus" ? "Decided by the robots' own consensus; the WMS only registered the lease."
+          : d.decided_by === "arbitration" ? "Radio consensus was incomplete; the WMS ledger filled it from the robots' own sealed bids." : ""}</div>
+      <div class="chain__note">Lease: ${lease}. Outcome: ${out}</div>
+    </div>`;
+}
+
+/* One decision record as a sentence a judge can read aloud: what was
+ * predicted, how severe, what each robot was told and why, what happened. */
+function decisionHtml(d, self) {
+  if (d.trigger === "edge_ai") return edgeHtml(d, self);
+  if (d.trigger === "proactive") return proactiveHtml(d, self);
+  if (d.trigger === "allocation") return allocationHtml(d, self);
+  const p = d.prediction || {};
+  const risk = d.risk || {};
+  const peer = (d.robots || []).find((r) => r !== self) || DASH;
+  const mine = d.decisions ? d.decisions[self] : null;
+  const terms = risk.terms
+    ? Object.entries(risk.terms).map(([k, v]) => `${k} ${num(v, 2)}`).join(", ")
+    : DASH;
+  const out = d.outcome
+    ? (d.outcome.result === "conflict_occurred"
+      ? `Conflict band reached ${int(d.outcome.after_ticks)} ticks later.`
+      : "Predicted window passed without the conflict.")
+    : "Outcome pending.";
+  return `
+    <div class="panel__section">
+      <div class="kv"><span class="kv__k">${d.id} &middot; tick ${int(d.tick)}</span>
+        <span class="kv__v"><span class="chip">${risk.band || DASH} ${num(risk.score, 2)}</span></span></div>
+      <div class="chain__note">Predicted ${p.geometry || "conflict"} with ${peer} in
+        ${int(p.lead_ticks)} ticks (min ${metres(p.min_dist_m, 2)} m). Risk terms: ${terms}.</div>
+      <div class="chain__note">Decision: ${mine ? `${mine.kind} - ${mine.reason}` : DASH}</div>
+      <div class="chain__note">${out}</div>
+    </div>`;
+}
 
 export class InspectorPanel {
-  constructor(el) {
+  constructor(el, transport) {
     this.el = el;
+    this.transport = transport || null;
+    this._explained = null;
+  }
+
+  /** On a new selection, pull that robot's decision history once. */
+  _seedHistory(id) {
+    if (!this.transport || !id || this._explained === id) return;
+    this._explained = id;
+    this.transport.explain(id).then((res) => {
+      if (res && res.ok && res.data && Array.isArray(res.data.decisions)) {
+        store.mergeDecisions(res.data.decisions);
+      }
+    });
   }
 
   render() {
@@ -29,6 +134,7 @@ export class InspectorPanel {
         </div>`;
       return;
     }
+    this._seedHistory(id);
     const r = store.robot(id);
     if (!r) {
       this.el.innerHTML = `
@@ -125,6 +231,18 @@ export class InspectorPanel {
           <div class="kv"><span class="kv__k">Actual</span><span class="kv__v num">${metres(r.position.x)}, ${metres(r.position.y)} m</span></div>
         ` : ""}
       </div>` : ""}
+
+      <div class="panel__section">
+        <h2 class="panel__title">Predicted conflicts</h2>
+        ${(() => {
+          const recs = store.decisionsFor(id).slice(-6).reverse();
+          return recs.length
+            ? recs.map((d) => decisionHtml(d, id)).join("")
+            : `<div class="chain__note">No decision record for ${id} yet: predicted
+               conflicts, Edge-AI predictions, proactive holds and task auctions appear
+               here as they happen.</div>`;
+        })()}
+      </div>
 
       <div class="panel__section">
         <h2 class="panel__title">Movement intent</h2>

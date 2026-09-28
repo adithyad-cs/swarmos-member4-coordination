@@ -82,6 +82,15 @@ class Verdict:
     utility_terms: dict[str, float] = field(default_factory=dict)
     winning_margin: Optional[float] = None
     needs_replan: bool = False
+    # Extra points (metres) a REROUTE asks the planner to route around, on top
+    # of the blockers named in conflict_with. Empty for every verdict except
+    # the F5 standoff breaker's; see SwarmPolicy._break_standoff.
+    avoid_points: tuple[tuple[float, float], ...] = ()
+    # Proactive coordination (PREDICTIVE_COORDINATION): the proactive action
+    # this verdict carries ("PRE-HOLD"), and the Edge-AI advisory output that
+    # triggered it. None for every ordinary verdict.
+    proactive: Optional[str] = None
+    edge_advisory: Optional[dict] = None
 
     def __post_init__(self) -> None:
         if self.speed_scale is None:
@@ -103,6 +112,8 @@ class Verdict:
                 None if self.winning_margin is None else round(self.winning_margin, 4)
             ),
             "needs_replan": self.needs_replan,
+            **({"proactive": self.proactive, "edge_advisory": self.edge_advisory}
+               if self.proactive else {}),
         }
 
 
@@ -193,12 +204,17 @@ class StopAndWaitPolicy:
         pair of swept segments is held at least SAFE_SEPARATION_M apart, which
         is above the 0.70 m pair footprint. The comparison against SWARMOS is
         therefore a pure throughput comparison, never a safety strawman.
-      - livelock bounded. Pure stop-and-wait CAN gridlock head-on in a narrow
-        aisle - that is a real property of the classical rule, not a bug in
-        this implementation. A robot held for STUCK_TICKS consecutive ticks is
-        issued a REROUTE so a run cannot wedge permanently. That is the
-        standard "wait, then replan" recovery, and it is counted in stats() so
-        the cost of the baseline's conservatism stays visible and auditable.
+      - wedge bounded, NOT livelock free. Pure stop-and-wait CAN gridlock
+        head-on in a narrow aisle - that is a real property of the classical
+        rule, not a bug in this implementation. A robot held for STUCK_TICKS
+        consecutive ticks is issued a REROUTE, the standard "wait, then
+        replan" recovery, counted in stats(). The system audit found that this
+        does not bound LIVELOCK: two head-on robots time out on the same tick,
+        reroute symmetrically, and can meet again indefinitely (overlap_batch
+        seed 13, 3 robots). The engine's observe-only livelock audit
+        (engine.LIVELOCK_WINDOW_TICKS) counts such episodes and the benchmark
+        reports the run as did-not-finish; the policy is left unchanged so
+        the baseline is not tuned against the evaluation.
       - it uses no negotiation, no reservations, no joint planning and no
         lookahead past one tick, which is precisely the classical behaviour
         SWARMOS improves upon.
@@ -231,6 +247,10 @@ class StopAndWaitPolicy:
     # waiting forever. 3 s at 10 Hz - long enough that it never fires on
     # ordinary passing traffic, short enough that a gridlock clears on screen.
     STUCK_TICKS = 30
+    # F1 (docs/C2_ROOT_CAUSE_ANALYSIS.md RC2): the same polyline sweep as the
+    # SWARMOS kernel, so both arms share one safety geometry. Off = the
+    # chord-only rule, bit-identical to the frozen C2 baseline.
+    POLYLINE_SWEEP = False
 
     def __init__(self) -> None:
         self._halts = 0
@@ -249,17 +269,21 @@ class StopAndWaitPolicy:
             rid: (states[rid].position.x, states[rid].position.y) for rid in ids
         }
         # What each robot intends, if granted the whole step.
-        intent: dict[str, Segment] = {
-            rid: (here[rid], _project_step(states[rid], self.MAX_STEP_M))
-            for rid in ids
-        }
+        from app.sim.sweep import build_sweep, point_sweep, sweep_distance, waypoints_of
+
+        def _sweep_of(rid: str):
+            end = _project_step(states[rid], self.MAX_STEP_M)
+            if self.POLYLINE_SWEEP:
+                return build_sweep(here[rid], end, waypoints_of(states[rid]),
+                                   self.MAX_STEP_M, 1.0)
+            return ((here[rid], end),)
+
+        intent = {rid: _sweep_of(rid) for rid in ids}
         # The reference geometry every later robot is judged against. An
         # undecided peer contributes only where it currently stands (see the
         # class docstring); once decided, the entry becomes exactly what it was
         # granted, so a halted robot collapses to a point and stops blocking.
-        sweep: dict[str, Segment] = {
-            rid: (here[rid], here[rid]) for rid in ids
-        }
+        sweep = {rid: point_sweep(here[rid]) for rid in ids}
 
         for rid in ids:
             mine = intent[rid]
@@ -274,12 +298,13 @@ class StopAndWaitPolicy:
                 ):
                     continue
                 theirs = sweep[other_id]
-                if _segment_distance(mine, theirs) >= self.SAFE_SEPARATION_M:
+                if sweep_distance(mine, theirs, _segment_distance) >= self.SAFE_SEPARATION_M:
                     continue
                 # Already inside the margin. Allow motion that strictly opens
                 # the gap, otherwise a pair wedged by a reroute or a spawn can
                 # never separate again.
-                if _segment_distance((mine[1], mine[1]), theirs) > math.dist(
+                end = mine[0][1]
+                if sweep_distance(point_sweep(end), theirs, _segment_distance) > math.dist(
                     here[rid], here[other_id]
                 ):
                     continue
@@ -337,6 +362,20 @@ class StopAndWaitPolicy:
                 round(self._halts / self._ticks, 3) if self._ticks else 0.0
             ),
         }
+
+
+class TextbookStopAndWaitPolicy(StopAndWaitPolicy):
+    """Traditional stop-and-wait, the SIH26123 C2 comparison arm.
+
+    Identical rule to StopAndWaitPolicy (halt while the next swept step would
+    come within SAFE_SEPARATION_M of a peer, fixed id-order right of way,
+    timeout-then-replan deadlock escape) at its DOCUMENTED default timeout of
+    STUCK_TICKS = 30 (3 s). The API's "baseline" arm is the same class tuned to
+    STUCK_TICKS = 8, found by sweeping the baseline itself; that tuned arm is
+    kept as the stronger, honesty-check comparison and both are reported.
+    """
+
+    name = "stop_and_wait"
 
 
 def _project_step(state: AMRState, step_m: float) -> tuple[float, float]:
@@ -448,5 +487,3 @@ POLICIES: dict[str, type] = {
     NoOpPolicy.name: NoOpPolicy,
     StopAndWaitPolicy.name: StopAndWaitPolicy,
 }
-
-# File contains AI-generated response based on internal company sources

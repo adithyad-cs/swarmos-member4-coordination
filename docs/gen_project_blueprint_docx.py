@@ -963,5 +963,3 @@ if __name__ == "__main__":
     d = Document(path)
     print("Wrote: %s" % path)
     print("Paragraphs: %d   Tables: %d" % (len(d.paragraphs), len(d.tables)))
-
-# File contains AI-generated response based on internal company sources

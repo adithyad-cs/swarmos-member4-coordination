@@ -1,0 +1,165 @@
+{
+  "horizon_ticks": 25,
+  "model_sha256": "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c",
+  "note": "Re-scores the non-ML baselines correctly; the model_report.json analytic row for H > 15 was a definition bug (always positive). Selection is unaffected: it compared ML candidates only.",
+  "runtime": {
+    "loaded_model_peak_bytes": 5851403,
+    "max_abs_diff_runtime_vs_sklearn": 0.016068761565467035,
+    "mean_predict_us_incl_confidence": 35.36
+  },
+  "test": {
+    "B1_analytic_lookahead": {
+      "f0.5": 0.5175,
+      "f1": 0.5767,
+      "fn": 5790,
+      "fp": 15284,
+      "fpr": 0.0561,
+      "precision": 0.4843,
+      "recall": 0.7126,
+      "tn": 257174,
+      "tp": 14354
+    },
+    "B2_constant_velocity_cpa": {
+      "f0.5": 0.5816,
+      "f1": 0.5254,
+      "fn": 11026,
+      "fp": 5444,
+      "fpr": 0.02,
+      "precision": 0.6262,
+      "recall": 0.4526,
+      "tn": 267014,
+      "tp": 9118
+    },
+    "B3_distance_rule": {
+      "d_star_m_from_validation": 1.0,
+      "f0.5": 0.2036,
+      "f1": 0.1076,
+      "fn": 18930,
+      "fp": 1202,
+      "fpr": 0.0044,
+      "precision": 0.5025,
+      "recall": 0.0603,
+      "tn": 271256,
+      "tp": 1214
+    },
+    "model_runtime": {
+      "f0.5": 0.7904,
+      "f1": 0.7096,
+      "fn": 7930,
+      "fp": 2067,
+      "fpr": 0.0076,
+      "precision": 0.8553,
+      "recall": 0.6063,
+      "tn": 270391,
+      "tp": 12214
+    }
+  },
+  "test_by_scenario": {
+    "open_floor_batch": {
+      "B1": {
+        "f0.5": 0.6179,
+        "f1": 0.6437,
+        "fn": 1904,
+        "fp": 2826,
+        "fpr": 0.0385,
+        "precision": 0.6019,
+        "recall": 0.6917,
+        "tn": 70620,
+        "tp": 4272
+      },
+      "B2": {
+        "f0.5": 0.6069,
+        "f1": 0.5253,
+        "fn": 3526,
+        "fp": 1264,
+        "fpr": 0.0172,
+        "precision": 0.6771,
+        "recall": 0.4291,
+        "tn": 72182,
+        "tp": 2650
+      },
+      "model": {
+        "f0.5": 0.8049,
+        "f1": 0.7134,
+        "fn": 2472,
+        "fp": 504,
+        "fpr": 0.0069,
+        "precision": 0.8802,
+        "recall": 0.5997,
+        "tn": 72942,
+        "tp": 3704
+      }
+    },
+    "overlap_batch": {
+      "B1": {
+        "f0.5": 0.6024,
+        "f1": 0.6284,
+        "fn": 1242,
+        "fp": 1836,
+        "fpr": 0.0415,
+        "precision": 0.5863,
+        "recall": 0.6769,
+        "tn": 42428,
+        "tp": 2602
+      },
+      "B2": {
+        "f0.5": 0.6295,
+        "f1": 0.586,
+        "fn": 1824,
+        "fp": 1030,
+        "fpr": 0.0233,
+        "precision": 0.6623,
+        "recall": 0.5255,
+        "tn": 43234,
+        "tp": 2020
+      },
+      "model": {
+        "f0.5": 0.7738,
+        "f1": 0.697,
+        "fn": 1545,
+        "fp": 454,
+        "fpr": 0.0103,
+        "precision": 0.8351,
+        "recall": 0.5981,
+        "tn": 43810,
+        "tp": 2299
+      }
+    },
+    "rush_50": {
+      "B1": {
+        "f0.5": 0.4532,
+        "f1": 0.53,
+        "fn": 2644,
+        "fp": 10622,
+        "fpr": 0.0686,
+        "precision": 0.4132,
+        "recall": 0.7388,
+        "tn": 144126,
+        "tp": 7480
+      },
+      "B2": {
+        "f0.5": 0.5489,
+        "f1": 0.502,
+        "fn": 5676,
+        "fp": 3150,
+        "fpr": 0.0204,
+        "precision": 0.5854,
+        "recall": 0.4394,
+        "tn": 151598,
+        "tp": 4448
+      },
+      "model": {
+        "f0.5": 0.7881,
+        "f1": 0.7121,
+        "fn": 3913,
+        "fp": 1109,
+        "fpr": 0.0072,
+        "precision": 0.8485,
+        "recall": 0.6135,
+        "tn": 153639,
+        "tp": 6211
+      }
+    }
+  },
+  "test_rows": 292602
+}

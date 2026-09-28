@@ -107,7 +107,8 @@ def test_scenarios_lists_everything_the_lab_panel_needs(client):
     names = {s["name"] for s in body["scenarios"]}
     assert {"rush_50", "narrow_aisle_deadlock", "blocked_aisle"} <= names
     assert "robot_failure" in body["faults"] or "ROBOT_FAILURE" in body["faults"]
-    assert set(body["policies"]) == {"swarmos", "baseline"}
+    # "baseline" = tuned stop-and-wait; "stop_and_wait" = the SIH C2 textbook arm.
+    assert set(body["policies"]) == {"swarmos", "baseline", "stop_and_wait"}
 
 
 def test_status_before_any_run(client):
@@ -313,3 +314,80 @@ def test_frame_robots_use_the_compact_wire_keys(client):
     # store.js adaptRobot() is written against exactly this key set.
     for key in ("id", "x", "y", "h", "v", "b", "s", "p", "tg", "pv"):
         assert key in robot, f"wire frame is missing '{key}'"
+
+
+# --------------------------------------------------------------------------
+# regression: /api/benchmark/run used to fail on every request
+# --------------------------------------------------------------------------
+
+def test_benchmark_endpoint_runs(client):
+    """The factories handed to run_ab took one argument while run_one calls
+    them with none, so every request returned ok:false with a TypeError. This
+    pins the fixed contract end to end with the smallest honest run."""
+    r = client.post(
+        "/api/benchmark/run",
+        json={"scenario": "rush_50", "seeds": [11, 13], "ticks": 120},
+    )
+    body = r.json()
+    assert r.status_code == 200, body
+    assert body["ok"] is True, body
+    assert body["seeds"] == [11, 13]
+    assert "throughput" in body and "safety" in body
+
+
+def test_inject_passes_duration_and_link_parameters(client):
+    client.post("/api/sim/start", json={"scenario": "rush_50", "seed": 11,
+                                        "fleet_size": 8})
+    r = client.post("/api/sim/inject", json={
+        "fault": "link_impair", "drop_pct": 100, "latency_ms": 0, "ticks": 30,
+    })
+    body = r.json()
+    assert body["ok"] is True, body
+    assert body["detail"]["applied"] is True
+    assert body["detail"]["drop_pct"] == 100.0
+    assert body["detail"]["ticks"] == 30
+    bad = client.post("/api/sim/inject", json={"fault": "link_impair",
+                                               "ticks": "soon"})
+    assert bad.json()["ok"] is False
+
+
+def test_explain_endpoint_returns_decisions_and_safety(client):
+    client.post("/api/sim/start", json={"scenario": "rush_50", "seed": 11,
+                                        "fleet_size": 8})
+    client.post("/api/sim/step", json={"ticks": 20})
+    body = client.get("/api/explain/R001").json()
+    assert body["ok"] is True, body
+    assert body["robot_id"] == "R001"
+    assert "decisions" in body and "safety" in body
+    assert body["safety"]["verdict"] in ("PASS", "FAIL")
+    assert client.get("/api/explain/R999").json()["ok"] is False
+
+
+@pytest.mark.parametrize("fault", ["link_impair", "blocked_aisle", "zone_partition",
+                                   "task_burst", "kill_ml", "clear_blockage"])
+def test_non_robot_faults_work_with_a_robot_selected(client, fault):
+    """Regression: the Lab sends the selected robot with every fault, and
+    non-robot faults used to fail with 'unexpected keyword argument robot_id'."""
+    client.post("/api/sim/start", json={"scenario": "rush_50", "seed": 11,
+                                        "fleet_size": 8})
+    body = client.post("/api/sim/inject",
+                       json={"fault": fault, "robot_id": "R002"}).json()
+    assert body["ok"] is True, body
+    assert body["ignored_params"] == ["robot_id"]
+
+
+def test_robot_faults_still_target_the_selected_robot(client):
+    client.post("/api/sim/start", json={"scenario": "rush_50", "seed": 11,
+                                        "fleet_size": 8})
+    body = client.post("/api/sim/inject",
+                       json={"fault": "robot_failure", "robot_id": "R003"}).json()
+    assert body["ok"] is True and body["detail"]["robot_id"] == "R003"
+    assert "ignored_params" not in body
+
+
+def test_unknown_parameter_still_errors_loudly(client):
+    client.post("/api/sim/start", json={"scenario": "rush_50", "seed": 11,
+                                        "fleet_size": 8})
+    body = client.post("/api/sim/inject",
+                       json={"fault": "robot_failure", "zone": "EAST"}).json()
+    assert body["ok"] is False and "rejected the parameters" in body["error"]

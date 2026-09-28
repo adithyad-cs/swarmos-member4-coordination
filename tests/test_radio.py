@@ -367,5 +367,3 @@ def test_radio_stats_expose_delivery_rate_and_rate_per_robot():
     assert s["out_of_range"] == 1
     assert s["delivery_rate"] == pytest.approx(0.5)
     assert s["msgs_per_robot_tick"] == pytest.approx(0.5)
-
-# File contains AI-generated response based on internal company sources

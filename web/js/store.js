@@ -165,6 +165,9 @@ class Store {
     this.robots = new Map();
     /** @type {Map<string, object>} robot_id -> latest verdict */
     this.verdicts = new Map();
+    // Explainable decision records (predicted conflict -> risk -> decision ->
+    // outcome), keyed by record id so a later frame can fill in the outcome.
+    this.decisions = new Map();
     /** @type {Array<object>} live conflicts, newest last */
     this.conflicts = [];
     /** Warehouse geometry, sent once on connect. Null until then. */
@@ -261,6 +264,7 @@ class Store {
     }
 
     if (Array.isArray(msg.conflicts)) this.conflicts = msg.conflicts;
+    if (Array.isArray(msg.decisions)) this.mergeDecisions(msg.decisions);
 
     if (msg.kpis) {
       // Merge rather than replace: a partial KPI payload must not blank the
@@ -317,9 +321,25 @@ class Store {
     return this.robots.size > 0;
   }
 
+  /** Merge decision records; keeps the newest 80. */
+  mergeDecisions(list) {
+    for (const d of list) {
+      if (d && d.id) this.decisions.set(d.id, d);
+    }
+    while (this.decisions.size > 80) {
+      this.decisions.delete(this.decisions.keys().next().value);
+    }
+  }
+
+  /** Records involving one robot, oldest first. */
+  decisionsFor(id) {
+    return [...this.decisions.values()].filter((d) => (d.robots || []).includes(id));
+  }
+
   reset() {
     this.robots.clear();
     this.verdicts.clear();
+    this.decisions.clear();
     this.conflicts = [];
     this.pulsed.clear();
     this.kpis = emptyKpis();

@@ -54,6 +54,3 @@ __all__ = [
     "SCENARIOS", "DEFAULT_SCENARIO", "ScenarioSpec", "Injection", "FaultKind",
     "get_scenario", "list_scenarios", "scalability_variants",
 ]
-
-
-# File contains AI-generated response based on internal company sources

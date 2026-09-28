@@ -1,0 +1,44 @@
+H 10 chosen forest {"logreg": [0.7607, 0.7511], "tree": [0.7959, 0.793], "gbdt": [0.8326, 0.8218], "forest": [0.8575, 0.8288]}
+H 15 chosen forest {"logreg": [0.7412, 0.7429], "tree": [0.7843, 0.7744], "gbdt": [0.8206, 0.8042], "forest": [0.8404, 0.8133]}
+H 25 chosen forest {"logreg": [0.7099, 0.7125], "tree": [0.7668, 0.7567], "gbdt": [0.8012, 0.7811], "forest": [0.8205, 0.7952]}
+{
+ "chosen": {
+  "horizon_ticks": 25,
+  "model": "forest",
+  "threshold": 0.5
+ },
+ "test": {
+  "pr_auc": 0.8201,
+  "roc_auc": 0.976,
+  "at_threshold": {
+   "tp": 12214,
+   "fp": 2067,
+   "fn": 7930,
+   "tn": 270391,
+   "precision": 0.8553,
+   "recall": 0.6063,
+   "f1": 0.7096,
+   "f0.5": 0.7904,
+   "fpr": 0.0076,
+   "fnr": 0.3937
+  },
+  "analytic_lookahead": {
+   "tp": 20144,
+   "fp": 272458,
+   "fn": 0,
+   "tn": 0,
+   "precision": 0.0688,
+   "recall": 1.0,
+   "f1": 0.1288,
+   "f0.5": 0.0846,
+   "fpr": 1.0,
+   "fnr": 0.0
+  }
+ },
+ "runtime": {
+  "inference_us_per_pair_pure_python": 32.54,
+  "artifact_bytes": 690193,
+  "artifact_file_sha256": "5de8afcd716b4aebd28f0ab76dd2a33e19e77df93c92a748be11920dabb12628",
+  "model_content_sha256": "829ae8fe2e2ab134e41cb48340ce86df93163870f5118200d57f69133941ef0c"
+ }
+}
